@@ -7,7 +7,7 @@ RUN yum -y clean all
 RUN pip install --upgrade pip
 
 COPY ./requirements/ /tmp/requirements/
-RUN pip install --no-cache-dir --require-hashes --no-deps -r /tmp/requirements/dev.txt
+RUN pip install --no-cache-dir --require-hashes --no-deps --ignore-installed -r /tmp/requirements/dev.txt
 
 WORKDIR /app
 EXPOSE 80
