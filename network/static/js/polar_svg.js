@@ -41,14 +41,12 @@ function calcPolarPlotSVG(timeframe, groundstation, tleLine1, tleLine2) {
     polarOrbit.setAttributeNS(null, 'fill', 'none');
     polarOrbit.setAttributeNS(null, 'stroke', 'blue');
     polarOrbit.setAttributeNS(null, 'stroke-opacity', '1.0');
-    polarOrbit.setAttributeNS(null, 'stroke-width', '2');
+    polarOrbit.setAttributeNS(null, 'stroke-width', '3');
 
     // Initialize the satellite record
     var satrec = satellite.twoline2satrec(tleLine1, tleLine2);
 
-    // Draw the orbit pass on the polar az/el plot
-    var g = '';
-    for (var t = moment(timeframe.start); t < moment(timeframe.end); t.add(20, 's')) {
+    function polarGetAzEl(t) {
         var positionAndVelocity = satellite.propagate(satrec, t.toDate());
 
         var gmst = satellite.gstime(t.toDate());
@@ -57,10 +55,17 @@ function calcPolarPlotSVG(timeframe, groundstation, tleLine1, tleLine2) {
 
         var lookAngles    = satellite.ecfToLookAngles(observerGd, positionEcf);
 
-        var azimuth   = lookAngles.azimuth * rad2deg,
-            elevation = lookAngles.elevation * rad2deg;
+        return {'azimuth':   lookAngles.azimuth * rad2deg,
+            'elevation': lookAngles.elevation * rad2deg};
+    }
 
-        var coord = polarGetXY(azimuth, elevation);
+
+    // Draw the orbit pass on the polar az/el plot
+    var g = '';
+    for (var t = moment(timeframe.start); t < moment(timeframe.end); t.add(20, 's')) {
+        var sky_position = polarGetAzEl(t);
+        var coord = polarGetXY(sky_position.azimuth, sky_position.elevation);
+
         if (g == '') {
             // Start of line
             g += 'M';
@@ -72,5 +77,32 @@ function calcPolarPlotSVG(timeframe, groundstation, tleLine1, tleLine2) {
     }
     polarOrbit.setAttribute('d', g);
 
-    return polarOrbit:
+    // Draw observation start
+    var point_start = document.createElementNS(svg_namespace, 'circle');
+    point_start.setAttributeNS(null, 'fill', 'lightgreen');
+    point_start.setAttributeNS(null, 'stroke', 'black');
+    point_start.setAttributeNS(null, 'stroke-width', '1');
+
+    var sky_position_rise = polarGetAzEl(moment(timeframe.start));
+    var coord_rise = polarGetXY(sky_position_rise.azimuth, sky_position_rise.elevation);
+
+    point_start.setAttribute('cx', coord_rise.x);
+    point_start.setAttribute('cy', coord_rise.y);
+    point_start.setAttribute('r', 7);
+
+    // Draw oberservation end
+    var point_end = document.createElementNS(svg_namespace, 'circle');
+    point_end.setAttributeNS(null, 'fill', 'red');
+    point_end.setAttributeNS(null, 'stroke', 'black');
+    point_end.setAttributeNS(null, 'stroke-width', '1');
+
+    var sky_position_set = polarGetAzEl(moment(timeframe.end));
+    var coord_set = polarGetXY(sky_position_set.azimuth, sky_position_set.elevation);
+
+    point_end.setAttribute('cx', coord_set.x);
+    point_end.setAttribute('cy', coord_set.y);
+    point_end.setAttribute('r', 7);
+
+
+    return [polarOrbit, point_start, point_end];
 }

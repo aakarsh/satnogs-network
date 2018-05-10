@@ -76,3 +76,25 @@
     float: left;
     margin-right: 5px;
 }
+
+.green_circle {
+    width:7px;
+    height:0;
+    line-height:0;
+    padding:3.5px;
+    border: solid 1px black;
+    border-radius:7px;
+    background:#90ee90;
+    display:inline-block;
+}
+
+.red_circle {
+    width:7px;
+    height:0;
+    line-height:0;
+    padding:3.5px;
+    border: solid 1px black;
+    border-radius:7px;
+    background:#ff0000;
+    display:inline-block;
+}

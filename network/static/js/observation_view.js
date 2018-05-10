@@ -124,9 +124,9 @@ $(document).ready(function() {
     };
 
     const polarPlotSVG = calcPolarPlotSVG(timeframe,
-                                          groundstation,
-                                          tleLine1,
-                                          tleLine2);
+        groundstation,
+        tleLine1,
+        tleLine2);
 
     $('svg#polar').append(polarPlotSVG);
 

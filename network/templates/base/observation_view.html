@@ -148,6 +148,7 @@
       <div class="front-line">
         <span class="label label-default">Rise</span>
         <span class="front-data">
+          <div class="green_circle"></div>
           {{ observation.rise_azimuth }}°
         </span>
       </div>
@@ -160,6 +161,7 @@
       <div class="front-line">
         <span class="label label-default">Set</span>
         <span class="front-data">
+          <div class="red_circle"></div>
           {{ observation.set_azimuth }}°
         </span>
       </div>
@@ -388,6 +390,7 @@
   <script src="{% static 'lib/jquery.json-viewer/json-viewer/jquery.json-viewer.js' %}"></script>
   <script src="{% static 'lib/satellite.js/dist/satellite.min.js' %}"></script>
   <script src="{% static 'js/utc.js' %}"></script>
+  <script src="{% static 'js/polar_svg.js' %}"></script>
   <script src="{% static 'js/observation_view.js' %}"></script>
   <script src="{% static 'js/satellite.js' %}"></script>
 {% endblock javascript %}
