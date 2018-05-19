@@ -22,11 +22,14 @@ class ObservationSerializer(serializers.ModelSerializer):
         model = Observation
         fields = ('id', 'start', 'end', 'ground_station', 'transmitter', 'norad_cat_id',
                   'payload', 'waterfall', 'demoddata', 'station_name', 'station_lat',
-                  'station_lng', 'station_alt', 'vetted_status', 'client_version',
-                  'client_metadata')
+                  'station_lng', 'station_alt', 'vetted_status', 'archived', 'archive_url',
+                  'client_version', 'client_metadata', 'vetted_user', 'vetted_datetime',
+                  'rise_azimuth', 'set_azimuth', 'max_altitude', 'tle')
         read_only_fields = ['id', 'start', 'end', 'observation', 'ground_station',
-                            'transmitter', 'norad_cat_id', 'station_name',
-                            'station_lat', 'station_lng', 'station_alt']
+                            'transmitter', 'norad_cat_id', 'archived', 'archive_url',
+                            'station_name', 'station_lat', 'station_lng', 'vetted_user',
+                            'station_alt', 'vetted_status', 'vetted_datetime', 'rise_azimuth',
+                            'set_azimuth', 'max_altitude', 'tle']
 
     def update(self, instance, validated_data):
         validated_data.pop('demoddata')
