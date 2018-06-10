@@ -718,6 +718,8 @@ def pass_predictions(request, id):
                                 'bad_count': str(satellite.bad_count),
                                 'unknown_count': str(satellite.unknown_count),
                                 'norad_cat_id': str(satellite.norad_cat_id),
+                                'tle1': str(satellite.latest_tle.tle1),
+                                'tle2': str(satellite.latest_tle.tle2),
                                 'tr': tr.datetime(),  # Rise time
                                 'azr': azimuth_r,     # Rise Azimuth
                                 'tt': tt.datetime(),  # Max altitude time
@@ -733,7 +735,10 @@ def pass_predictions(request, id):
 
     data = {
         'id': id,
-        'nextpasses': sorted(nextpasses, key=itemgetter('tr'))
+        'nextpasses': sorted(nextpasses, key=itemgetter('tr')),
+        'ground_station': {'lng': str(station.lng),
+                           'lat': str(station.lat),
+                           'alt': station.alt}
     }
 
     return JsonResponse(data, safe=False)

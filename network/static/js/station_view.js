@@ -1,4 +1,4 @@
-/* global mapboxgl, polarplot, moment, Slider */
+/* global mapboxgl, polarplot, moment, Slider, calcPolarPlotSVG  */
 /* jshint esversion: 6 */
 
 $(document).ready(function() {
@@ -208,6 +208,8 @@ $(document).ready(function() {
                 var tr_display_time = moment(data.nextpasses[i].tr).format('HH:mm');
                 var ts_display_date = moment(data.nextpasses[i].ts).format('YYYY-MM-DD');
                 var ts_display_time = moment(data.nextpasses[i].ts).format('HH:mm');
+                var tr_svg = moment.utc(data.nextpasses[i].tr).format();
+                var ts_svg = moment.utc(data.nextpasses[i].ts).format();
 
                 var overlap_style = null;
                 var overlap = check_overlap(jobs, moment.utc(data.nextpasses[i].tr), moment.utc(data.nextpasses[i].ts));
@@ -261,7 +263,51 @@ $(document).ready(function() {
                       </span>
                     </td>
                     <td>
-                      <canvas class="polar-plot" width="100" height="100" data-points="${json_polar_data}"></canvas>
+                      <div id="polar_plot">
+                        <svg
+                            xmlns="http://www.w3.org/2000/svg" version="1.1"
+                            id="polar${i}"
+                            data-tle1="${data.nextpasses[i].tle1}"
+                            data-tle2="${data.nextpasses[i].tle2}"
+                            data-timeframe-start="${tr_svg}"
+                            data-timeframe-end="${ts_svg}"
+                            data-groundstation-lat="${data.ground_station.lat}"
+                            data-groundstation-lon="${data.ground_station.lng}"
+                            data-groundstation-alt="${data.ground_station.alt}"
+                            width="120px" height="120px"
+                            viewBox="-110 -110 220 220"
+                            overflow="hidden">
+                            <path
+                                fill="none" stroke="black" stroke-width="1"
+                                d="M 0 -95 v 190 M -95 0 h 190"
+                                />
+                            <circle
+                                fill="none" stroke="black"
+                                cx="0" cy="0" r="30"
+                                />
+                            <circle
+                                fill="none" stroke="black"
+                                cx="0" cy="0" r="60"
+                                />
+                            <circle
+                                fill="none" stroke="black"
+                                cx="0" cy="0" r="90"
+                                />
+                            <text x="-4" y="-96">
+                                N
+                            </text>
+                            <text x="-4" y="105">
+                                S
+                            </text>
+                            <text x="96" y="4">
+                                E
+                            </text>
+                            <text x="-106" y="4">
+                                W
+                            </text>
+                        </svg>
+                      </div>
+                      <!-- <canvas class="polar-plot" width="100" height="100" data-points="${json_polar_data}"></canvas> -->
                     </td>
                     <td class="pass-schedule">
                       ${overlap ? `<div class="overlap-ribbon" aria-hidden="true"
@@ -285,8 +331,30 @@ $(document).ready(function() {
                     </td>
                   </tr>
                 `);
+
+                // Draw orbit in polar plot
+                var tleLine1 = $('svg#polar' + i.toString()).data('tle1');
+                var tleLine2 = $('svg#polar' + i.toString()).data('tle2');
+
+                var timeframe = {
+                    start: new Date($('svg#polar' + i.toString()).data('timeframe-start')),
+                    end: new Date($('svg#polar' + i.toString()).data('timeframe-end'))
+                };
+
+                var groundstation = {
+                    lon: $('svg#polar' + i.toString()).data('groundstation-lon'),
+                    lat: $('svg#polar' + i.toString()).data('groundstation-lat'),
+                    alt: $('svg#polar' + i.toString()).data('groundstation-alt')
+                };
+
+                const polarPlotSVG = calcPolarPlotSVG(timeframe,
+                    groundstation,
+                    tleLine1,
+                    tleLine2);
+
+                $('svg#polar' + i.toString()).append(polarPlotSVG);
             }
-            polarplot();
+            //polarplot();
 
             // Show predicion results count
             $('#prediction_results').show();
