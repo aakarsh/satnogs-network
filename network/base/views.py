@@ -397,14 +397,15 @@ def prediction_windows(request, sat_id, transmitter, start_date, end_date,
 
             # no match if the sat will not rise above the configured min horizon
             elevation = format(math.degrees(altt), '.0f')
-            if float(elevation) >= station.horizon:
-                if ephem.Date(tr).datetime() < end_date:
-                    if ephem.Date(ts).datetime() > end_date:
-                        ts = end_date
-                        keep_digging = False
-                    else:
-                        time_start_new = ephem.Date(ts).datetime() + timedelta(minutes=1)
-                        observer.date = time_start_new.strftime("%Y-%m-%d %H:%M:%S.%f")
+            if ephem.Date(tr).datetime() < end_date:
+                if ephem.Date(ts).datetime() > end_date:
+                    ts = end_date
+                    keep_digging = False
+                else:
+                    time_start_new = ephem.Date(ts).datetime() + timedelta(minutes=1)
+                    observer.date = time_start_new.strftime("%Y-%m-%d %H:%M:%S.%f")
+
+                if float(elevation) >= station.horizon:
 
                     # Adjust or discard window if overlaps exist
                     window_start = make_aware(ephem.Date(tr).datetime(), utc)
@@ -443,10 +444,10 @@ def prediction_windows(request, sat_id, transmitter, start_date, end_date,
                         except IndexError:
                             pass
                 else:
-                    # window start outside of window bounds
-                    break
+                    # did not rise above user configured horizon
+                    continue
             else:
-                # did not rise above user configured horizon
+                # window start outside of window bounds
                 break
 
         if station_match:
