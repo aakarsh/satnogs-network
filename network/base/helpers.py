@@ -36,13 +36,15 @@ def calculate_polar_data(observer, satellite, start, end, points):
 
 
 def resolve_overlaps(station, gs_data, start, end):
+    overlapped = False
     if gs_data:
         for datum in gs_data:
             if datum.is_past:
                 continue
             if datum.start <= end and start <= datum.end:
+                overlapped = True
                 if datum.start <= start and datum.end >= end:
-                    return False
+                    return ()
                 if start < datum.start and end > datum.end:
                     start1 = start
                     end1 = datum.start
@@ -53,7 +55,10 @@ def resolve_overlaps(station, gs_data, start, end):
                     start = datum.end
                 if datum.end >= end:
                     end = datum.start
-    return start, end
+    if overlapped:
+        return start, end, overlapped
+    else:
+        return start, end
 
 
 def cache_get_key(*args, **kwargs):

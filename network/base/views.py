@@ -385,8 +385,7 @@ def prediction_windows(request, sat_id, transmitter, start_date, end_date,
         observer.elevation = station.alt
         observer.date = str(start_date)
         station_match = False
-        keep_digging = True
-        while keep_digging:
+        while True:
             try:
                 tr, azr, tt, altt, ts, azs = observer.next_pass(satellite)
             except ValueError:
@@ -395,12 +394,12 @@ def prediction_windows(request, sat_id, transmitter, start_date, end_date,
                         'error': 'That satellite seems to stay always below your horizon.'
                     }]
                 break
+
             # no match if the sat will not rise above the configured min horizon
             elevation = format(math.degrees(altt), '.0f')
             if ephem.Date(tr).datetime() < end_date:
                 if ephem.Date(ts).datetime() > end_date:
-                    ts = end_date
-                    keep_digging = False
+                    break
                 else:
                     time_start_new = ephem.Date(ts).datetime() + timedelta(minutes=1)
                     observer.date = time_start_new.strftime("%Y-%m-%d %H:%M:%S.%f")
@@ -414,8 +413,9 @@ def prediction_windows(request, sat_id, transmitter, start_date, end_date,
                     # Check if overlaps with existing scheduled observations
                     gs_data = Observation.objects.filter(ground_station=station)
                     window = resolve_overlaps(station, gs_data, window_start, window_end)
+                    window_length = len(window)
 
-                    if window:
+                    if window_length > 0:
                         if not station_match:
                             station_windows = {
                                 'id': station.id,
@@ -423,26 +423,27 @@ def prediction_windows(request, sat_id, transmitter, start_date, end_date,
                                 'window': []
                             }
                             station_match = True
+
                         window_start = window[0]
                         window_end = window[1]
                         station_windows['window'].append(
                             {
                                 'start': window_start.strftime("%Y-%m-%d %H:%M:%S.%f"),
                                 'end': window_end.strftime("%Y-%m-%d %H:%M:%S.%f"),
-                                'az_start': azr
+                                'az_start': azr,
+                                'overlapped': window_length != 2
                             })
-                        # In case our window was split in two
-                        try:
+                        if window_length == 4:
+                            # In this case our window was split in two
                             window_start = window[2]
                             window_end = window[3]
                             station_windows['window'].append(
                                 {
                                     'start': window_start.strftime("%Y-%m-%d %H:%M:%S.%f"),
                                     'end': window_end.strftime("%Y-%m-%d %H:%M:%S.%f"),
-                                    'az_start': azr
+                                    'az_start': azr,
+                                    'overlapped': True
                                 })
-                        except IndexError:
-                            pass
                 else:
                     # did not rise above user configured horizon
                     continue
