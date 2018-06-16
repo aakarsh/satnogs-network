@@ -64,8 +64,8 @@ $(document).ready( function(){
             beforeSend: function() { $('#loading').show(); }
         }).done(function(data) {
             $('#loading').hide();
-            if (data.error) {
-                var error_msg = data.error;
+            if (data.length == 1 && data[0].error) {
+                var error_msg = data[0].error;
                 $('#windows-data').html('<span class="text-danger">' + error_msg + '</span>');
             } else {
                 var dc = 0; // Data counter

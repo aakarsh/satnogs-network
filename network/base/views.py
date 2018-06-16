@@ -390,11 +390,11 @@ def prediction_windows(request, sat_id, transmitter, start_date, end_date,
             try:
                 tr, azr, tt, altt, ts, azs = observer.next_pass(satellite)
             except ValueError:
-                data = {
-                    'error': 'That satellite seems to stay always below your horizon.'
-                }
+                if len(stations) == 1:
+                    data = [{
+                        'error': 'That satellite seems to stay always below your horizon.'
+                    }]
                 break
-
             # no match if the sat will not rise above the configured min horizon
             elevation = format(math.degrees(altt), '.0f')
             if ephem.Date(tr).datetime() < end_date:
