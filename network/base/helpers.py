@@ -47,14 +47,14 @@ def resolve_overlaps(station, gs_data, start, end):
                     return ()
                 if start < datum.start and end > datum.end:
                     start1 = start
-                    end1 = datum.start
-                    start2 = datum.end
+                    end1 = datum.start - timedelta(seconds=10)
+                    start2 = datum.end + timedelta(seconds=10)
                     end2 = end
                     return start1, end1, start2, end2
                 if datum.start <= start:
-                    start = datum.end
+                    start = datum.end + timedelta(seconds=10)
                 if datum.end >= end:
-                    end = datum.start
+                    end = datum.start - timedelta(seconds=10)
     if overlapped:
         return start, end, overlapped
     else:

@@ -235,6 +235,33 @@ def observation_new(request):
             messages.error(request, 'Please schedule an observation that begins in the future')
             return redirect(reverse('base:observation_new'))
 
+        total = int(request.POST.get('total'))
+        changed = 0
+        for item in range(total):
+            start = make_aware(datetime.strptime(
+                request.POST.get('{0}-starting_time'.format(item)), '%Y-%m-%d %H:%M:%S.%f'
+            ))
+            end = make_aware(datetime.strptime(
+                request.POST.get('{}-ending_time'.format(item)), '%Y-%m-%d %H:%M:%S.%f'
+            ))
+            station_id = request.POST.get('{}-station'.format(item))
+            station = Station.objects.get(id=station_id)
+            gs_data = Observation.objects.filter(ground_station=station)
+            window = resolve_overlaps(station, gs_data, start, end)
+            if (len(window) > 2 or len(window) == 0):
+                changed += 1
+
+        if changed > 0:
+            error_message = (
+                str(changed) + " observations are already scheduled or overlap with others."
+                " Please recalculate and try schedule them again."
+            )
+            if(changed == 1):
+                error_message = (
+                    "The observation is already scheduled or overlaps with others."
+                    " Please recalculate and try schedule it again.")
+            messages.error(request, error_message)
+            return redirect(reverse('base:observation_new'))
         start = make_aware(start_time, utc)
         end = make_aware(end_time, utc)
         sat = Satellite.objects.get(norad_cat_id=sat_id)
@@ -246,8 +273,6 @@ def observation_new(request):
                                   str(sat.latest_tle.tle2))
         observer = ephem.Observer()
         observer.date = str(start)
-
-        total = int(request.POST.get('total'))
 
         scheduled = []
 
