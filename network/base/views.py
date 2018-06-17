@@ -445,6 +445,7 @@ def prediction_windows(request, sat_id, transmitter, start_date, end_date,
                             station_windows = {
                                 'id': station.id,
                                 'name': station.name,
+                                'status': station.status,
                                 'window': []
                             }
                             station_match = True

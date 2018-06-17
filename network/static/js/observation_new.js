@@ -73,21 +73,23 @@ $(document).ready( function(){
                 var label = '';
                 $('#windows-data').empty();
                 $.each(data, function(i, k){
-                    label = k.id + ' - ' + k.name;
-                    var times = [];
-                    $.each(k.window, function(m, n){
-                        if(!n.overlapped || obs_filter_station){
-                            var starting_time = moment.utc(n.start).valueOf();
-                            var ending_time = moment.utc(n.end).valueOf();
-                            $('#windows-data').append('<input type="hidden" name="' + dc + '-starting_time" value="' + n.start + '">');
-                            $('#windows-data').append('<input type="hidden" name="' + dc + '-ending_time" value="' + n.end + '">');
-                            $('#windows-data').append('<input type="hidden" name="' + dc + '-station" value="' + k.id + '">');
-                            times.push({starting_time: starting_time, ending_time: ending_time});
-                            dc = dc + 1;
+                    if(k.status !== 1 || obs_filter_station){
+                        label = k.id + ' - ' + k.name;
+                        var times = [];
+                        $.each(k.window, function(m, n){
+                            if(!n.overlapped || obs_filter_station){
+                                var starting_time = moment.utc(n.start).valueOf();
+                                var ending_time = moment.utc(n.end).valueOf();
+                                $('#windows-data').append('<input type="hidden" name="' + dc + '-starting_time" value="' + n.start + '">');
+                                $('#windows-data').append('<input type="hidden" name="' + dc + '-ending_time" value="' + n.end + '">');
+                                $('#windows-data').append('<input type="hidden" name="' + dc + '-station" value="' + k.id + '">');
+                                times.push({starting_time: starting_time, ending_time: ending_time});
+                                dc = dc + 1;
+                            }
+                        });
+                        if(times.length > 0){
+                            suggested_data.push({label: label, times: times});
                         }
-                    });
-                    if(times.length > 0){
-                        suggested_data.push({label: label, times: times});
                     }
                 });
 
