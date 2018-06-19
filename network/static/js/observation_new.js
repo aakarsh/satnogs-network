@@ -22,18 +22,32 @@ $(document).ready( function(){
     }
 
     if (!obs_filter_dates) {
-        var minstart = $('#datetimepicker-start').data('date-minstart');
-        var minend = $('#datetimepicker-end').data('date-minend');
-        var maxrange = $('#datetimepicker-end').data('date-maxrange');
-        $('#datetimepicker-start').datetimepicker();
-        $('#datetimepicker-start').data('DateTimePicker').minDate(moment.utc().add(minstart, 'm'));
-        $('#datetimepicker-end').datetimepicker();
-        $('#datetimepicker-end').data('DateTimePicker').minDate(moment.utc().add(minend, 'm'));
+        var minStart = $('#datetimepicker-start').data('date-minstart');
+        var minEnd = $('#datetimepicker-end').data('date-minend');
+        var maxRange = $('#datetimepicker-end').data('date-maxrange');
+        var minRange = minEnd - minStart;
+        var minStartDate = moment().utc().add(minStart, 'm').format('YYYY-MM-DD HH:mm');
+        var maxStartDate = moment().utc().add(minStart + maxRange - minRange, 'm').format('YYYY-MM-DD HH:mm');
+        var minEndDate = moment().utc().add(minEnd, 'm').format('YYYY-MM-DD HH:mm');
+        var maxEndDate = moment().utc().add(minStart + maxRange, 'm').format('YYYY-MM-DD HH:mm');
+        $('#datetimepicker-start').datetimepicker({
+            useCurrent: false //https://github.com/Eonasdan/bootstrap-datetimepicker/issues/1075
+        });
+        $('#datetimepicker-start').data('DateTimePicker').date(minStartDate);
+        $('#datetimepicker-start').data('DateTimePicker').minDate(minStartDate);
+        $('#datetimepicker-start').data('DateTimePicker').maxDate(maxStartDate);
+        $('#datetimepicker-end').datetimepicker({
+            useCurrent: false //https://github.com/Eonasdan/bootstrap-datetimepicker/issues/1075
+        });
+        $('#datetimepicker-end').data('DateTimePicker').date(minEndDate);
+        $('#datetimepicker-end').data('DateTimePicker').minDate(minEndDate);
+        $('#datetimepicker-end').data('DateTimePicker').maxDate(maxEndDate);
         $('#datetimepicker-start').on('dp.change',function (e) {
-            // Setting default, minimum and maximum for end
-            $('#datetimepicker-end').data('DateTimePicker').defaultDate(moment.utc(e.date).add(60, 'm'));
-            $('#datetimepicker-end').data('DateTimePicker').minDate(e.date);
-            $('#datetimepicker-end').data('DateTimePicker').maxDate(moment.utc(e.date).add(maxrange, 'm'));
+            var newMinEndDate = e.date.clone().add(minRange, 'm');
+            if ($('#datetimepicker-end').data('DateTimePicker').date() < newMinEndDate) {
+                $('#datetimepicker-end').data('DateTimePicker').date(newMinEndDate);
+            }
+            $('#datetimepicker-end').data('DateTimePicker').minDate(newMinEndDate);
         });
     }
 
