@@ -235,6 +235,33 @@ def observation_new(request):
             messages.error(request, 'Please schedule an observation that begins in the future')
             return redirect(reverse('base:observation_new'))
 
+        total = int(request.POST.get('total'))
+        changed = 0
+        for item in range(total):
+            start = make_aware(datetime.strptime(
+                request.POST.get('{0}-starting_time'.format(item)), '%Y-%m-%d %H:%M:%S.%f'
+            ))
+            end = make_aware(datetime.strptime(
+                request.POST.get('{}-ending_time'.format(item)), '%Y-%m-%d %H:%M:%S.%f'
+            ))
+            station_id = request.POST.get('{}-station'.format(item))
+            station = Station.objects.get(id=station_id)
+            gs_data = Observation.objects.filter(ground_station=station)
+            window = resolve_overlaps(station, gs_data, start, end)
+            if (len(window) > 2 or len(window) == 0):
+                changed += 1
+
+        if changed > 0:
+            error_message = (
+                str(changed) + " observations are already scheduled or overlap with others."
+                " Please recalculate and try schedule them again."
+            )
+            if(changed == 1):
+                error_message = (
+                    "The observation is already scheduled or overlaps with others."
+                    " Please recalculate and try schedule it again.")
+            messages.error(request, error_message)
+            return redirect(reverse('base:observation_new'))
         start = make_aware(start_time, utc)
         end = make_aware(end_time, utc)
         sat = Satellite.objects.get(norad_cat_id=sat_id)
@@ -246,8 +273,6 @@ def observation_new(request):
                                   str(sat.latest_tle.tle2))
         observer = ephem.Observer()
         observer.date = str(start)
-
-        total = int(request.POST.get('total'))
 
         scheduled = []
 
@@ -385,26 +410,26 @@ def prediction_windows(request, sat_id, transmitter, start_date, end_date,
         observer.elevation = station.alt
         observer.date = str(start_date)
         station_match = False
-        keep_digging = True
-        while keep_digging:
+        while True:
             try:
                 tr, azr, tt, altt, ts, azs = observer.next_pass(satellite)
             except ValueError:
-                data = {
-                    'error': 'That satellite seems to stay always below your horizon.'
-                }
+                if len(stations) == 1:
+                    data = [{
+                        'error': 'That satellite seems to stay always below your horizon.'
+                    }]
                 break
 
             # no match if the sat will not rise above the configured min horizon
             elevation = format(math.degrees(altt), '.0f')
-            if float(elevation) >= station.horizon:
-                if ephem.Date(tr).datetime() < end_date:
-                    if ephem.Date(ts).datetime() > end_date:
-                        ts = end_date
-                        keep_digging = False
-                    else:
-                        time_start_new = ephem.Date(ts).datetime() + timedelta(minutes=1)
-                        observer.date = time_start_new.strftime("%Y-%m-%d %H:%M:%S.%f")
+            if ephem.Date(tr).datetime() < end_date:
+                if ephem.Date(ts).datetime() > end_date:
+                    break
+                else:
+                    time_start_new = ephem.Date(ts).datetime() + timedelta(minutes=1)
+                    observer.date = time_start_new.strftime("%Y-%m-%d %H:%M:%S.%f")
+
+                if float(elevation) >= station.horizon:
 
                     # Adjust or discard window if overlaps exist
                     window_start = make_aware(ephem.Date(tr).datetime(), utc)
@@ -413,40 +438,43 @@ def prediction_windows(request, sat_id, transmitter, start_date, end_date,
                     # Check if overlaps with existing scheduled observations
                     gs_data = Observation.objects.filter(ground_station=station)
                     window = resolve_overlaps(station, gs_data, window_start, window_end)
+                    window_length = len(window)
 
-                    if window:
+                    if window_length > 0:
                         if not station_match:
                             station_windows = {
                                 'id': station.id,
                                 'name': station.name,
+                                'status': station.status,
                                 'window': []
                             }
                             station_match = True
+
                         window_start = window[0]
                         window_end = window[1]
                         station_windows['window'].append(
                             {
                                 'start': window_start.strftime("%Y-%m-%d %H:%M:%S.%f"),
                                 'end': window_end.strftime("%Y-%m-%d %H:%M:%S.%f"),
-                                'az_start': azr
+                                'az_start': azr,
+                                'overlapped': window_length != 2
                             })
-                        # In case our window was split in two
-                        try:
+                        if window_length == 4:
+                            # In this case our window was split in two
                             window_start = window[2]
                             window_end = window[3]
                             station_windows['window'].append(
                                 {
                                     'start': window_start.strftime("%Y-%m-%d %H:%M:%S.%f"),
                                     'end': window_end.strftime("%Y-%m-%d %H:%M:%S.%f"),
-                                    'az_start': azr
+                                    'az_start': azr,
+                                    'overlapped': True
                                 })
-                        except IndexError:
-                            pass
                 else:
-                    # window start outside of window bounds
-                    break
+                    # did not rise above user configured horizon
+                    continue
             else:
-                # did not rise above user configured horizon
+                # window start outside of window bounds
                 break
 
         if station_match:
