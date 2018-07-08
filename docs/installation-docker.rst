@@ -17,9 +17,9 @@ Docker Installation
 
      $ cp env-dist .env
 
-   Start database container::
+   Start database container (Run it in the background)::
 
-     $ docker-compose up -d db
+     $ docker-compose up --detach db
 
    Build satnogs-network container::
 
@@ -35,7 +35,7 @@ Docker Installation
 
 #. **Run it!**
 
-   Run satnogs-network::
+   Run satnogs-network (in the foreground)::
 
      $ docker-compose up
 
