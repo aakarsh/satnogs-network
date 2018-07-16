@@ -1,6 +1,7 @@
 {% extends "base.html" %}
 {% load tags %}
 {% load staticfiles %}
+{% load humanize %}
 
 {% block title %} - Observations{% endblock %}
 
@@ -180,11 +181,11 @@
                   </span>
                 </td>
                 <td>
-                  <span data-toggle="tooltip" data-placement="bottom" title="{{ observation.start|timesince }} ago">
+                  <span data-toggle="tooltip" data-placement="bottom" title="{{ observation.start|naturaltime }}">
                     <span class="datetime-date">{{ observation.start|date:"Y-m-d" }}</span>
                     <span class="datetime-time">{{ observation.start|date:"H:i:s" }}</span><br>
                   </span>
-                  <span data-toggle="tooltip" data-placement="bottom" title="{{ observation.end|timesince }} ago">
+                  <span data-toggle="tooltip" data-placement="bottom" title="{{ observation.end|naturaltime }}">
                     <span class="datetime-date">{{ observation.end|date:"Y-m-d" }}</span>
                     <span class="datetime-time">{{ observation.end|date:"H:i:s" }}</span>
                   </span>
