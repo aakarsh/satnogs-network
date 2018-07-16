@@ -1,4 +1,4 @@
-/* global mapboxgl, polarplot, moment, Slider, calcPolarPlotSVG  */
+/* global mapboxgl, moment, Slider, calcPolarPlotSVG  */
 /* jshint esversion: 6 */
 
 $(document).ready(function() {
@@ -354,7 +354,6 @@ $(document).ready(function() {
 
                 $('svg#polar' + i.toString()).append(polarPlotSVG);
             }
-            //polarplot();
 
             // Show predicion results count
             $('#prediction_results').show();
