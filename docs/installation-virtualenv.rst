@@ -1,8 +1,15 @@
 VirtualEnv Installation
 =======================
 
-Requirements: You will need python, python-virtualenvwrapper, pip and git
+#. **Install the requirements**
 
+   Generic requirements which you will need:: 
+
+     python, python-virtualenvwrapper, pip and git, libmysqlclient-dev (mysql_config)
+
+   Debian Stretch (9) specific requirements ::
+
+     $ sudo apt-get install libmariadbclient-dev python-pip virtualenvwrapper 
 
 #. **Build the environment**
 
