@@ -35,10 +35,6 @@ LOCAL_APPS = (
 )
 
 INSTALLED_APPS = DJANGO_APPS + THIRD_PARTY_APPS + LOCAL_APPS
-if ENVIRONMENT == 'production':
-    INSTALLED_APPS += (
-        'opbeat.contrib.django',
-    )
 
 # Middlware
 MIDDLEWARE = (
@@ -51,11 +47,6 @@ MIDDLEWARE = (
     'django.middleware.security.SecurityMiddleware',
     'csp.middleware.CSPMiddleware',
 )
-if ENVIRONMENT == 'production':
-    MIDDLEWARE += (
-        'opbeat.contrib.django.middleware.OpbeatAPMMiddleware',
-        'opbeat.contrib.django.middleware.Opbeat404CatchMiddleware',
-    )
 
 # Email
 if DEBUG:
@@ -191,30 +182,20 @@ LOGGING = {
             'class': 'logging.StreamHandler',
             'formatter': 'verbose'
         },
-        'opbeat': {
-            'level': 'WARNING',
-            'filters': ['require_debug_false'],
-            'class': 'opbeat.contrib.django.handlers.OpbeatHandler',
-        },
     },
     'loggers': {
         'django.request': {
-            'handlers': ['opbeat'],
+            'handlers': ['console'],
             'level': 'ERROR',
             'propagate': True,
         },
         'django.network.backends': {
             'level': 'ERROR',
-            'handlers': ['opbeat'],
+            'handlers': ['console'],
             'propagate': False,
         },
         'network': {
             'level': 'WARNING',
-            'handlers': ['opbeat'],
-            'propagate': False,
-        },
-        'opbeat.errors': {
-            'level': 'ERROR',
             'handlers': ['console'],
             'propagate': False,
         },
@@ -301,13 +282,6 @@ if DATABASES['default']['ENGINE'].split('.')[-1] == 'mysql':
 MAPBOX_GEOCODE_URL = 'https://api.tiles.mapbox.com/v4/geocode/mapbox.places/'
 MAPBOX_MAP_ID = config('MAPBOX_MAP_ID', default='')
 MAPBOX_TOKEN = config('MAPBOX_TOKEN', default='')
-
-# Metrics
-OPBEAT = {
-    'ORGANIZATION_ID': config('OPBEAT_ORGID', default=''),
-    'APP_ID': config('OPBEAT_APPID', default=''),
-    'SECRET_TOKEN': config('OPBEAT_SECRET', default=''),
-}
 
 # Observations settings
 # Datetimes in minutes for scheduling OPTIONS
