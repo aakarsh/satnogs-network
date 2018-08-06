@@ -37,15 +37,3 @@ def setup_periodic_tasks(sender, **kwargs):
 
     sender.add_periodic_task(RUN_HOURLY, stations_cache_rates.s(),
                              name='stations-cache-rates')
-
-
-if settings.ENVIRONMENT == 'production' or settings.ENVIRONMENT == 'stage':
-    from opbeat.contrib.django.models import client, logger, register_handlers
-    from opbeat.contrib.celery import register_signal
-
-    try:
-        register_signal(client)
-    except Exception as e:
-        logger.exception('Failed installing celery hook: {0}'.format(e))
-
-    register_handlers()
