@@ -65,7 +65,7 @@ def _observation_post_save(sender, instance, created, **kwargs):
     if created and instance.ground_station.testing:
         instance.testing = True
         instance.save()
-    if instance.has_demoddata:
+    if instance.has_demoddata and instance.vetted_status == 'unknown':
         instance.vetted_status = 'good'
         instance.vetted_datetime = now()
         instance.save()
