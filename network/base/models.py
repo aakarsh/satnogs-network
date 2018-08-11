@@ -131,7 +131,7 @@ class Station(models.Model):
                               on_delete=models.SET_NULL, null=True, blank=True)
     name = models.CharField(max_length=45)
     image = models.ImageField(upload_to='ground_stations', blank=True)
-    alt = models.PositiveIntegerField(help_text='In meters above ground')
+    alt = models.PositiveIntegerField(help_text='In meters above sea level')
     lat = models.FloatField(validators=[MaxValueValidator(90), MinValueValidator(-90)],
                             help_text='eg. 38.01697')
     lng = models.FloatField(validators=[MaxValueValidator(180), MinValueValidator(-180)],
