@@ -94,8 +94,8 @@ django-crispy-forms==1.7.1 \
     --hash=sha256:fda07e532835faae1de96aad47faa0cc29bdd6ff2464a475d035fdb9b58e2fa4
 
 # Astronomy
-https://github.com/comzeradd/orbit/archive/cache.zip \
-    --hash=sha256:7cae6b5a171f615698325debf80546d338e4bb73a697e2368619debf1582ac19
+https://gitlab.com/librespacefoundation/orbit/-/archive/master/orbit-master.zip \
+    --hash=sha256:cf693a70e221f6217fd8f86343406c96792504d1d331cb1f2c724e6099062850
 
 # API
 djangorestframework==3.7.7 \
