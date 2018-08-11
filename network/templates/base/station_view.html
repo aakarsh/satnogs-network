@@ -95,7 +95,7 @@
           <span class="label label-default">Antennas</span>
           <span class="front-data">
             {% for antenna in station.antenna.all %}
-              <span class="label label-info" data-toggle="tooltip" data-placement="bottom"
+              <span class="antenna-pill" data-toggle="tooltip" data-placement="bottom"
                     title="{{ antenna.frequency|frq }} - {{ antenna.frequency_max|frq }}">
                 {{ antenna.band}} {{ antenna.get_antenna_type_display }}
               </span>
