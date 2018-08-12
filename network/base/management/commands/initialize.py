@@ -20,9 +20,9 @@ class Command(BaseCommand):
 
         # Create random fixtures for remaining models
         self.stdout.write("Creating fixtures...")
-        StationFactory.create_batch(10,
+        StationFactory.create_batch(40,
                                     antennas=(Antenna.objects.all().values_list('id', flat=True)))
-        ObservationFactory.create_batch(20)
+        ObservationFactory.create_batch(200)
         for _ in range(40):
             DemodDataFactory.create(payload_demod__data=generate_payload(),
                                     payload_demod__filename=generate_payload_name())
