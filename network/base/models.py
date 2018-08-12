@@ -23,6 +23,7 @@ RIG_TYPES = ['Radio', 'SDR']
 ANTENNA_BANDS = ['HF', 'VHF', 'UHF', 'L', 'S', 'C', 'X', 'KU']
 ANTENNA_TYPES = (
     ('dipole', 'Dipole'),
+    ('v-dipole', 'V-Dipole'),
     ('yagi', 'Yagi'),
     ('helical', 'Helical'),
     ('parabolic', 'Parabolic'),
