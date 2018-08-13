@@ -17,23 +17,26 @@
         Observations
       </h2>
     </div>
-    <div class="col-md-4 pull-right visible-md visible-lg">
-      <h1 class="pull-right">
-        <a href="#legend" class="btn" data-toggle="modal" data-target="#LegendModal">
-            <span class="glyphicon glyphicon-info-sign" aria-hidden="true"></span>
+    <div class="col-md-6 pull-right visible-md visible-lg">
+      <span class="pull-right">
+        <a href="#legend" class="btn btn-default" data-toggle="modal" data-target="#LegendModal">
+          <span class="glyphicon glyphicon-info-sign" aria-hidden="true"></span>
         </a>
         <a class="btn btn-default" role="button" data-toggle="collapse"
-                href="#collapseFilters" aria-expanded="false" aria-controls="collapseFilters">
-          <span class="glyphicon glyphicon-filter" aria-hidden="true"></span> Filters
+           href="#collapseFilters" aria-expanded="false" aria-controls="collapseFilters">
+          <span class="glyphicon glyphicon-filter" aria-hidden="true"></span>
         </a>
-        {% if can_schedule %}
-          <a class="btn btn-primary" href="{% url 'base:observation_new' %}">
-            <span class="glyphicon glyphicon-plus" aria-hidden="true"></span> New Observation
-          </a>
+	{% if is_paginated %}
+	<span style="display: inline-block">{% load paginator %}{% paginator request 3%}</span>
+	{% endif %}
+	{% if can_schedule %}
+        <a class="btn btn-primary" href="{% url 'base:observation_new' %}">
+          <span class="glyphicon glyphicon-plus" aria-hidden="true"></span> New Observation
+        </a>
         {% endif %}
-      </h1>
+      </span>
     </div>
-    <div class="col-md-4 pull-right hidden-md hidden-lg">
+    <div class="col-md-6 pull-right hidden-md hidden-lg">
       <h2 class="pull-right">
         <a class="btn btn-default" role="button" data-toggle="collapse"
                 href="#collapseFilters" aria-expanded="false" aria-controls="collapseFilters">
@@ -142,7 +145,6 @@
 
   <div class="row">
     <div class="col-md-12">
-      {% if is_paginated %}{% load paginator %}{% paginator request 3 %}{% endif %}
       <table class="table table-hover">
         <thead>
           <th>ID</th>
@@ -224,9 +226,11 @@
           {% endfor %}
         </tbody>
       </table>
-      {% if is_paginated %}{% load paginator %}{% paginator request 3 %}{% endif %}
-      Query returned {{ observations|length }} observation{{ observations|length|pluralize }}.
-      <a id="open-all" href="#">Open all in tabs</a>
+      <div style="text-align:center">
+	{% if is_paginated %}{% load paginator %}{% paginator request 3 %}{% endif %}
+	Query returned {{ observations|length }} observation{{ observations|length|pluralize }}.
+	<a id="open-all" href="#">Open all in tabs</a>
+      </div>
     </div>
   </div>
   {% include 'includes/satellite.html' %}
