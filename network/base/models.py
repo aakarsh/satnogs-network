@@ -7,6 +7,7 @@ from shortuuidfield import ShortUUIDField
 from django.conf import settings
 from django.core.cache import cache
 from django.core.validators import MaxValueValidator, MinValueValidator
+from django.core.exceptions import ValidationError
 from django.dispatch import receiver
 from django.db import models
 from django.db.models.signals import post_save
@@ -95,6 +96,13 @@ def _station_post_save(sender, instance, created, **kwargs):
     post_save.connect(_station_post_save, sender=Station)
 
 
+def validate_image(fieldfile_obj):
+    filesize = fieldfile_obj.file.size
+    megabyte_limit = 2.0
+    if filesize > megabyte_limit * 1024 * 1024:
+        raise ValidationError("Max file size is %sMB" % str(megabyte_limit))
+
+
 class Rig(models.Model):
     """Model for Rig types."""
     name = models.CharField(choices=zip(RIG_TYPES, RIG_TYPES), max_length=10)
@@ -131,7 +139,8 @@ class Station(models.Model):
     owner = models.ForeignKey(User, related_name="ground_stations",
                               on_delete=models.SET_NULL, null=True, blank=True)
     name = models.CharField(max_length=45)
-    image = models.ImageField(upload_to='ground_stations', blank=True)
+    image = models.ImageField(upload_to='ground_stations', blank=True,
+                              validators=[validate_image])
     alt = models.PositiveIntegerField(help_text='In meters above sea level')
     lat = models.FloatField(validators=[MaxValueValidator(90), MinValueValidator(-90)],
                             help_text='eg. 38.01697')
