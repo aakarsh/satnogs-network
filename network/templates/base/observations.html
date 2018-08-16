@@ -7,18 +7,18 @@
 
 {% block content %}
   <div class="row">
-    <div class="col-md-3 visible-md visible-lg">
-      <h1>
-        Observations
-      </h1>
-    </div>
-    <div class="col-xs-3 hidden-md hidden-lg">
+    <div class="col-md-3 col-xs-3">
       <h2>
         Observations
       </h2>
     </div>
-    <div class="col-md-6 pull-right visible-md visible-lg">
-      <span class="pull-right">
+    {% if is_paginated %}
+      <div class="col-md-6 visible-md visible-lg">
+        <span class="pull-right">{% load paginator %}{% paginator request 3%}</span>
+      </div>
+    {% endif %}
+    <div class="col-md-3 pull-right visible-md visible-lg">
+      <span class="pull-right observations-actions">
         <a href="#legend" class="btn btn-default" data-toggle="modal" data-target="#LegendModal">
           <span class="glyphicon glyphicon-info-sign" aria-hidden="true"></span>
         </a>
@@ -26,13 +26,10 @@
            href="#collapseFilters" aria-expanded="false" aria-controls="collapseFilters">
           <span class="glyphicon glyphicon-filter" aria-hidden="true"></span>
         </a>
-	{% if is_paginated %}
-	<span style="display: inline-block">{% load paginator %}{% paginator request 3%}</span>
-	{% endif %}
-	{% if can_schedule %}
-        <a class="btn btn-primary" href="{% url 'base:observation_new' %}">
-          <span class="glyphicon glyphicon-plus" aria-hidden="true"></span> New Observation
-        </a>
+      	{% if can_schedule %}
+          <a class="btn btn-primary" href="{% url 'base:observation_new' %}">
+            <span class="glyphicon glyphicon-plus" aria-hidden="true"></span> New Observation
+          </a>
         {% endif %}
       </span>
     </div>
