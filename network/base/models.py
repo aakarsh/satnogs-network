@@ -203,8 +203,8 @@ class Station(models.Model):
         rate = cache.get('sat-{0}-rate'.format(self.id))
         if not rate:
             observations = self.observations.exclude(testing=True)
-            has_audio = observations.filter(id__in=(o.id for o in observations if o.has_audio))
-            success = has_audio.count()
+            success = observations.filter(id__in=(o.id for o in observations
+                                                  if o.is_good or o.is_bad)).count()
             if observations:
                 rate = int(100 * (float(success) / float(observations.count())))
                 cache.set('sat-{0}-rate'.format(self.id), rate)
