@@ -86,10 +86,17 @@
                 {% endif %}
                 <td>
                   <a href="{% url 'base:observations_list' %}?station={{ station.id }}">
-                    <span class="badge total-pill" data-toggle="tooltip" data-placement="bottom"
-                          title="{{ station.success_rate }}% Success">
-                      {{ station.observations_count }}
-                    </span>
+                    {% if not station.success_rate %}
+                      <span class="badge total-pill" data-toggle="tooltip" data-placement="bottom"
+                            title="No data">
+                        {{ station.total_obs }}
+                      </span>
+                    {% else %}
+                      <span class="badge total-pill" data-toggle="tooltip" data-placement="bottom"
+                            title="{{ station.success_rate }}% Success">
+                        {{ station.total_obs }}
+                      </span>
+                    {% endif %}
                   </a>
                 </td>
                 <td>
