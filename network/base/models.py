@@ -148,7 +148,7 @@ class Station(models.Model):
                             help_text='eg. 23.7314')
     qthlocator = models.CharField(max_length=255, blank=True)
     location = models.CharField(max_length=255, blank=True)
-    antenna = models.ManyToManyField(Antenna, blank=True,
+    antenna = models.ManyToManyField(Antenna, blank=True, related_name="stations",
                                      help_text=('If you want to add a new Antenna contact '
                                                 '<a href="https://community.satnogs.org/" '
                                                 'target="_blank">SatNOGS Team</a>'))

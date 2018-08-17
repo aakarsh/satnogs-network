@@ -18,7 +18,14 @@ class ModeAdmin(admin.ModelAdmin):
 
 @admin.register(Antenna)
 class AntennaAdmin(admin.ModelAdmin):
-    list_filter = ('band', 'antenna_type')
+    list_display = ('id', '__unicode__', 'antenna_count', 'station_list', )
+    list_filter = ('band', 'antenna_type', )
+
+    def antenna_count(self, obj):
+        return obj.stations.all().count()
+
+    def station_list(self, obj):
+        return ",\n".join([str(s.id) for s in obj.stations.all()])
 
 
 @admin.register(Station)
