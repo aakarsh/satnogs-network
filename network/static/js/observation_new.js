@@ -10,6 +10,45 @@ $(document).ready( function(){
         $('.tle[data-norad="' + satellite + '"]').show();
     }
 
+    var suggested_data = [];
+
+    $('#select-all-observations').on('click', function(){
+        $.each(suggested_data, function(i, station){
+            $.each(station.times, function(j, observation){
+                observation.selected = true;
+                $('#' + observation.id).toggleClass('unselected-obs', false);
+            });
+            station.selectedAll = true;
+        });
+    });
+
+    $('#select-none-observations').on('click', function(){
+        $.each(suggested_data, function(i, station){
+            $.each(station.times, function(j, observation){
+                observation.selected = false;
+                $('#' + observation.id).toggleClass('unselected-obs', true);
+            });
+            station.selectedAll = false;
+        });
+    });
+
+    $('#form-obs').on('submit', function() {
+        var obs_counter = 0;
+        $.each(suggested_data, function(i, station){
+            $.each(station.times, function(j, observation){
+                if(observation.selected){
+                    var start = moment.utc(observation.starting_time).format('YYYY-MM-DD HH:mm:ss.SSS');
+                    var end = moment.utc(observation.ending_time).format('YYYY-MM-DD HH:mm:ss.SSS');
+                    $('#windows-data').append('<input type="hidden" name="' + obs_counter + '-starting_time" value="' + start + '">');
+                    $('#windows-data').append('<input type="hidden" name="' + obs_counter + '-ending_time" value="' + end + '">');
+                    $('#windows-data').append('<input type="hidden" name="' + obs_counter + '-station" value="' + station.id + '">');
+                    obs_counter += 1;
+                }
+            });
+        });
+        $('#windows-data').append('<input type="hidden" name="total" value="' + obs_counter + '">');
+    });
+
     var satellite;
 
     var obs_filter = $('#form-obs').data('obs-filter');
@@ -82,32 +121,32 @@ $(document).ready( function(){
                 var error_msg = data[0].error;
                 $('#windows-data').html('<span class="text-danger">' + error_msg + '</span>');
             } else {
+                suggested_data = [];
                 var dc = 0; // Data counter
-                var suggested_data = [];
-                var label = '';
                 $('#windows-data').empty();
                 $.each(data, function(i, k){
-                    if(k.status !== 1 || obs_filter_station){
-                        label = k.id + ' - ' + k.name;
-                        var times = [];
-                        $.each(k.window, function(m, n){
-                            if(!n.overlapped || obs_filter_station){
-                                var starting_time = moment.utc(n.start).valueOf();
-                                var ending_time = moment.utc(n.end).valueOf();
-                                $('#windows-data').append('<input type="hidden" name="' + dc + '-starting_time" value="' + n.start + '">');
-                                $('#windows-data').append('<input type="hidden" name="' + dc + '-ending_time" value="' + n.end + '">');
-                                $('#windows-data').append('<input type="hidden" name="' + dc + '-station" value="' + k.id + '">');
-                                times.push({starting_time: starting_time, ending_time: ending_time});
-                                dc = dc + 1;
+                    var label = k.id + ' - ' + k.name;
+                    var times = [];
+                    var selectedAll = true;
+                    $.each(k.window, function(m, n){
+                        if(!n.overlapped || obs_filter_station){
+                            var starting_time = moment.utc(n.start).valueOf();
+                            var ending_time = moment.utc(n.end).valueOf();
+                            var selected = false;
+                            if(k.status !== 1 || obs_filter_station){
+                                selected = true;
                             }
-                        });
-                        if(times.length > 0){
-                            suggested_data.push({label: label, times: times});
+                            selectedAll = selectedAll && selected;
+                            times.push({starting_time: starting_time, ending_time: ending_time, selected: selected, id: k.id + '_' + times.length});
+
+                            dc = dc + 1;
                         }
+                    });
+                    if(times.length > 0){
+                        suggested_data.push({label: label, id: k.id, selectedAll: selectedAll, times: times});
                     }
                 });
 
-                $('#windows-data').append('<input type="hidden" name="total" value="' + dc + '">');
                 if (dc > 0) {
                     timeline_init(start_time, end_time, suggested_data);
                 } else {
@@ -121,10 +160,25 @@ $(document).ready( function(){
     function timeline_init(start, end, payload){
         var start_time_timeline = moment.utc(start).valueOf();
         var end_time_timeline = moment.utc(end).valueOf();
+        var period = end_time_timeline - start_time_timeline;
+        var tick_interval = 15;
+        var tick_time = d3.time.minutes;
+
+        if(period >= 86400000){
+            tick_interval = 2;
+            tick_time = d3.time.hours;
+        } else if(period >= 43200000){
+            tick_interval = 1;
+            tick_time = d3.time.hours;
+        } else if(period >= 21600000){
+            tick_interval = 30;
+        }
 
         $('#timeline').empty();
         $('.coloredDiv').css('background-color', 'transparent');
         $('#name').empty();
+        $('#start-time').empty();
+        $('#end-time').empty();
 
         var chart = d3.timeline()
             .beginning(start_time_timeline)
@@ -134,9 +188,35 @@ $(document).ready( function(){
                 var colors = chart.colors();
                 div.find('.coloredDiv').css('background-color', colors(i));
                 div.find('#name').text(datum.label);
+                div.find('#start-time').text('Start Time: ' + moment.utc(d.starting_time).format('YYYY-MM-DD HH:mm:ss'));
+                div.find('#end-time').text(' End Time: ' + moment.utc(d.ending_time).format('YYYY-MM-DD HH:mm:ss'));
+            })
+            .click(function(d, i, datum){
+                if(Array.isArray(d)){
+                    $.each(datum.times, function(i, observation){
+                        observation.selected = !datum.selectedAll;
+                        $('#' + observation.id).toggleClass('unselected-obs', !observation.selected);
+                    });
+                    datum.selectedAll = !datum.selectedAll;
+                } else {
+                    var obs = $('#' + d.id);
+                    d.selected = !d.selected;
+                    obs.toggleClass('unselected-obs', !d.selected);
+                    if(!d.selected){
+                        datum.selectedAll = false;
+                    } else {
+                        datum.selectedAll = true;
+                        for(var j in datum.times){
+                            if(!datum.times[j].selected){
+                                datum.selectedAll = false;
+                                break;
+                            }
+                        }
+                    }
+                }
             })
             .margin({left:140, right:10, top:0, bottom:50})
-            .tickFormat({format: d3.time.format.utc('%H:%M'), tickTime: d3.time.minutes, tickInterval: 30, tickSize: 6})
+            .tickFormat({format: d3.time.format.utc('%H:%M'), tickTime: tick_time, tickInterval: tick_interval, tickSize: 6})
             .stack();
 
         var svg_width = 1140;
@@ -146,6 +226,15 @@ $(document).ready( function(){
         d3.select('#timeline').append('svg').attr('width', svg_width)
             .datum(payload).call(chart);
 
+        $('g').find('rect').css({'stroke': 'black', 'cursor': 'pointer'});
+
+        $.each(suggested_data, function(i, station){
+            $.each(station.times, function(j, obs){
+                if(!obs.selected){
+                    $('#' + obs.id).addClass('unselected-obs');
+                }
+            });
+        });
         $('#hoverRes').show();
         $('#schedule-observation').removeAttr('disabled');
     }
