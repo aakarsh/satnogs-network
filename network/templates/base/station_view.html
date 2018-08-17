@@ -243,7 +243,9 @@
           </th>
           <th>⤉ ⇴ ⤈</th>
           <th>Polar plot</th>
-          <th></th>
+          {% if can_schedule %}
+            <th></th>
+          {% endif %}
         </thead>
         <tbody id="pass_predictions" can_schedule="{{ can_schedule }}">
           <tr id="loading-image">

@@ -309,26 +309,29 @@ $(document).ready(function() {
                       </div>
                       <!-- <canvas class="polar-plot" width="100" height="100" data-points="${json_polar_data}"></canvas> -->
                     </td>
-                    <td class="pass-schedule">
-                      ${overlap ? `<div class="overlap-ribbon" aria-hidden="true"
-                                        data-toggle="tooltip" data-placement="bottom"
-                                        title="A scheduled observation overlaps">
-                                        ${overlap}% overlap</div><br>
-                      ` : `
-                      `}
-                      ${schedulable ? `<a href="${new_obs}?norad=${data.nextpasses[i].norad_cat_id}&ground_station=${station}&start_date=${tr}&end_date=${ts}"
-                           class="btn btn-default schedulable"
-                           target="_blank">
-                           schedule
-                           <span class="glyphicon glyphicon-new-window" aria-hidden="true"></span>
-                         </a>
-                      ` : `
-                        <a class="btn btn-default" disabled>
-                          schedule
-                          <span class="glyphicon glyphicon-new-window" aria-hidden="true"></span>
-                        </a>
-                      `}
-                    </td>
+                    ${can_schedule ? `
+                      <td class="pass-schedule">
+                        ${overlap ? `<div class="overlap-ribbon" aria-hidden="true"
+                                          data-toggle="tooltip" data-placement="bottom"
+                                          title="A scheduled observation overlaps">
+                                          ${overlap}% overlap</div><br>
+                        ` : `
+                        `}
+                        ${schedulable ? `<a href="${new_obs}?norad=${data.nextpasses[i].norad_cat_id}&ground_station=${station}&start_date=${tr}&end_date=${ts}"
+                             class="btn btn-default schedulable"
+                             target="_blank">
+                             schedule
+                             <span class="glyphicon glyphicon-new-window" aria-hidden="true"></span>
+                           </a>
+                        ` : `
+                          <a class="btn btn-default" disabled>
+                            schedule
+                            <span class="glyphicon glyphicon-new-window" aria-hidden="true"></span>
+                          </a>
+                        `}
+                      </td>
+                    ` : `
+                    `}
                   </tr>
                 `);
 
