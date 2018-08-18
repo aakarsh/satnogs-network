@@ -37,6 +37,10 @@ class StationAllView(viewsets.ReadOnlyModelViewSet):
     serializer_class = StationSerializer
 
 
+class ObservationOverlapError(Exception):
+    pass
+
+
 @ajax_required
 def satellite_position(request, sat_id):
     sat = get_object_or_404(Satellite, norad_cat_id=sat_id)
@@ -207,6 +211,114 @@ class ObservationListView(ListView):
         return context
 
 
+def create_new_observation(station_id,
+                           sat_id,
+                           trans_id,
+                           start_time,
+                           end_time,
+                           author):
+    ground_station = Station.objects.get(id=station_id)
+    gs_data = Observation.objects.filter(ground_station=ground_station)
+
+    window = resolve_overlaps(ground_station, gs_data, start_time, end_time)
+    if (len(window) > 2 or len(window) == 0):
+        raise ObservationOverlapError
+
+    sat = Satellite.objects.get(norad_cat_id=sat_id)
+    trans = Transmitter.objects.get(uuid=trans_id)
+    tle = Tle.objects.get(id=sat.latest_tle.id)
+
+    sat_ephem = ephem.readtle(str(sat.latest_tle.tle0),
+                              str(sat.latest_tle.tle1),
+                              str(sat.latest_tle.tle2))
+    observer = ephem.Observer()
+    observer.date = str(start_time)
+    observer.lon = str(ground_station.lng)
+    observer.lat = str(ground_station.lat)
+    observer.elevation = ground_station.alt
+    tr, azr, tt, altt, ts, azs = observer.next_pass(sat_ephem)
+
+    return Observation(satellite=sat, transmitter=trans, tle=tle, author=author,
+                       start=start_time, end=end_time,
+                       ground_station=ground_station,
+                       rise_azimuth=format(math.degrees(azr), '.0f'),
+                       max_altitude=format(math.degrees(altt), '.0f'),
+                       set_azimuth=format(math.degrees(azs), '.0f'))
+
+
+def observation_new_post(request):
+    total = int(request.POST.get('total'))
+
+    changed = 0
+    for item in range(total):
+        try:
+            start_time = make_aware(datetime.strptime(
+                request.POST.get('{}-starting_time'.format(item)), '%Y-%m-%d %H:%M:%S.%f'
+            ), utc)
+            end_time = make_aware(datetime.strptime(
+                request.POST.get('{}-ending_time'.format(item)), '%Y-%m-%d %H:%M:%S.%f'
+            ), utc)
+        except ValueError:
+            messages.error(request, 'Please use the datetime dialogs to submit valid values.')
+            return redirect(reverse('base:observation_new'))
+
+        if (end_time - start_time) > timedelta(minutes=settings.OBSERVATION_DATE_MAX_RANGE):
+            messages.error(request,
+                           'Please use the datetime dialogs to submit valid timeframe '
+                           '(error: maximum observation duration exceeded).')
+            return redirect(reverse('base:observation_new'))
+
+        if (start_time < datetime.now()):
+            messages.error(request, 'Please schedule an observation that begins in the future')
+            return redirect(reverse('base:observation_new'))
+
+        if (start_time > end_time):
+            messages.error(request,
+                           'Please use the datetime dialogs to submit valid timeframe '
+                           '(error: observation start time after observation end time).')
+            return redirect(reverse('base:observation_new'))
+
+        try:
+            station_id = request.POST.get('{}-station'.format(item))
+            observation = create_new_observation(station_id=station_id,
+                                                 sat_id=request.POST.get('satellite'),
+                                                 trans_id=request.POST.get('transmitter'),
+                                                 start_time=start_time,
+                                                 end_time=end_time,
+                                                 author=request.user)
+            observation.save()
+            scheduled = observation.id
+        except ObservationOverlapError:
+            changed += 1
+
+    if changed > 0:
+        if(changed == 1):
+            error_message = (
+                "The observation is already scheduled or overlaps with others."
+                " Please recalculate and try schedule it again.")
+        else:
+            error_message = (
+                str(changed) + " observations are already scheduled or overlap with others."
+                " Please recalculate and try schedule them again."
+            )
+        messages.error(request, error_message)
+        return redirect(reverse('base:observation_new'))
+
+    try:
+        del request.session['scheduled']
+    except KeyError:
+        pass
+    request.session['scheduled'] = scheduled
+
+    # If it's a single observation redirect to that one
+    if total == 1:
+        messages.success(request, 'Observation was scheduled successfully.')
+        return redirect(reverse('base:observation_view', kwargs={'id': scheduled[0]}))
+
+    messages.success(request, 'Observations were scheduled successfully.')
+    return redirect(reverse('base:observations_list'))
+
+
 @login_required
 def observation_new(request):
     """View for new observation"""
@@ -218,102 +330,7 @@ def observation_new(request):
         return redirect(reverse('base:observations_list'))
 
     if request.method == 'POST':
-        sat_id = request.POST.get('satellite')
-        trans_id = request.POST.get('transmitter')
-        try:
-            start_time = datetime.strptime(request.POST.get('start-time'), '%Y-%m-%d %H:%M')
-            end_time = datetime.strptime(request.POST.get('end-time'), '%Y-%m-%d %H:%M')
-        except ValueError:
-            messages.error(request, 'Please use the datetime dialogs to submit valid values.')
-            return redirect(reverse('base:observation_new'))
-
-        if (end_time - start_time) > timedelta(minutes=settings.OBSERVATION_DATE_MAX_RANGE):
-            messages.error(request, 'Please use the datetime dialogs to submit valid timeframe.')
-            return redirect(reverse('base:observation_new'))
-
-        if (start_time < datetime.now()):
-            messages.error(request, 'Please schedule an observation that begins in the future')
-            return redirect(reverse('base:observation_new'))
-
-        total = int(request.POST.get('total'))
-        changed = 0
-        for item in range(total):
-            start = make_aware(datetime.strptime(
-                request.POST.get('{0}-starting_time'.format(item)), '%Y-%m-%d %H:%M:%S.%f'
-            ))
-            end = make_aware(datetime.strptime(
-                request.POST.get('{}-ending_time'.format(item)), '%Y-%m-%d %H:%M:%S.%f'
-            ))
-            station_id = request.POST.get('{}-station'.format(item))
-            station = Station.objects.get(id=station_id)
-            gs_data = Observation.objects.filter(ground_station=station)
-            window = resolve_overlaps(station, gs_data, start, end)
-            if (len(window) > 2 or len(window) == 0):
-                changed += 1
-
-        if changed > 0:
-            error_message = (
-                str(changed) + " observations are already scheduled or overlap with others."
-                " Please recalculate and try schedule them again."
-            )
-            if(changed == 1):
-                error_message = (
-                    "The observation is already scheduled or overlaps with others."
-                    " Please recalculate and try schedule it again.")
-            messages.error(request, error_message)
-            return redirect(reverse('base:observation_new'))
-        start = make_aware(start_time, utc)
-        end = make_aware(end_time, utc)
-        sat = Satellite.objects.get(norad_cat_id=sat_id)
-        trans = Transmitter.objects.get(uuid=trans_id)
-        tle = Tle.objects.get(id=sat.latest_tle.id)
-
-        sat_ephem = ephem.readtle(str(sat.latest_tle.tle0),
-                                  str(sat.latest_tle.tle1),
-                                  str(sat.latest_tle.tle2))
-        observer = ephem.Observer()
-        observer.date = str(start)
-
-        scheduled = []
-
-        for item in range(total):
-            start = datetime.strptime(
-                request.POST.get('{0}-starting_time'.format(item)), '%Y-%m-%d %H:%M:%S.%f'
-            )
-            end = datetime.strptime(
-                request.POST.get('{}-ending_time'.format(item)), '%Y-%m-%d %H:%M:%S.%f'
-            )
-            station_id = request.POST.get('{}-station'.format(item))
-            ground_station = Station.objects.get(id=station_id)
-            observer.lon = str(ground_station.lng)
-            observer.lat = str(ground_station.lat)
-            observer.elevation = ground_station.alt
-            tr, azr, tt, altt, ts, azs = observer.next_pass(sat_ephem)
-
-            obs = Observation(satellite=sat, transmitter=trans, tle=tle, author=me,
-                              start=make_aware(start, utc), end=make_aware(end, utc),
-                              ground_station=ground_station,
-                              rise_azimuth=format(math.degrees(azr), '.0f'),
-                              max_altitude=format(math.degrees(altt), '.0f'),
-                              set_azimuth=format(math.degrees(azs), '.0f'))
-            obs.save()
-            scheduled.append(obs.id)
-            time_start_new = ephem.Date(ts).datetime() + timedelta(minutes=1)
-            observer.date = time_start_new.strftime("%Y-%m-%d %H:%M:%S.%f")
-
-        try:
-            del request.session['scheduled']
-        except KeyError:
-            pass
-        request.session['scheduled'] = scheduled
-
-        # If it's a single observation redirect to that one
-        if total == 1:
-            messages.success(request, 'Observation was scheduled successfully.')
-            return redirect(reverse('base:observation_view', kwargs={'id': scheduled[0]}))
-
-        messages.success(request, 'Observations were scheduled successfully.')
-        return redirect(reverse('base:observations_list'))
+        return observation_new_post(request)
 
     satellites = Satellite.objects.filter(transmitters__alive=True) \
         .filter(status='alive').distinct()

@@ -36,6 +36,16 @@ def calculate_polar_data(observer, satellite, start, end, points):
 
 
 def resolve_overlaps(station, gs_data, start, end):
+    """
+    This function checks for overlaps between all existing observations on `gs_data` and a
+    potential new observation with given `start` and `end` time.
+
+    Returns
+    - ()/"an empty tuple"             if total overlap exists
+    - (start1, end1, start2, end2)    if the overlap happens in the middle of the new observation
+    - (start, end, True)              if the overlap happens at one end of the new observation
+    - (start, end)                    if no overlap exists
+    """
     overlapped = False
     if gs_data:
         for datum in gs_data:
