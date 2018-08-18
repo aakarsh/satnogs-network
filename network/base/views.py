@@ -249,8 +249,7 @@ def create_new_observation(station_id,
 def observation_new_post(request):
     total = int(request.POST.get('total'))
 
-    changed = 0
-    scheduled = []
+    new_observations = []
     for item in range(total):
         try:
             start_time = make_aware(datetime.strptime(
@@ -287,13 +286,13 @@ def observation_new_post(request):
                                                  start_time=start_time,
                                                  end_time=end_time,
                                                  author=request.user)
-            observation.save()
-            scheduled.append(observation.id)
+            new_observations.append(observation)
         except ObservationOverlapError:
-            changed += 1
+            pass
 
+    changed = total - len(new_observations)
     if changed > 0:
-        if(changed == 1):
+        if (changed == 1):
             error_message = (
                 "The observation is already scheduled or overlaps with others."
                 " Please recalculate and try schedule it again.")
@@ -305,16 +304,19 @@ def observation_new_post(request):
         messages.error(request, error_message)
         return redirect(reverse('base:observation_new'))
 
+    for observation in new_observations:
+        observation.save()
+
     try:
         del request.session['scheduled']
     except KeyError:
         pass
-    request.session['scheduled'] = scheduled
+    request.session['scheduled'] = list(obs.id for obs in new_observations)
 
     # If it's a single observation redirect to that one
     if total == 1:
         messages.success(request, 'Observation was scheduled successfully.')
-        return redirect(reverse('base:observation_view', kwargs={'id': scheduled[0]}))
+        return redirect(reverse('base:observation_view', kwargs={'id': new_observations[0].id}))
 
     messages.success(request, 'Observations were scheduled successfully.')
     return redirect(reverse('base:observations_list'))
