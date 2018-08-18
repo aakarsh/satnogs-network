@@ -293,9 +293,14 @@ def observation_new_post(request):
     changed = total - len(new_observations)
     if changed > 0:
         if (changed == 1):
-            error_message = (
-                "The observation is already scheduled or overlaps with others."
-                " Please recalculate and try schedule it again.")
+            if total == 1:
+                error_message = (
+                    "The observation is already scheduled or overlaps with others."
+                    " Please recalculate and try schedule it again.")
+            else:
+                error_message = (
+                    "One observation is already scheduled or overlaps with others."
+                    " Please recalculate and try schedule it again.")
         else:
             error_message = (
                 str(changed) + " observations are already scheduled or overlap with others."
