@@ -250,6 +250,7 @@ def observation_new_post(request):
     total = int(request.POST.get('total'))
 
     changed = 0
+    scheduled = []
     for item in range(total):
         try:
             start_time = make_aware(datetime.strptime(
@@ -287,7 +288,7 @@ def observation_new_post(request):
                                                  end_time=end_time,
                                                  author=request.user)
             observation.save()
-            scheduled = observation.id
+            scheduled.append(observation.id)
         except ObservationOverlapError:
             changed += 1
 
