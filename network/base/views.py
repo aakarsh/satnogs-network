@@ -268,7 +268,7 @@ def observation_new_post(request):
                            '(error: maximum observation duration exceeded).')
             return redirect(reverse('base:observation_new'))
 
-        if (start_time < datetime.now()):
+        if (start_time < make_aware(datetime.now(), utc)):
             messages.error(request, 'Please schedule an observation that begins in the future')
             return redirect(reverse('base:observation_new'))
 
