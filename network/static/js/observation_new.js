@@ -137,7 +137,15 @@ $(document).ready( function(){
                                 selected = true;
                             }
                             selectedAll = selectedAll && selected;
-                            times.push({starting_time: starting_time, ending_time: ending_time, selected: selected, id: k.id + '_' + times.length});
+                            times.push({
+                                starting_time: starting_time,
+                                ending_time: ending_time,
+                                az_start: n.az_start,
+                                az_end: n.az_end,
+                                elev_max: n.elev_max,
+                                selected: selected,
+                                id: k.id + '_' + times.length
+                            });
 
                             dc = dc + 1;
                         }
@@ -179,6 +187,7 @@ $(document).ready( function(){
         $('#name').empty();
         $('#start-time').empty();
         $('#end-time').empty();
+        $('#details').empty();
 
         var chart = d3.timeline()
             .beginning(start_time_timeline)
@@ -190,6 +199,7 @@ $(document).ready( function(){
                 div.find('#name').text(datum.label);
                 div.find('#start-time').text('Start Time: ' + moment.utc(d.starting_time).format('YYYY-MM-DD HH:mm:ss'));
                 div.find('#end-time').text(' End Time: ' + moment.utc(d.ending_time).format('YYYY-MM-DD HH:mm:ss'));
+                div.find('#details').text('⤉ ' + d.az_start + '° ⇴ ' + d.elev_max + '° ⤈ ' + d.az_end + '°');
             })
             .click(function(d, i, datum){
                 if(Array.isArray(d)){
