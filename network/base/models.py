@@ -26,6 +26,7 @@ ANTENNA_TYPES = (
     ('dipole', 'Dipole'),
     ('v-dipole', 'V-Dipole'),
     ('discone', 'Discone'),
+    ('ground', 'Ground Plane'),
     ('yagi', 'Yagi'),
     ('helical', 'Helical'),
     ('parabolic', 'Parabolic'),
