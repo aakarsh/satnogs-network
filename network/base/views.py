@@ -21,7 +21,7 @@ from network.base.models import (Station, Transmitter, Observation,
 from network.users.models import User
 from network.base.forms import StationForm, SatelliteFilterForm
 from network.base.decorators import admin_required, ajax_required
-from network.base.helpers import calculate_polar_data, resolve_overlaps, get_elevation, get_azimuth
+from network.base.helpers import resolve_overlaps, get_elevation, get_azimuth
 from network.base.perms import schedule_perms, delete_perms, vet_perms
 from network.base.tasks import update_all_tle, fetch_data
 
@@ -750,10 +750,6 @@ def pass_predictions(request, id):
                     if tr < ephem.Date(datetime.now() +
                                        timedelta(minutes=settings.OBSERVATION_DATE_MIN_START)):
                         valid = False
-                    polar_data = calculate_polar_data(observer,
-                                                      sat_ephem,
-                                                      tr.datetime(),
-                                                      ts.datetime(), 10)
                     sat_pass = {'passid': passid,
                                 'mytime': str(observer.date),
                                 'name': str(satellite.name),
@@ -774,8 +770,7 @@ def pass_predictions(request, id):
                                 'altt': elevation,    # Max altitude
                                 'ts': ts.datetime(),  # Set time
                                 'azs': azimuth_s,     # Set azimuth
-                                'valid': valid,
-                                'polar_data': polar_data}
+                                'valid': valid}
                     nextpasses.append(sat_pass)
                 observer.date = ephem.Date(ts).datetime() + timedelta(minutes=1)
             else:

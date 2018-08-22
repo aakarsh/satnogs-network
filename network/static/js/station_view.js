@@ -201,7 +201,6 @@ $(document).ready(function() {
 
             for (var i = 0; i <= len; i++) {
                 var schedulable = data.nextpasses[i].valid && can_schedule;
-                var json_polar_data = JSON.stringify(data.nextpasses[i].polar_data);
                 var tr = moment(data.nextpasses[i].tr).format('YYYY/MM/DD HH:mm');
                 var ts = moment(data.nextpasses[i].ts).format('YYYY/MM/DD HH:mm');
                 var tr_display_date = moment(data.nextpasses[i].tr).format('YYYY-MM-DD');
@@ -307,7 +306,6 @@ $(document).ready(function() {
                             </text>
                         </svg>
                       </div>
-                      <!-- <canvas class="polar-plot" width="100" height="100" data-points="${json_polar_data}"></canvas> -->
                     </td>
                     ${can_schedule ? `
                       <td class="pass-schedule">
