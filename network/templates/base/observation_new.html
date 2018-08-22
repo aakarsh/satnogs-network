@@ -7,6 +7,7 @@
 
 {% block css %}
   <link href="{% static 'lib/eonasdan-bootstrap-datetimepicker/build/css/bootstrap-datetimepicker.min.css' %}" rel="stylesheet">
+  <link rel="stylesheet" href="{% static 'lib/bootstrap-slider/dist/css/bootstrap-slider.min.css' %}">
 {% endblock css %}
 
 {% block content %}
@@ -143,8 +144,16 @@
     <div class="row calculation-result">
       <div class="col-md-12">
         <h3>Calculated Timeline</h3>
-        <button type="button" id="select-all-observations" class="btn btn-default btn-sm"><i class="glyphicon glyphicon-check">All</i></button>
-        <button type="button" id="select-none-observations" class="btn btn-default btn-sm"><i class="glyphicon glyphicon-unchecked">None</i></button>
+        <div id="obs-selection-tools">
+          <div>
+            <button type="button" id="select-all-observations" class="btn btn-default btn-sm"><i class="glyphicon glyphicon-check">All</i></button>
+            <button type="button" id="select-none-observations" class="btn btn-default btn-sm"><i class="glyphicon glyphicon-unchecked">None</i></button>
+          </div>
+          <div>
+            <label for="elevation-filter">Max Elevation</label>
+            <input id="elevation-filter" type="text"/>
+          </div>
+        </div>
         <div id="loading" class="notice">Calculating</div>
         <div id="timeline"></div>
         <div id="hover-obs">
@@ -191,6 +200,7 @@
   <script src="{% static 'lib/d3-timeline/src/d3-timeline.js' %}"></script>
   <script src="{% static 'lib/moment/min/moment.min.js' %}"></script>
   <script src="{% static 'lib/eonasdan-bootstrap-datetimepicker/build/js/bootstrap-datetimepicker.min.js' %}"></script>
+  <script src="{% static 'lib/bootstrap-slider/dist/bootstrap-slider.min.js' %}"></script>
   <script src="{% static 'lib/satellite.js/dist/satellite.min.js' %}"></script>
   <script src="{% static 'js/utc.js' %}"></script>
   <script src="{% static 'js/polar_svg.js' %}"></script>

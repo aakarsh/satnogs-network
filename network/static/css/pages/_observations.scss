@@ -20,6 +20,11 @@
     stroke-opacity: 0;
 }
 
+.filtered-out {
+    fill-opacity: 0;
+    stroke-opacity: 0;
+}
+
 svg .timeline-label {
     cursor: pointer;
 }
@@ -80,6 +85,22 @@ svg .timeline-label {
         &:not(.active) {
             color: #666;
         }
+    }
+}
+
+#obs-selection-tools {
+    display: flex;
+    justify-content: space-between;
+    align-content: center;
+    align-items: center;
+    width: 100%;
+}
+
+#elevation-filter {
+    margin: 0 0 0 20px;
+
+    .slider-selection {
+        background: #5bc0de;
     }
 }
 

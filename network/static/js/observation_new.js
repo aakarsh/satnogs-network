@@ -1,4 +1,4 @@
-/* global moment, d3, calcPolarPlotSVG */
+/* global moment, d3, Slider, calcPolarPlotSVG */
 
 $(document).ready( function(){
     function select_proper_transmitters(satellite) {
@@ -11,12 +11,40 @@ $(document).ready( function(){
     }
 
     var suggested_data = [];
+    var elevation_slider = new Slider('#elevation-filter', { id: 'elevation-filter', min: 0, max: 90, step: 1, range: true, value: [0, 90] });
+
+    function filter_observations() {
+        var elmin = elevation_slider.getValue()[0];
+        var elmax = elevation_slider.getValue()[1];
+
+        $.each(suggested_data, function(i, station){
+            $.each(station.times, function(j, observation){
+                var obs_rect = $('#' + observation.id);
+                if(observation.elev_max > elmax || observation.elev_max < elmin){
+                    observation.selected = false;
+                    obs_rect.toggleClass('unselected-obs', true);
+                    obs_rect.toggleClass('filtered-out', true);
+                } else {
+                    obs_rect.toggleClass('filtered-out', false);
+                }
+                if(!obs_rect.hasClass('filtered-out') && !observation.selected){
+                    station.selectedAll = false;
+                }
+            });
+        });
+    }
+
+    elevation_slider.on('slideStop', function() {
+        filter_observations();
+    });
 
     $('#select-all-observations').on('click', function(){
         $.each(suggested_data, function(i, station){
             $.each(station.times, function(j, observation){
-                observation.selected = true;
-                $('#' + observation.id).toggleClass('unselected-obs', false);
+                if(!$('#' + observation.id).hasClass('filtered-out')){
+                    observation.selected = true;
+                    $('#' + observation.id).toggleClass('unselected-obs', false);
+                }
             });
             station.selectedAll = true;
         });
@@ -240,22 +268,26 @@ $(document).ready( function(){
             .click(function(d, i, datum){
                 if(Array.isArray(d)){
                     $.each(datum.times, function(i, observation){
-                        observation.selected = !datum.selectedAll;
-                        $('#' + observation.id).toggleClass('unselected-obs', !observation.selected);
+                        if(!$('#' + observation.id).hasClass('filtered-out')){
+                            observation.selected = !datum.selectedAll;
+                            $('#' + observation.id).toggleClass('unselected-obs', !observation.selected);
+                        }
                     });
                     datum.selectedAll = !datum.selectedAll;
                 } else {
                     var obs = $('#' + d.id);
-                    d.selected = !d.selected;
-                    obs.toggleClass('unselected-obs', !d.selected);
-                    if(!d.selected){
-                        datum.selectedAll = false;
-                    } else {
-                        datum.selectedAll = true;
-                        for(var j in datum.times){
-                            if(!datum.times[j].selected){
-                                datum.selectedAll = false;
-                                break;
+                    if(!obs.hasClass('filtered-out')){
+                        d.selected = !d.selected;
+                        obs.toggleClass('unselected-obs', !d.selected);
+                        if(!d.selected){
+                            datum.selectedAll = false;
+                        } else {
+                            datum.selectedAll = true;
+                            for(var j in datum.times){
+                                if(!datum.times[j].selected){
+                                    datum.selectedAll = false;
+                                    break;
+                                }
                             }
                         }
                     }
