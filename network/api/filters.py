@@ -9,4 +9,5 @@ class ObservationViewFilter(django_filters.FilterSet):
 
     class Meta:
         model = Observation
-        fields = ['ground_station', 'satellite__norad_cat_id']
+        fields = ['ground_station', 'satellite__norad_cat_id', 'transmitter', 'vetted_status',
+                  'vetted_user', 'tle']
