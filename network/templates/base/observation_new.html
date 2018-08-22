@@ -147,12 +147,23 @@
         <button type="button" id="select-none-observations" class="btn btn-default btn-sm"><i class="glyphicon glyphicon-unchecked">None</i></button>
         <div id="loading" class="notice">Calculating</div>
         <div id="timeline"></div>
-        <div id="hoverRes">
+        <div id="hover-obs">
           <div class="coloredDiv"></div>
-          <div id="name"></div>
-          <div id="start-time"></div>
-          <div id="end-time"></div>
-          <div id="details"></div>
+          <div class="obs-details">
+            <div id="name" class="bold-text"></div>
+            <div class="bold-text">Start Time:</div>
+            <div id="start-time"></div>
+            <div class="bold-text">End Time:</div>
+            <div id="end-time"></div>
+            <div class="bold-text" id="details"></div>
+          </div>
+          <svg
+            xmlns="http://www.w3.org/2000/svg" version="1.1"
+            id="polar-plot"
+            width="120px" height="120px"
+            viewBox="-110 -110 220 220"
+            overflow="hidden">
+          </svg>
         </div>
         <div id="windows-data"></div>
       </div>
@@ -180,6 +191,8 @@
   <script src="{% static 'lib/d3-timeline/src/d3-timeline.js' %}"></script>
   <script src="{% static 'lib/moment/min/moment.min.js' %}"></script>
   <script src="{% static 'lib/eonasdan-bootstrap-datetimepicker/build/js/bootstrap-datetimepicker.min.js' %}"></script>
+  <script src="{% static 'lib/satellite.js/dist/satellite.min.js' %}"></script>
   <script src="{% static 'js/utc.js' %}"></script>
+  <script src="{% static 'js/polar_svg.js' %}"></script>
   <script src="{% static 'js/observation_new.js' %}"></script>
 {% endblock javascript %}

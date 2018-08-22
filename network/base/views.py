@@ -376,8 +376,8 @@ def observation_new(request):
                    'date_max_range': settings.OBSERVATION_DATE_MAX_RANGE})
 
 
-def create_station_window(window, overlapped, azr, azs, elevation,
-                          max_elevation_time, observer, satellite, station):
+def create_station_window(window, overlapped, azr, azs, elevation, max_elevation_time,
+                          observer, satellite, tle, station):
     window_start = window[0]
     window_end = window[1]
     if overlapped:
@@ -394,6 +394,9 @@ def create_station_window(window, overlapped, azr, azs, elevation,
                 'az_start': get_azimuth(observer, satellite, window_start),
                 'az_end': get_azimuth(observer, satellite, window_end),
                 'elev_max': elevation,
+                'tle0': tle.tle0,
+                'tle1': tle.tle1,
+                'tle2': tle.tle2,
                 'overlapped': True
             }]
         else:
@@ -405,6 +408,9 @@ def create_station_window(window, overlapped, azr, azs, elevation,
             'az_start': float(format(math.degrees(azr), '.0f')),
             'az_end': float(format(math.degrees(azs), '.0f')),
             'elev_max': elevation,
+            'tle0': tle.tle0,
+            'tle1': tle.tle1,
+            'tle2': tle.tle2,
             'overlapped': False
         }]
 
@@ -515,8 +521,8 @@ def prediction_windows(request, sat_id, transmitter, start_date, end_date,
 
                         for window in windows[0]:
                             station_windows['window'].extend(create_station_window(
-                                window, windows[1], azr, azs, elevation,
-                                max_elevation_time, observer, satellite, station
+                                window, windows[1], azr, azs, elevation, max_elevation_time,
+                                observer, satellite, sat.latest_tle, station
                             ))
                 else:
                     # did not rise above user configured horizon

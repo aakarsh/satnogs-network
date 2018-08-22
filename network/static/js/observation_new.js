@@ -1,4 +1,4 @@
-/* global moment, d3 */
+/* global moment, d3, calcPolarPlotSVG */
 
 $(document).ready( function(){
     function select_proper_transmitters(satellite) {
@@ -100,7 +100,7 @@ $(document).ready( function(){
     $('#calculate-observation').click( function(){
         $('.calculation-result').show();
         $('#timeline').empty();
-        $('#hoverRes').hide();
+        $('#hover-obs').hide();
         $('#windows-data').empty();
         var start_time = $('#datetimepicker-start input').val();
         var end_time = $('#datetimepicker-end input').val();
@@ -143,6 +143,9 @@ $(document).ready( function(){
                                 az_start: n.az_start,
                                 az_end: n.az_end,
                                 elev_max: n.elev_max,
+                                tle0: n.tle0,
+                                tle1: n.tle1,
+                                tle2: n.tle2,
                                 selected: selected,
                                 id: k.id + '_' + times.length
                             });
@@ -151,7 +154,15 @@ $(document).ready( function(){
                         }
                     });
                     if(times.length > 0){
-                        suggested_data.push({label: label, id: k.id, selectedAll: selectedAll, times: times});
+                        suggested_data.push({
+                            label: label,
+                            id: k.id,
+                            lat: k.lat,
+                            lon: k.lng,
+                            alt: k.alt,
+                            selectedAll: selectedAll,
+                            times: times
+                        });
                     }
                 });
 
@@ -182,24 +193,49 @@ $(document).ready( function(){
             tick_interval = 30;
         }
 
+        $('#hover-obs').hide();
         $('#timeline').empty();
-        $('.coloredDiv').css('background-color', 'transparent');
-        $('#name').empty();
-        $('#start-time').empty();
-        $('#end-time').empty();
-        $('#details').empty();
 
         var chart = d3.timeline()
             .beginning(start_time_timeline)
             .ending(end_time_timeline)
+            .mouseout(function () {
+                $('#hover-obs').fadeOut(100);
+            })
             .hover(function (d, i, datum) {
-                var div = $('#hoverRes');
+                var div = $('#hover-obs');
+                div.fadeIn(300);
                 var colors = chart.colors();
                 div.find('.coloredDiv').css('background-color', colors(i));
                 div.find('#name').text(datum.label);
-                div.find('#start-time').text('Start Time: ' + moment.utc(d.starting_time).format('YYYY-MM-DD HH:mm:ss'));
-                div.find('#end-time').text(' End Time: ' + moment.utc(d.ending_time).format('YYYY-MM-DD HH:mm:ss'));
+                div.find('#start-time').text(moment.utc(d.starting_time).format('YYYY-MM-DD HH:mm:ss'));
+                div.find('#end-time').text(moment.utc(d.ending_time).format('YYYY-MM-DD HH:mm:ss'));
                 div.find('#details').text('⤉ ' + d.az_start + '° ⇴ ' + d.elev_max + '° ⤈ ' + d.az_end + '°');
+                const groundstation = {
+                    lat: datum.lat,
+                    lon: datum.lon,
+                    alt: datum.alt
+                };
+                const timeframe = {
+                    start: new Date(d.starting_time),
+                    end: new Date(d.ending_time)
+                };
+                const polarPlotSVG = calcPolarPlotSVG(timeframe,
+                    groundstation,
+                    d.tle1,
+                    d.tle2);
+                const polarPlotAxes = `
+                    <path fill="none" stroke="black" stroke-width="1" d="M 0 -95 v 190 M -95 0 h 190"/> 
+                    <circle fill="none" stroke="black" cx="0" cy="0" r="30"/>
+                    <circle fill="none" stroke="black" cx="0" cy="0" r="60"/>
+                    <circle fill="none" stroke="black" cx="0" cy="0" r="90"/>
+                    <text x="-4" y="-96">N</text>
+                    <text x="-4" y="105">S</text>
+                    <text x="96" y="4">E</text>
+                    <text x="-106" y="4">W</text>
+                `;
+                $('#polar-plot').html(polarPlotAxes);
+                $('#polar-plot').append(polarPlotSVG);
             })
             .click(function(d, i, datum){
                 if(Array.isArray(d)){
@@ -245,7 +281,6 @@ $(document).ready( function(){
                 }
             });
         });
-        $('#hoverRes').show();
         $('#schedule-observation').removeAttr('disabled');
     }
 
