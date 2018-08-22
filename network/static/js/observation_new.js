@@ -24,8 +24,10 @@ $(document).ready( function(){
                     observation.selected = false;
                     obs_rect.toggleClass('unselected-obs', true);
                     obs_rect.toggleClass('filtered-out', true);
+                    obs_rect.css('cursor', 'default');
                 } else {
                     obs_rect.toggleClass('filtered-out', false);
+                    obs_rect.css('cursor', 'pointer');
                 }
                 if(!obs_rect.hasClass('filtered-out') && !observation.selected){
                     station.selectedAll = false;
@@ -231,39 +233,41 @@ $(document).ready( function(){
                 $('#hover-obs').fadeOut(100);
             })
             .hover(function (d, i, datum) {
-                var div = $('#hover-obs');
-                div.fadeIn(300);
-                var colors = chart.colors();
-                div.find('.coloredDiv').css('background-color', colors(i));
-                div.find('#name').text(datum.label);
-                div.find('#start-time').text(moment.utc(d.starting_time).format('YYYY-MM-DD HH:mm:ss'));
-                div.find('#end-time').text(moment.utc(d.ending_time).format('YYYY-MM-DD HH:mm:ss'));
-                div.find('#details').text('⤉ ' + d.az_start + '° ⇴ ' + d.elev_max + '° ⤈ ' + d.az_end + '°');
-                const groundstation = {
-                    lat: datum.lat,
-                    lon: datum.lon,
-                    alt: datum.alt
-                };
-                const timeframe = {
-                    start: new Date(d.starting_time),
-                    end: new Date(d.ending_time)
-                };
-                const polarPlotSVG = calcPolarPlotSVG(timeframe,
-                    groundstation,
-                    d.tle1,
-                    d.tle2);
-                const polarPlotAxes = `
-                    <path fill="none" stroke="black" stroke-width="1" d="M 0 -95 v 190 M -95 0 h 190"/> 
-                    <circle fill="none" stroke="black" cx="0" cy="0" r="30"/>
-                    <circle fill="none" stroke="black" cx="0" cy="0" r="60"/>
-                    <circle fill="none" stroke="black" cx="0" cy="0" r="90"/>
-                    <text x="-4" y="-96">N</text>
-                    <text x="-4" y="105">S</text>
-                    <text x="96" y="4">E</text>
-                    <text x="-106" y="4">W</text>
-                `;
-                $('#polar-plot').html(polarPlotAxes);
-                $('#polar-plot').append(polarPlotSVG);
+                if(!$('#' + d.id).hasClass('filtered-out')){
+                    var div = $('#hover-obs');
+                    div.fadeIn(300);
+                    var colors = chart.colors();
+                    div.find('.coloredDiv').css('background-color', colors(i));
+                    div.find('#name').text(datum.label);
+                    div.find('#start-time').text(moment.utc(d.starting_time).format('YYYY-MM-DD HH:mm:ss'));
+                    div.find('#end-time').text(moment.utc(d.ending_time).format('YYYY-MM-DD HH:mm:ss'));
+                    div.find('#details').text('⤉ ' + d.az_start + '° ⇴ ' + d.elev_max + '° ⤈ ' + d.az_end + '°');
+                    const groundstation = {
+                        lat: datum.lat,
+                        lon: datum.lon,
+                        alt: datum.alt
+                    };
+                    const timeframe = {
+                        start: new Date(d.starting_time),
+                        end: new Date(d.ending_time)
+                    };
+                    const polarPlotSVG = calcPolarPlotSVG(timeframe,
+                        groundstation,
+                        d.tle1,
+                        d.tle2);
+                    const polarPlotAxes = `
+                        <path fill="none" stroke="black" stroke-width="1" d="M 0 -95 v 190 M -95 0 h 190"/> 
+                        <circle fill="none" stroke="black" cx="0" cy="0" r="30"/>
+                        <circle fill="none" stroke="black" cx="0" cy="0" r="60"/>
+                        <circle fill="none" stroke="black" cx="0" cy="0" r="90"/>
+                        <text x="-4" y="-96">N</text>
+                        <text x="-4" y="105">S</text>
+                        <text x="96" y="4">E</text>
+                        <text x="-106" y="4">W</text>
+                    `;
+                    $('#polar-plot').html(polarPlotAxes);
+                    $('#polar-plot').append(polarPlotSVG);
+                }
             })
             .click(function(d, i, datum){
                 if(Array.isArray(d)){
