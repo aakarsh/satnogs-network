@@ -320,3 +320,6 @@ if ENVIRONMENT == 'dev':
     for backend in TEMPLATES:
         del backend['OPTIONS']['loaders']
         backend['APP_DIRS'] = True
+
+# needed to ensure data_obs files can be read by nginx
+FILE_UPLOAD_PERMISSIONS = 0644
