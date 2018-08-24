@@ -95,7 +95,7 @@ django-crispy-forms==1.7.1 \
 
 # Astronomy
 https://gitlab.com/librespacefoundation/orbit/-/archive/master/orbit-master.zip \
-    --hash=sha256:cf693a70e221f6217fd8f86343406c96792504d1d331cb1f2c724e6099062850
+    --hash=sha256:c83a69991f13992c2864323caaf410474211f1bc8e53f2d6439d949211e9b29a
 
 # API
 djangorestframework==3.7.7 \

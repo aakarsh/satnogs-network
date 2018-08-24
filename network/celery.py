@@ -10,6 +10,7 @@ os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'network.settings')
 from django.conf import settings  # noqa
 
 RUN_DAILY = 60 * 60 * 24
+RUN_EVERY_TWO_HOURS = 2 * 60 * 60
 RUN_HOURLY = 60 * 60
 
 app = Celery('network')
@@ -23,7 +24,7 @@ def setup_periodic_tasks(sender, **kwargs):
     from network.base.tasks import (update_all_tle, fetch_data, clean_observations,
                                     station_status_update, stations_cache_rates)
 
-    sender.add_periodic_task(RUN_HOURLY, update_all_tle.s(),
+    sender.add_periodic_task(RUN_EVERY_TWO_HOURS, update_all_tle.s(),
                              name='update-all-tle')
 
     sender.add_periodic_task(RUN_HOURLY, fetch_data.s(),
