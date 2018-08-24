@@ -1,6 +1,6 @@
 from rest_framework import serializers
 
-from network.base.models import Observation, Station, DemodData
+from network.base.models import Observation, Station, DemodData, Antenna
 
 
 class DemodDataSerializer(serializers.ModelSerializer):
@@ -70,8 +70,15 @@ class ObservationSerializer(serializers.ModelSerializer):
             return None
 
 
+class AntennaSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = Antenna
+        fields = ('frequency', 'frequency_max', 'band', 'antenna_type')
+
+
 class StationSerializer(serializers.ModelSerializer):
-    antenna = serializers.SerializerMethodField()
+    antenna = AntennaSerializer(many=True)
     altitude = serializers.SerializerMethodField()
     min_horizon = serializers.SerializerMethodField()
     observations = serializers.SerializerMethodField()

@@ -75,7 +75,10 @@ class StationViewApiTest(TestCase):
     def test_station_view_api(self):
 
         ants = self.station.antenna.all()
-        ser_ants = [" ".join([ant.band, ant.get_antenna_type_display()]) for ant in ants]
+        ser_ants = [{u'band': ant.band,
+                     u'frequency': ant.frequency,
+                     u'frequency_max': ant.frequency_max,
+                     u'antenna_type': ant.antenna_type} for ant in ants]
 
         station_serialized = {
             u'altitude': self.station.alt,
