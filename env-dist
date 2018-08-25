@@ -1,8 +1,21 @@
 ENVIRONMENT='dev'
 DEBUG=True
 
+# Email
+DEFAULT_FROM_EMAIL=SatNOGS <noreply@satnogs.org>
+ADMINS_FROM_NAME=Admins
+ADMINS_FROM_EMAIL=noreply@satnogs.org
+
+# Security
+SECRET_KEY=something_long_and_random
+ALLOWED_HOSTS=localhost
+
 # Database
 DATABASE_URL='sqlite:///db.sqlite3'
+
+# Mapbox
+MAPBOX_TOKEN=enter_mapbox_token_here
+MAPBOX_MAP_ID=pierros.jbf6la1j
 
 # Application
 DB_API_ENDPOINT='https://db.satnogs.org/api/'
@@ -11,3 +24,20 @@ DB_API_ENDPOINT='https://db.satnogs.org/api/'
 CACHE_BACKEND = 'django.core.cache.backends.locmem.LocMemCache'
 CACHE_LOCATION = 'unique-snowflake'
 CACHE_CLIENT_CLASS = None
+
+# Celery
+CELERY_BROKER_URL=redis://redis:6379/0
+CELERY_RESULT_BACKEND=redis://redis:6379/0
+
+# Archive.org
+#S3_ACCESS_KEY='s3_access_key'
+#S3_SECRET_KEY='s3_secret_key'
+#ARCHIVE_COLLECTION='collection_name'
+
+# Compressor
+COMPRESS_ENABLED=False
+COMPRESS_OFFLINE=False
+
+# Raven - sentry
+RAVEN_ENABLED=False
+#RAVEN_DSN='sentry_dsn'
