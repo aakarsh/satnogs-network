@@ -64,6 +64,7 @@ def _observation_post_save(sender, instance, created, **kwargs):
     Post save Observation operations
     * Auto vet as good obserfvation with Demod Data
     * Mark Observations from testing stations
+    * Update client version for ground station
     """
     post_save.disconnect(_observation_post_save, sender=Observation)
     if created and instance.ground_station.testing:
@@ -73,6 +74,10 @@ def _observation_post_save(sender, instance, created, **kwargs):
         instance.vetted_status = 'good'
         instance.vetted_datetime = now()
         instance.save()
+    if instance.client_version:
+        instance.ground_station.client_version = instance.client_version
+        instance.save()
+        instance.ground_station.save()
     post_save.connect(_observation_post_save, sender=Observation)
 
 
@@ -164,6 +169,7 @@ class Station(models.Model):
     rig = models.ForeignKey(Rig, related_name='ground_stations',
                             on_delete=models.SET_NULL, null=True, blank=True)
     description = models.TextField(max_length=500, blank=True, help_text='Max 500 characters')
+    client_version = models.CharField(max_length=10, blank=True)
 
     class Meta:
         ordering = ['-status']

@@ -139,6 +139,14 @@
           {{ station.created|timesince }} ago
         </span>
       </div>
+      {% if station.client_version %}
+        <div class="front-line">
+          <span class="label label-default">Client version</span>
+          <span class="front-data" title="on latest reported observation">
+            {{ station.client_version }}
+          </span>
+        </div>
+      {% endif %}
       <div class="front-line">
         <span class="label label-{{ station.get_status_display|lower }}">{{ station.get_status_display }}</span>
         <span class="front-data" data-toggle="tooltip"
