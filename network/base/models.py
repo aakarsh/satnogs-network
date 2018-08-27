@@ -169,7 +169,7 @@ class Station(models.Model):
     rig = models.ForeignKey(Rig, related_name='ground_stations',
                             on_delete=models.SET_NULL, null=True, blank=True)
     description = models.TextField(max_length=500, blank=True, help_text='Max 500 characters')
-    client_version = models.CharField(max_length=10, blank=True)
+    client_version = models.CharField(max_length=45, blank=True)
 
     class Meta:
         ordering = ['-status']
