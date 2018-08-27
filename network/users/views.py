@@ -2,6 +2,7 @@ from django.core.urlresolvers import reverse
 from django.shortcuts import get_object_or_404, render
 from django.views.generic import RedirectView
 from django.views.generic import UpdateView
+from django.db.models import Count
 
 from braces.views import LoginRequiredMixin
 
@@ -40,7 +41,7 @@ def view_user(request, username):
     """View for user page."""
     user = get_object_or_404(User, username=username)
     observations = Observation.objects.filter(author=user)[0:10]
-    stations = Station.objects.filter(owner=user)
+    stations = Station.objects.filter(owner=user).annotate(total_obs=Count('observations'))
 
     can_schedule = False
     if request.user.is_authenticated():
