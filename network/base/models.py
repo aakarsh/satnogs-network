@@ -302,7 +302,7 @@ class Satellite(models.Model):
 
     @property
     def data_count(self):
-        return Observation.objects.filter(satellite=self).count()
+        return Observation.objects.filter(satellite=self).exclude(vetted_status='failed').count()
 
     @property
     def good_count(self):
@@ -374,6 +374,46 @@ class Transmitter(models.Model):
     baud = models.FloatField(validators=[MinValueValidator(0)], null=True, blank=True)
     satellite = models.ForeignKey(Satellite, related_name='transmitters',
                                   on_delete=models.CASCADE, null=True, blank=True)
+
+    @property
+    def data_count(self):
+        return Observation.objects.filter(transmitter=self).exclude(vetted_status='failed').count()
+
+    @property
+    def good_count(self):
+        data = Observation.objects.filter(transmitter=self)
+        return data.filter(vetted_status='good').count()
+
+    @property
+    def bad_count(self):
+        data = Observation.objects.filter(transmitter=self)
+        return data.filter(vetted_status='bad').count()
+
+    @property
+    def unknown_count(self):
+        data = Observation.objects.filter(transmitter=self)
+        return data.filter(vetted_status='unknown').count()
+
+    @property
+    def success_rate(self):
+        try:
+            return int(100 * (float(self.good_count) / float(self.data_count)))
+        except (ZeroDivisionError, TypeError):
+            return 0
+
+    @property
+    def bad_rate(self):
+        try:
+            return int(100 * (float(self.bad_count) / float(self.data_count)))
+        except (ZeroDivisionError, TypeError):
+            return 0
+
+    @property
+    def unknown_rate(self):
+        try:
+            return int(100 * (float(self.unknown_count) / float(self.data_count)))
+        except (ZeroDivisionError, TypeError):
+            return 0
 
     def __unicode__(self):
         return self.description

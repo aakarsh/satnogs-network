@@ -13,43 +13,49 @@
               </div>
             </div>
             <div class="col-md-8">
-              <div class="satellite-info">
+              <div class="front-line">
                 <span class="satellite-title"></span>
                 <span class="satellite-names"></span>
               </div>
-              <div class="satellite-info">
+              <div class="front-line">
                 <span class="label label-default">NORAD ID</span>
-                <span class="satellite-id"></span>
+                <span class="front-data satellite-id"></span>
               </div>
-              <div class="satellite-info">
-                <ul class="list-unstyled">
-                  <li>
-                    <span class="satellite-success"></span>
-                  </li>
-                  <li>
-                    <span class="label label-success satellite-good" data-toggle="tooltip" data-placement="bottom" title="Successful observations"></span>
-                    <span class="label label-warning satellite-unknown" data-toggle="tooltip" data-placement="bottom" title="Unknown observations"></span>
-                    <span class="label label-danger satellite-bad" data-toggle="tooltip" data-placement="bottom" title="Bad observations"></span>
-                  </li>
-                </ul>
+              <div class="front-line">
+                <span class="label label-default">Success Rate</span>
+                <span class="front-data satellite-success-rate"></span>
               </div>
-              <div class="satellite-info">
-                <ul class="list-unstyled">
-                  <li>
-                    <span class="glyphicon glyphicon-plus" aria-hidden="true"></span>
-                    <a href="/observations/new/" id="new-obs-link">Schedule new Observation</a>
-                  </li>
-                  <li>
-                    <span class="glyphicon glyphicon-list-alt" aria-hidden="true"></span>
-                    <a href="/observations/" id="old-obs-link">Past Observations</a>
-                  </li>
-                  <li>&nbsp;</li>
-                  <li>
-                    <span class="glyphicon glyphicon-new-window" aria-hidden="true"></span>
-                    <a href="https://db.satnogs.org/" target="_blank" id="db-link">SatNOGS DB Entry & Data</a>
-                  </li>
-                </ul>
+              <div class="front-line">
+                <span class="label label-default">Observations</span>
+                <span class="front-data">
+                  <span class="satellite-total-obs"></span>
+                  <span class="pull-right">
+                    <a  href="/observations" id="good-sat-obs">
+                      <button type="button" class="btn btn-xs btn-success satellite-good" data-toggle="tooltip" data-placement="bottom" title="Successful observations"></button>
+                    </a>
+                    <a  href="/observations" id="unknown-sat-obs">
+                      <button type="button" class="btn btn-xs btn-warning satellite-unknown" data-toggle="tooltip" data-placement="bottom" title="Unknown observations"></button>
+                    </a>
+                    <a  href="/observations" id="bad-sat-obs">
+                      <button type="button" class="btn btn-xs btn-bad satellite-bad" data-toggle="tooltip" data-placement="bottom" title="Bad observations"></button>
+                    </a>
+                    <a href="/observations/" id="old-obs-link">
+                      <button type="button" class="btn btn-xs btn-info">View all</button>
+                    </a>
+                  </span>
+                </span>
               </div>
+              <div class="front-line">
+                <span class="glyphicon glyphicon-plus" aria-hidden="true"></span>
+                <a href="/observations/new/" id="new-obs-link">Schedule new Observation</a>
+              </div>
+              <div class="front-line">
+                <span class="glyphicon glyphicon-new-window" aria-hidden="true"></span>
+                <a href="https://db.satnogs.org/" target="_blank" id="db-link">SatNOGS DB Entry & Data</a>
+              </div>
+            </div>
+            <div class="col-md-12">
+              <div id="transmitters"></div>
             </div>
           </div>
         </div>

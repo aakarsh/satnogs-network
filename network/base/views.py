@@ -839,6 +839,19 @@ def station_delete(request, id):
     return redirect(reverse('users:view_user', kwargs={'username': me}))
 
 
+class TransmittersSerializer(serializers.ModelSerializer):
+
+    mode = serializers.SerializerMethodField()
+
+    class Meta:
+        model = Transmitter
+        fields = ('description', 'alive', 'downlink_low', 'mode', 'success_rate', 'bad_rate',
+                  'unknown_rate', 'good_count', 'bad_count', 'unknown_count', 'data_count')
+
+    def get_mode(self, obj):
+        return obj.mode.name
+
+
 def satellite_view(request, id):
     try:
         sat = Satellite.objects.get(norad_cat_id=id)
@@ -847,6 +860,8 @@ def satellite_view(request, id):
             'error': 'Unable to find that satellite.'
         }
         return JsonResponse(data, safe=False)
+
+    transmitters = Transmitter.objects.filter(satellite=sat)
 
     data = {
         'id': id,
@@ -858,6 +873,7 @@ def satellite_view(request, id):
         'bad_count': sat.bad_count,
         'unknown_count': sat.unknown_count,
         'data_count': sat.data_count,
+        'transmitters': TransmittersSerializer(transmitters, many=True).data,
     }
 
     return JsonResponse(data, safe=False)

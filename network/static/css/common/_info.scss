@@ -4,6 +4,16 @@
     display: flow-root;
 }
 
+.front-data-big {
+    float: right;
+    width: 300px;
+    display: flow-root;
+
+    .progress {
+        width: 250px;
+    }
+}
+
 .front-line {
     margin-top: 12px;
     margin-bottom: 12px;
