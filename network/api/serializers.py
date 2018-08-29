@@ -160,6 +160,4 @@ class SettingsSerializer(serializers.ModelSerializer):
     class Meta:
         model = Station
         fields = ('uuid', 'name', 'alt', 'lat', 'lng', 'rig',
-                  'testing', 'antenna', 'id', 'apikey', 'description')
-
-    apikey = serializers.CharField(read_only=True)
+                  'testing', 'antenna', 'id', 'description')
