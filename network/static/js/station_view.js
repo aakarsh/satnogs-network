@@ -25,51 +25,57 @@ $(document).ready(function() {
     }
 
     // Init the map
-    var mapboxtoken = $('div#map-station').data('mapboxtoken');
-    mapboxgl.accessToken = mapboxtoken;
-    var map = new mapboxgl.Map({
-        container: 'map-station',
-        style: 'mapbox://styles/pierros/cj8kftshl4zll2slbelhkndwo',
-        zoom: 5,
-        minZoom: 2,
-        center: [parseFloat(station_info.lng),parseFloat(station_info.lat)]
-    });
-    map.addControl(new mapboxgl.NavigationControl());
-    map.on('load', function () {
-        map.loadImage('/static/img/pin.png', function(error, image) {
-            map.addImage('pin', image);
+    if (!mapboxgl.supported()) {
+        $('#map-station').addClass('error');
+        $('#map-station').addClass('alert-error');
+        $('#map-station').html('Map can\'t be rendered:<br/> Your browser does not support MapboxGL (WebGL required).');
+    } else {
+        var mapboxtoken = $('div#map-station').data('mapboxtoken');
+        mapboxgl.accessToken = mapboxtoken;
+        var map = new mapboxgl.Map({
+            container: 'map-station',
+            style: 'mapbox://styles/pierros/cj8kftshl4zll2slbelhkndwo',
+            zoom: 5,
+            minZoom: 2,
+            center: [parseFloat(station_info.lng),parseFloat(station_info.lat)]
         });
-        var map_points = {
-            'id': 'points',
-            'type': 'symbol',
-            'source': {
-                'type': 'geojson',
-                'data': {
-                    'type': 'FeatureCollection',
-                    'features': [{
-                        'type': 'Feature',
-                        'geometry': {
-                            'type': 'Point',
-                            'coordinates': [
-                                parseFloat(station_info.lng),
-                                parseFloat(station_info.lat)]
-                        },
-                        'properties': {
-                            'description': '<a href="/stations/' + station_info.id + '">' + station_info.id + ' - ' + station_info.name + '</a>',
-                            'icon': 'circle'
-                        }
-                    }]
+        map.addControl(new mapboxgl.NavigationControl());
+        map.on('load', function () {
+            map.loadImage('/static/img/pin.png', function(error, image) {
+                map.addImage('pin', image);
+            });
+            var map_points = {
+                'id': 'points',
+                'type': 'symbol',
+                'source': {
+                    'type': 'geojson',
+                    'data': {
+                        'type': 'FeatureCollection',
+                        'features': [{
+                            'type': 'Feature',
+                            'geometry': {
+                                'type': 'Point',
+                                'coordinates': [
+                                    parseFloat(station_info.lng),
+                                    parseFloat(station_info.lat)]
+                            },
+                            'properties': {
+                                'description': '<a href="/stations/' + station_info.id + '">' + station_info.id + ' - ' + station_info.name + '</a>',
+                                'icon': 'circle'
+                            }
+                        }]
+                    }
+                },
+                'layout': {
+                    'icon-image': 'pin',
+                    'icon-size': 0.4,
+                    'icon-allow-overlap': true
                 }
-            },
-            'layout': {
-                'icon-image': 'pin',
-                'icon-size': 0.4,
-                'icon-allow-overlap': true
-            }
-        };
-        map.addLayer(map_points);
-        map.repaint = true;
-    });
+            };
+            map.addLayer(map_points);
+            map.repaint = true;
+        });
+    }
 
     // Slider filters for pass predictions
     var success_slider = new Slider('#success-filter', { id: 'success-filter', min: 0, max: 100, step: 5, range: true, value: [0, 100] });
