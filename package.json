@@ -16,6 +16,7 @@
     "dependencies": {
         "bootstrap": "^3.3.7",
         "bootstrap-slider": "^10.0.0",
+        "bootstrap-select": "^1.13.2",
         "d3": "^3.5.17",
         "d3-timeline": "jiahuang/d3-timeline",
         "dnt-helper": "schalkneethling/dnt-helper",
@@ -48,6 +49,8 @@
         "bootstrap-slider/dist/css/bootstrap-slider.min.css",
         "jquery.json-viewer/json-viewer/jquery.json-viewer.js",
         "jquery.json-viewer/json-viewer/jquery.json-viewer.css",
-        "satellite.js/dist/satellite.min.js"
+        "satellite.js/dist/satellite.min.js",
+        "bootstrap-select/dist/js/bootstrap-select.min.js",
+        "bootstrap-select/dist/css/bootstrap-select.min.css"
     ]
 }
