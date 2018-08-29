@@ -24,6 +24,7 @@ $(document).ready(function() {
                 modal.find('.satellite-good').text(data.good_count);
                 modal.find('.satellite-unknown').text(data.unknown_count);
                 modal.find('.satellite-bad').text(data.bad_count);
+                modal.find('#transmitters').empty();
                 $.each(data.transmitters, function(i, transmitter){
                     var transmitter_status = '-danger';
                     if(transmitter.alive){
