@@ -42,15 +42,17 @@ def view_user(request, username):
     user = get_object_or_404(User, username=username)
     observations = Observation.objects.filter(author=user)[0:10]
     stations = Station.objects.filter(owner=user).annotate(total_obs=Count('observations'))
+    token = ''
 
     can_schedule = False
     if request.user.is_authenticated():
         can_schedule = schedule_perms(request.user)
 
-    try:
-        token = Token.objects.get(user=user)
-    except Token.DoesNotExist:
-        token = Token.objects.create(user=user)
+        if request.user == user:
+            try:
+                token = Token.objects.get(user=user)
+            except Token.DoesNotExist:
+                token = Token.objects.create(user=user)
     form = StationForm()
     antennas = Antenna.objects.all()
     rigs = Rig.objects.all()
