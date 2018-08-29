@@ -3,8 +3,25 @@
 $(document).ready( function(){
     function select_proper_transmitters(satellite) {
         $('#transmitter-selection').prop('disabled', false);
-        $('#transmitter-selection option').hide();
-        $('#transmitter-selection option[data-satellite="' + satellite + '"]').show().prop('selected', true);
+        $('#transmitter-selection option').prop('disabled', true);
+
+        var transmitter_options = $('#transmitter-selection option[data-satellite="' + satellite + '"]');
+        var max_success_rate = {
+            'rate': $(transmitter_options[0]).data('successRate'),
+            'val': $(transmitter_options[0]).val()
+        };
+
+        transmitter_options.each(function(){
+            var option = $(this);
+            option.prop('disabled', false);
+            if(option.data('successRate') > max_success_rate.rate){
+                max_success_rate.rate = option.data('successRate');
+                max_success_rate.val = option.val();
+            }
+        });
+
+        $('#transmitter-selection').selectpicker('refresh');
+        $('#transmitter-selection').selectpicker('val', max_success_rate.val);
 
         $('.tle').hide();
         $('.tle[data-norad="' + satellite + '"]').show();
@@ -87,6 +104,7 @@ $(document).ready( function(){
 
     if (obs_filter) {
         satellite = $('input[name="satellite"]').val();
+        select_proper_transmitters(satellite);
         var ground_station = $('input[name="ground_station"]').val();
     }
 
@@ -120,9 +138,7 @@ $(document).ready( function(){
         });
     }
 
-    select_proper_transmitters(satellite);
-
-    $('#satellite-selection').bind('keyup change', function() {
+    $('#satellite-selection').on('changed.bs.select', function() {
         satellite = $(this).find(':selected').data('norad');
         select_proper_transmitters(satellite);
     });
@@ -322,12 +338,14 @@ $(document).ready( function(){
 
     // Hotkeys bindings
     $(document).bind('keyup', function(event){
-        if (event.which == 67) {
-            var link_calculate = $('#calculate-observation');
-            link_calculate[0].click();
-        } else if (event.which == 83) {
-            var link_schedule = $('#schedule-observation');
-            link_schedule[0].click();
+        if(document.activeElement.tagName != 'INPUT'){
+            if (event.which == 67) {
+                var link_calculate = $('#calculate-observation');
+                link_calculate[0].click();
+            } else if (event.which == 83) {
+                var link_schedule = $('#schedule-observation');
+                link_schedule[0].click();
+            }
         }
     });
 });

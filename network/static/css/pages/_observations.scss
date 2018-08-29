@@ -15,6 +15,32 @@
     -moz-transform: translate(0, 30px); /* Firefox */
 }
 
+/* stylelint-disable declaration-no-important */
+
+.bootstrap-select .dropdown-menu li a span.text {
+    /* overwrite bootstrap-select display css property for span.text */
+    /* in order to achieve full width span in dropdown options */
+    display: inline !important;
+}
+
+/* stylelint-enable */
+
+.transmitter-option {
+    display: flex;
+    justify-content: space-between;
+    align-content: center;
+    align-items: center;
+    flex-wrap: nowrap;
+
+    .transmitter-description {
+        margin: 0 5px 0 0;
+    }
+
+    .progress {
+        width: 50px;
+    }
+}
+
 .unselected-obs {
     fill-opacity: 0.2;
     stroke-opacity: 0;

@@ -8,6 +8,7 @@
 {% block css %}
   <link href="{% static 'lib/eonasdan-bootstrap-datetimepicker/build/css/bootstrap-datetimepicker.min.css' %}" rel="stylesheet">
   <link rel="stylesheet" href="{% static 'lib/bootstrap-slider/dist/css/bootstrap-slider.min.css' %}">
+  <link rel="stylesheet" href="{% static 'lib/bootstrap-select/dist/css/bootstrap-select.min.css' %}">
 {% endblock css %}
 
 {% block content %}
@@ -48,7 +49,7 @@
               {% endfor %}
               <input type="hidden" name="satellite" value="{{ obs_filter.norad }}">
             {% else %}
-              <select id="satellite-selection" class="form-control" name="satellite" autocomplete="off">
+              <select id="satellite-selection" class="form-control selectpicker" name="satellite" data-live-search="true" autocomplete="off">
                 <option value="" selected>Select a satellite</option>
                 {% for satellite in satellites %}
                   <option data-norad="{{ satellite.norad_cat_id }}" value="{{ satellite.norad_cat_id }}">
@@ -62,11 +63,32 @@
         <div class="form-group">
           <label class="col-sm-3 control-label">Transmitter</label>
           <div class="col-sm-9">
-            <select id="transmitter-selection" class="form-control" disabled name="transmitter" autocomplete="off">
+            <select id="transmitter-selection" class="form-control selectpicker"
+                    disabled data-hide-disabled="true" name="transmitter" autocomplete="off">
               <option id="no-transmitter" value="" disabled selected>No transmitter available</option>
               {% for transmitter in transmitters %}
                 <option data-satellite="{{ transmitter.satellite.norad_cat_id }}"
-                        value="{{ transmitter.uuid }}" >
+                        value="{{ transmitter.uuid }}"
+                        data-success-rate="{{  transmitter.success_rate  }}"
+                        data-content='<div class="transmitter-option">
+                                        <div class="transmitter-description">
+                                          {{ transmitter.description }} - {{ transmitter.downlink_low|frq }} - {{ transmitter.mode|default:"" }}
+                                        </div>
+                                        <div class="progress">
+                                          <div class="progress-bar progress-bar-success transmitter-good"
+                                            data-toggle="tooltip" data-placement="bottom"
+                                            title=" {{ transmitter.success_rate }}% ({{ transmitter.good_count }}) Good"
+                                            style="width: {{ transmitter.success_rate }}%"></div>
+                                          <div class="progress-bar progress-bar-warning transmitter-unknown"
+                                            data-toggle="tooltip" data-placement="bottom"
+                                            title=" {{ transmitter.unknown_rate }}% ({{ transmitter.unknown_count }}) Good"
+                                            style="width: {{ transmitter.unknown_rate }}%"></div>
+                                          <div class="progress-bar progress-bar-danger transmitter-bad"
+                                            data-toggle="tooltip" data-placement="bottom"
+                                            title=" {{ transmitter.bad_rate }}% ({{ transmitter.bad_count }}) Good"
+                                            style="width: {{ transmitter.bad_rate }}%"></div>
+                                        </div>
+                                      </div>'>
                   {{ transmitter.description }} - {{ transmitter.downlink_low|frq }} - {{ transmitter.mode|default:"" }}
                 </option>
               {% endfor %}
@@ -201,6 +223,7 @@
   <script src="{% static 'lib/moment/min/moment.min.js' %}"></script>
   <script src="{% static 'lib/eonasdan-bootstrap-datetimepicker/build/js/bootstrap-datetimepicker.min.js' %}"></script>
   <script src="{% static 'lib/bootstrap-slider/dist/bootstrap-slider.min.js' %}"></script>
+  <script src="{% static 'lib/bootstrap-select/dist/js/bootstrap-select.min.js' %}"></script>
   <script src="{% static 'lib/satellite.js/dist/satellite.min.js' %}"></script>
   <script src="{% static 'js/utc.js' %}"></script>
   <script src="{% static 'js/polar_svg.js' %}"></script>
