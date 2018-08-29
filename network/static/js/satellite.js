@@ -45,26 +45,24 @@ $(document).ready(function() {
                               <span class="transmitter-desc">` + transmitter.description + `</span>
                             </div>
                             <div class="panel-body">
-                              <div class="front-line">
-                                <span class="label label-default">Observations</span>
-                                <span class="front-data-big">
-                                  <span class="transmitter-total-obs">` + transmitter.data_count + `</span>
-                                  <div class="progress pull-right">
-                                    <div class="progress-bar progress-bar-success transmitter-good"
-                                                data-toggle="tooltip" data-placement="bottom"
-                                                title="` + good_percentage  + '% (' + transmitter.good_count + `) Good"
-                                                style="width:` + good_percentage + `%"></div>
-                                    <div class="progress-bar progress-bar-warning transmitter-unknown"
-                                                data-toggle="tooltip" data-placement="bottom"
-                                                title="` + unknown_percentage  + '% (' + transmitter.unknown_count + `) Unknown"
-                                                style="width:` + unknown_percentage + `%"></div>
-                                    <div class="progress-bar progress-bar-danger transmitter-bad"
-                                                data-toggle="tooltip" data-placement="bottom"
-                                                title="` + bad_percentage  + '% (' + transmitter.bad_count + `) Bad"
-                                                style="width:` + bad_percentage + `%"></div>
-                                  </div>
-                                </span>
-                              </div>
+                              <span class="label label-default">Observations</span>
+                              <span class="front-data-big">
+                                <span class="transmitter-total-obs">` + transmitter.data_count + `</span>
+                                <div class="progress pull-right">
+                                  <div class="progress-bar progress-bar-success transmitter-good"
+                                              data-toggle="tooltip" data-placement="bottom"
+                                              title="` + good_percentage  + '% (' + transmitter.good_count + `) Good"
+                                              style="width:` + good_percentage + `%"></div>
+                                  <div class="progress-bar progress-bar-warning transmitter-unknown"
+                                              data-toggle="tooltip" data-placement="bottom"
+                                              title="` + unknown_percentage  + '% (' + transmitter.unknown_count + `) Unknown"
+                                              style="width:` + unknown_percentage + `%"></div>
+                                  <div class="progress-bar progress-bar-danger transmitter-bad"
+                                              data-toggle="tooltip" data-placement="bottom"
+                                              title="` + bad_percentage  + '% (' + transmitter.bad_count + `) Bad"
+                                              style="width:` + bad_percentage + `%"></div>
+                                </div>
+                              </span>
                             </div>
                           </div>
                         </div>`
