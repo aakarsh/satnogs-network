@@ -73,6 +73,7 @@ CACHES = {
         'BACKEND': config('CACHE_BACKEND', default='redis_cache.RedisCache'),
         'LOCATION': config('CACHE_LOCATION', default='unix://var/run/redis/redis.sock'),
         'OPTIONS': {
+            'MAX_ENTRIES': 5000,
             'CLIENT_CLASS': config('CACHE_CLIENT_CLASS',
                                    default='django_redis.client.DefaultClient'),
         },
