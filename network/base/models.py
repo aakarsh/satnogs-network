@@ -381,39 +381,72 @@ class Transmitter(models.Model):
 
     @property
     def good_count(self):
-        data = Observation.objects.filter(transmitter=self)
-        return data.filter(vetted_status='good').count()
+        data = cache.get('tr-{0}-suc-count'.format(self.uuid))
+        if data is None:
+            obs = Observation.objects.filter(transmitter=self)
+            data = obs.filter(vetted_status='good').count()
+            cache.set('tr-{0}-suc-count'.format(self.uuid), data)
+            return data
+        return data
 
     @property
     def bad_count(self):
-        data = Observation.objects.filter(transmitter=self)
-        return data.filter(vetted_status='bad').count()
+        data = cache.get('tr-{0}-bad-count'.format(self.uuid))
+        if data is None:
+            obs = Observation.objects.filter(transmitter=self)
+            data = obs.filter(vetted_status='bad').count()
+            cache.set('tr-{0}-bad-count'.format(self.uuid), data)
+            return data
+        return data
 
     @property
     def unknown_count(self):
-        data = Observation.objects.filter(transmitter=self)
-        return data.filter(vetted_status='unknown').count()
+        data = cache.get('tr-{0}-unk-count'.format(self.uuid))
+        if data is None:
+            obs = Observation.objects.filter(transmitter=self)
+            data = obs.filter(vetted_status='unknown').count()
+            cache.set('tr-{0}-unk-count'.format(self.uuid), data)
+            return data
+        return data
 
     @property
     def success_rate(self):
-        try:
-            return int(100 * (float(self.good_count) / float(self.data_count)))
-        except (ZeroDivisionError, TypeError):
-            return 0
+        rate = cache.get('tr-{0}-suc-rate'.format(self.uuid))
+        if rate is None:
+            try:
+                rate = int(100 * (float(self.good_count) / float(self.data_count)))
+                cache.set('tr-{0}-suc-rate'.format(self.uuid), rate)
+                return rate
+            except (ZeroDivisionError, TypeError):
+                cache.set('tr-{0}-suc-rate'.format(self.uuid), 0)
+                return 0
+        return rate
 
     @property
     def bad_rate(self):
-        try:
-            return int(100 * (float(self.bad_count) / float(self.data_count)))
-        except (ZeroDivisionError, TypeError):
-            return 0
+        rate = cache.get('tr-{0}-bad-rate'.format(self.uuid))
+        if rate is None:
+            try:
+                rate = int(100 * (float(self.bad_count) / float(self.data_count)))
+                cache.set('tr-{0}-bad-rate'.format(self.uuid), rate)
+                return rate
+            except (ZeroDivisionError, TypeError):
+                cache.set('tr-{0}-bad-rate'.format(self.uuid), 0)
+                return 0
+        return rate
 
     @property
     def unknown_rate(self):
-        try:
-            return int(100 * (float(self.unknown_count) / float(self.data_count)))
-        except (ZeroDivisionError, TypeError):
-            return 0
+        rate = cache.get('tr-{0}-unk-rate'.format(self.uuid))
+        if rate is None:
+            try:
+                rate = int(100 * (float(self.unknown_count) / float(self.data_count)))
+                cache.set('tr-{0}-unk-rate'.format(self.uuid), rate)
+                return rate
+            except (ZeroDivisionError, TypeError):
+                cache.set('tr-{0}-unk-rate'.format(self.uuid), 0)
+                return 0
+        return rate
 
     def __unicode__(self):
         return self.description
