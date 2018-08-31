@@ -208,14 +208,14 @@ class Station(models.Model):
 
     @property
     def success_rate(self):
-        rate = cache.get('sat-{0}-rate'.format(self.id))
+        rate = cache.get('station-{0}-rate'.format(self.id))
         if not rate:
-            observations = self.observations.exclude(testing=True)
+            observations = self.observations.exclude(testing=True).exclude(vetted_status="unknown")
             success = observations.filter(id__in=(o.id for o in observations
                                                   if o.is_good or o.is_bad)).count()
             if observations:
                 rate = int(100 * (float(success) / float(observations.count())))
-                cache.set('sat-{0}-rate'.format(self.id), rate)
+                cache.set('station-{0}-rate'.format(self.id), rate)
             else:
                 rate = False
         return rate

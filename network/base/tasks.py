@@ -167,9 +167,9 @@ def station_status_update():
 def stations_cache_rates():
     stations = Station.objects.all()
     for station in stations:
-        observations = station.observations.exclude(testing=True)
-        has_audio = observations.filter(id__in=(o.id for o in observations if o.has_audio))
-        success = has_audio.count()
+        observations = station.observations.exclude(testing=True).exclude(vetted_status="unknown")
+        success = observations.filter(id__in=(o.id for o in observations
+                                              if o.is_good or o.is_bad)).count()
         if observations:
             rate = int(100 * (float(success) / float(observations.count())))
-            cache.set('sat-{0}-rate'.format(station.id), rate, 60 * 60 * 2)
+            cache.set('station-{0}-rate'.format(station.id), rate, 60 * 60 * 2)
