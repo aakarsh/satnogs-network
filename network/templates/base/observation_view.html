@@ -331,7 +331,11 @@
           <div role="tabpanel" class="tab-pane tab-data" id="tab-data">
             {% if observation.demoddata.all %}
               {% for demoddata in observation.demoddata.all %}
-                <span class="label label-default data-label">{{ demoddata.payload_demod }}</span>
+                <span class="label label-default data-label">
+                  <a href="{{ demoddata.payload_demod.url }}" class="data-link">
+                    {{ demoddata.payload_demod }}
+                  </a>
+                </span>
                 <div class="well well-sm data-well">
                   {% if demoddata.is_image %}
                     <img src="{{ demoddata.payload_demod.url }}" alt="observation-{{ observation.pk }}" class="img-responsive">
