@@ -374,6 +374,7 @@ class Transmitter(models.Model):
     baud = models.FloatField(validators=[MinValueValidator(0)], null=True, blank=True)
     satellite = models.ForeignKey(Satellite, related_name='transmitters',
                                   on_delete=models.CASCADE, null=True, blank=True)
+    sync_to_db = models.BooleanField(default=False)
 
     @property
     def data_count(self):
@@ -570,6 +571,7 @@ class DemodData(models.Model):
     observation = models.ForeignKey(Observation, related_name='demoddata',
                                     on_delete=models.CASCADE, blank=True, null=True)
     payload_demod = models.FileField(upload_to=_name_obs_demoddata, blank=True, null=True)
+    copied_to_db = models.BooleanField(default=False)
 
     def is_image(self):
         with open(self.payload_demod.path) as fp:

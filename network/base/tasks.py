@@ -1,7 +1,8 @@
-from datetime import timedelta
+from datetime import timedelta, datetime
 import json
 import os
 from requests.exceptions import ReadTimeout, HTTPError
+import urllib
 import urllib2
 
 from internetarchive import upload
@@ -12,7 +13,7 @@ from django.contrib.sites.models import Site
 from django.core.cache import cache
 from django.utils.timezone import now
 
-from network.base.models import Satellite, Tle, Mode, Transmitter, Observation, Station
+from network.base.models import Satellite, Tle, Mode, Transmitter, Observation, Station, DemodData
 from network.celery import app
 
 
@@ -148,6 +149,60 @@ def clean_observations():
                 return
         if os.path.isfile(obs.payload.path):
             archive_audio.delay(obs.id)
+
+
+@app.task
+def demod_to_db(frame_id):
+    """Task to send a frame from SatNOGS network to SatNOGS db"""
+    frame = DemodData.objects.get(id=frame_id)
+    obs = frame.observation
+    sat = obs.satellite
+    ground_station = obs.ground_station
+
+    # need to abstract the timestamp from the filename. hacky..
+    file_datetime = frame.payload_demod.name.split('/')[2].split('_')[2]
+    frame_datetime = datetime.strptime(file_datetime, '%Y-%m-%dT%H-%M-%S')
+    submit_datetime = datetime.strftime(frame_datetime,
+                                        '%Y-%m-%dT%H:%M:%S.000Z')
+
+    # SiDS parameters
+    params = {}
+    params['noradID'] = sat.norad_cat_id
+    params['source'] = ground_station.name
+    params['timestamp'] = submit_datetime
+    params['locator'] = ground_station.qthlocator
+    params['longitude'] = ground_station.lng
+    params['latitude'] = ground_station.lat
+    params['frame'] = frame.display_payload().replace(' ', '')
+    params['satnogs_network'] = 'True'  # NOT a part of SiDS
+
+    apiurl = settings.DB_API_ENDPOINT
+    telemetry_url = "{0}telemetry/".format(apiurl)
+
+    try:
+        res = urllib2.urlopen(telemetry_url, urllib.urlencode(params))
+        code = str(res.getcode())
+        if code.startswith('2'):
+            frame.copied_to_db = True
+            frame.save()
+    except (ReadTimeout, HTTPError):
+        return
+
+
+@app.task
+def sync_to_db():
+    """Task to send demod data to db / SiDS"""
+    q = now() - timedelta(days=1)
+    frames = DemodData.objects.filter(observation__end__gte=q,
+                                      copied_to_db=False,
+                                      observation__transmitter__sync_to_db=True)
+    for frame in frames:
+        try:
+            if not frame.is_image():
+                if os.path.isfile(frame.payload_demod.path):
+                    demod_to_db.delay(frame.id)
+        except Exception:
+            continue
 
 
 @app.task(ignore_result=True)

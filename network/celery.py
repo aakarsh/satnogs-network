@@ -12,6 +12,7 @@ from django.conf import settings  # noqa
 RUN_DAILY = 60 * 60 * 24
 RUN_EVERY_TWO_HOURS = 2 * 60 * 60
 RUN_HOURLY = 60 * 60
+RUN_EVERY_MINUTE = 60
 
 app = Celery('network')
 
@@ -22,7 +23,8 @@ app.autodiscover_tasks(lambda: settings.INSTALLED_APPS)
 @app.on_after_finalize.connect
 def setup_periodic_tasks(sender, **kwargs):
     from network.base.tasks import (update_all_tle, fetch_data, clean_observations,
-                                    station_status_update, stations_cache_rates)
+                                    station_status_update, stations_cache_rates,
+                                    sync_to_db)
 
     sender.add_periodic_task(RUN_EVERY_TWO_HOURS, update_all_tle.s(),
                              name='update-all-tle')
@@ -38,3 +40,6 @@ def setup_periodic_tasks(sender, **kwargs):
 
     sender.add_periodic_task(RUN_HOURLY, stations_cache_rates.s(),
                              name='stations-cache-rates')
+
+    sender.add_periodic_task(RUN_EVERY_MINUTE, sync_to_db.s(),
+                             name='sync-to-db')
