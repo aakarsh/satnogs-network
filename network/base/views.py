@@ -851,6 +851,8 @@ class TransmittersSerializer(serializers.ModelSerializer):
                   'bad_count', 'unknown_count', 'data_count')
 
     def get_mode(self, obj):
+        if obj.mode is None:
+            return "No Mode"
         return obj.mode.name
 
 
