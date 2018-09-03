@@ -845,8 +845,9 @@ class TransmittersSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Transmitter
-        fields = ('description', 'alive', 'downlink_low', 'mode', 'success_rate', 'bad_rate',
-                  'unknown_rate', 'good_count', 'bad_count', 'unknown_count', 'data_count')
+        fields = ('uuid', 'description', 'alive', 'downlink_low', 'mode',
+                  'success_rate', 'bad_rate', 'unknown_rate', 'good_count',
+                  'bad_count', 'unknown_count', 'data_count')
 
     def get_mode(self, obj):
         return obj.mode.name
@@ -873,6 +874,24 @@ def satellite_view(request, id):
         'bad_count': sat.bad_count,
         'unknown_count': sat.unknown_count,
         'data_count': sat.data_count,
+        'transmitters': TransmittersSerializer(transmitters, many=True).data,
+    }
+
+    return JsonResponse(data, safe=False)
+
+
+def transmitters_view(request, id):
+    try:
+        sat = Satellite.objects.get(norad_cat_id=id)
+    except Satellite.DoesNotExist:
+        data = {
+            'error': 'Unable to find that satellite.'
+        }
+        return JsonResponse(data, safe=False)
+
+    transmitters = Transmitter.objects.filter(satellite=sat)
+
+    data = {
         'transmitters': TransmittersSerializer(transmitters, many=True).data,
     }
 

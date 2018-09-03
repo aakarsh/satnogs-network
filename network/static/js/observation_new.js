@@ -1,30 +1,51 @@
 /* global moment, d3, Slider, calcPolarPlotSVG */
 
 $(document).ready( function(){
-    function select_proper_transmitters(satellite) {
-        $('#transmitter-selection').prop('disabled', false);
-        $('#transmitter-selection option').prop('disabled', true);
+    function select_proper_transmitters(satellite){
+        $.ajax({
+            url: '/transmitters/' + satellite + '/'
+        }).done(function(data) {
+            var transmitters_options = '';
+            var max_good_count = 0;
+            var max_good_val = '';
+            $.each(data.transmitters, function (i, transmitter) {
+                if (max_good_count <= transmitter.good_count) {
+                    max_good_count = transmitter.good_count;
+                    max_good_val = transmitter.uuid;
+                }
+                transmitters_options += `
+                    <option data-satellite="` + satellite + `"
+                            value="` + transmitter.uuid + `"
+                            data-success-rate="` + transmitter.success_rate + `"
+                            data-content='<div class="transmitter-option">
+                                            <div class="transmitter-description">
+                                              ` + transmitter.description + ' - ' + (transmitter.downlink_low/1e6).toFixed(3) + ' MHz - ' + transmitter.mode +
+                                            `</div>
+                                            <div class="progress">
+                                              <div class="progress-bar progress-bar-success transmitter-good"
+                                                data-toggle="tooltip" data-placement="bottom"
+                                                title="` + transmitter.success_rate + '% (' + transmitter.good_count + `) Good"
+                                                style="width:` + transmitter.success_rate + `%"></div>
+                                              <div class="progress-bar progress-bar-warning transmitter-unknown"
+                                                data-toggle="tooltip" data-placement="bottom"
+                                                title="` + transmitter.unknown_rate + '% (' + transmitter.unknown_count + `) Unknown"
+                                                style="width:` + transmitter.unknown_rate + `%"></div>
+                                              <div class="progress-bar progress-bar-danger transmitter-bad"
+                                                data-toggle="tooltip" data-placement="bottom"
+                                                title="` + transmitter.bad_rate + '% (' + transmitter.bad_count + `) Bad"
+                                                style="width:` + transmitter.bad_rate + `%"></div>
+                                            </div>
+                                          </div>'>
+                    </option>
+                `;
+            });
+            $('#transmitter-selection').html(transmitters_options).prop('disabled', false);
+            $('#transmitter-selection').selectpicker('refresh');
+            $('#transmitter-selection').selectpicker('val', max_good_val);
 
-        var transmitter_options = $('#transmitter-selection option[data-satellite="' + satellite + '"]');
-        var max_success_rate = {
-            'rate': $(transmitter_options[0]).data('successRate'),
-            'val': $(transmitter_options[0]).val()
-        };
-
-        transmitter_options.each(function(){
-            var option = $(this);
-            option.prop('disabled', false);
-            if(option.data('successRate') > max_success_rate.rate){
-                max_success_rate.rate = option.data('successRate');
-                max_success_rate.val = option.val();
-            }
+            $('.tle').hide();
+            $('.tle[data-norad="' + satellite + '"]').show();
         });
-
-        $('#transmitter-selection').selectpicker('refresh');
-        $('#transmitter-selection').selectpicker('val', max_success_rate.val);
-
-        $('.tle').hide();
-        $('.tle[data-norad="' + satellite + '"]').show();
     }
 
     var suggested_data = [];
@@ -272,7 +293,7 @@ $(document).ready( function(){
                         d.tle1,
                         d.tle2);
                     const polarPlotAxes = `
-                        <path fill="none" stroke="black" stroke-width="1" d="M 0 -95 v 190 M -95 0 h 190"/> 
+                        <path fill="none" stroke="black" stroke-width="1" d="M 0 -95 v 190 M -95 0 h 190"/>
                         <circle fill="none" stroke="black" cx="0" cy="0" r="30"/>
                         <circle fill="none" stroke="black" cx="0" cy="0" r="60"/>
                         <circle fill="none" stroke="black" cx="0" cy="0" r="90"/>

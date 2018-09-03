@@ -66,34 +66,6 @@
             <select id="transmitter-selection" class="form-control selectpicker"
                     disabled data-hide-disabled="true" name="transmitter" autocomplete="off">
               <option id="no-transmitter" value="" disabled selected>No transmitter available</option>
-              {% for transmitter in transmitters %}
-              {% with success_rate=transmitter.success_rate bad_rate=transmitter.bad_rate unknown_rate=transmitter.unknown_rate %}
-                <option data-satellite="{{ transmitter.satellite.norad_cat_id }}"
-                        value="{{ transmitter.uuid }}"
-                        data-success-rate="{{  success_rate  }}"
-                        data-content='<div class="transmitter-option">
-                                        <div class="transmitter-description">
-                                          {{ transmitter.description }} - {{ transmitter.downlink_low|frq }} - {{ transmitter.mode|default:"" }}
-                                        </div>
-                                        <div class="progress">
-                                          <div class="progress-bar progress-bar-success transmitter-good"
-                                            data-toggle="tooltip" data-placement="bottom"
-                                            title=" {{ success_rate }}% ({{ transmitter.good_count }}) Good"
-                                            style="width: {{ success_rate }}%"></div>
-                                          <div class="progress-bar progress-bar-warning transmitter-unknown"
-                                            data-toggle="tooltip" data-placement="bottom"
-                                            title=" {{ transmitter.unknown_rate }}% ({{ transmitter.unknown_count }}) Unknown"
-                                            style="width: {{ transmitter.unknown_rate }}%"></div>
-                                          <div class="progress-bar progress-bar-danger transmitter-bad"
-                                            data-toggle="tooltip" data-placement="bottom"
-                                            title=" {{ transmitter.bad_rate }}% ({{ transmitter.bad_count }}) Bad"
-                                            style="width: {{ transmitter.bad_rate }}%"></div>
-                                        </div>
-                                      </div>'>
-                  {{ transmitter.description }} - {{ transmitter.downlink_low|frq }} - {{ transmitter.mode|default:"" }}
-                </option>
-              {% endwith %}
-              {% endfor %}
             </select>
             {% for satellite in satellites %}
               <small class="tle" data-norad="{{ satellite.norad_cat_id }}">
