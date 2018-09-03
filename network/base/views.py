@@ -493,7 +493,8 @@ def prediction_windows(request, sat_id, transmitter, start_date, end_date,
                     time_start_new = ephem.Date(ts).datetime() + timedelta(minutes=1)
                     observer.date = time_start_new.strftime("%Y-%m-%d %H:%M:%S.%f")
 
-                if elevation >= station.horizon:
+                if (elevation >= station.horizon and
+                        ephem.Date(tr).datetime() < ephem.Date(ts).datetime()):
 
                     # Adjust or discard window if overlaps exist
                     window_start = make_aware(ephem.Date(tr).datetime(), utc)
