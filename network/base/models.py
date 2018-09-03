@@ -385,7 +385,7 @@ class Transmitter(models.Model):
         if data is None:
             obs = Observation.objects.filter(transmitter=self)
             data = obs.filter(vetted_status='good').count()
-            cache.set('tr-{0}-suc-count'.format(self.uuid), data)
+            cache.set('tr-{0}-suc-count'.format(self.uuid), data, 3600)
             return data
         return data
 
@@ -395,7 +395,7 @@ class Transmitter(models.Model):
         if data is None:
             obs = Observation.objects.filter(transmitter=self)
             data = obs.filter(vetted_status='bad').count()
-            cache.set('tr-{0}-bad-count'.format(self.uuid), data)
+            cache.set('tr-{0}-bad-count'.format(self.uuid), data, 3600)
             return data
         return data
 
@@ -405,7 +405,7 @@ class Transmitter(models.Model):
         if data is None:
             obs = Observation.objects.filter(transmitter=self)
             data = obs.filter(vetted_status='unknown').count()
-            cache.set('tr-{0}-unk-count'.format(self.uuid), data)
+            cache.set('tr-{0}-unk-count'.format(self.uuid), data, 3600)
             return data
         return data
 
@@ -415,10 +415,10 @@ class Transmitter(models.Model):
         if rate is None:
             try:
                 rate = int(100 * (float(self.good_count) / float(self.data_count)))
-                cache.set('tr-{0}-suc-rate'.format(self.uuid), rate)
+                cache.set('tr-{0}-suc-rate'.format(self.uuid), rate, 3600)
                 return rate
             except (ZeroDivisionError, TypeError):
-                cache.set('tr-{0}-suc-rate'.format(self.uuid), 0)
+                cache.set('tr-{0}-suc-rate'.format(self.uuid), 0, 3600)
                 return 0
         return rate
 
@@ -428,10 +428,10 @@ class Transmitter(models.Model):
         if rate is None:
             try:
                 rate = int(100 * (float(self.bad_count) / float(self.data_count)))
-                cache.set('tr-{0}-bad-rate'.format(self.uuid), rate)
+                cache.set('tr-{0}-bad-rate'.format(self.uuid), rate, 3600)
                 return rate
             except (ZeroDivisionError, TypeError):
-                cache.set('tr-{0}-bad-rate'.format(self.uuid), 0)
+                cache.set('tr-{0}-bad-rate'.format(self.uuid), 0, 3600)
                 return 0
         return rate
 
@@ -441,10 +441,10 @@ class Transmitter(models.Model):
         if rate is None:
             try:
                 rate = int(100 * (float(self.unknown_count) / float(self.data_count)))
-                cache.set('tr-{0}-unk-rate'.format(self.uuid), rate)
+                cache.set('tr-{0}-unk-rate'.format(self.uuid), rate, 3600)
                 return rate
             except (ZeroDivisionError, TypeError):
-                cache.set('tr-{0}-unk-rate'.format(self.uuid), 0)
+                cache.set('tr-{0}-unk-rate'.format(self.uuid), 0, 3600)
                 return 0
         return rate
 
