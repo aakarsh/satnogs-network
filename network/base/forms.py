@@ -12,7 +12,8 @@ class StationForm(forms.ModelForm):
 
 
 class SatelliteFilterForm(forms.Form):
-    norad = forms.IntegerField()
+    norad = forms.IntegerField(required=False)
     start_date = forms.CharField(required=False)
     end_date = forms.CharField(required=False)
     ground_station = forms.IntegerField(required=False)
+    transmitter = forms.CharField(required=False)

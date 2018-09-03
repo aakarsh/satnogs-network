@@ -34,7 +34,8 @@
 
   <form class="form-horizontal" role="form" action="{% url 'base:observation_new' %}"
         method="post" data-obs-filter="{{ obs_filter.exists|lower }}" data-obs-filter-station="{{ obs_filter.ground_station }}"
-        data-obs-filter-dates="{{ obs_filter.start_date }}" id="form-obs">{% csrf_token %}
+        data-obs-filter-dates="{{ obs_filter.start_date }}" data-obs-filter-transmitter="{{ obs_filter.transmitter }}"
+        data-obs-filter-satellite="{{ obs_filter.norad }}" id="form-obs">{% csrf_token %}
     <div class="row">
       <div class="col-md-6">
         <div class="form-group">
@@ -43,11 +44,13 @@
             {% if obs_filter.norad %}
               {% for satellite in satellites %}
                 {% ifequal satellite.norad_cat_id obs_filter.norad %}
-                  <input type="text" class="form-control" name="satellite-name"
-                         readonly value="{{ satellite.norad_cat_id }} - {{ satellite.name }}">
+                  <select id="satellite-selection" class="form-control selectpicker" name="satellite" disabled>
+                    <option data-norad="{{ satellite.norad_cat_id }}" value="{{ satellite.norad_cat_id }}" selected>
+                      {{ satellite.norad_cat_id }} - {{ satellite.name }}
+                    </option>
+                  </select>
                 {% endifequal %}
               {% endfor %}
-              <input type="hidden" name="satellite" value="{{ obs_filter.norad }}">
             {% else %}
               <select id="satellite-selection" class="form-control selectpicker" name="satellite" data-live-search="true" autocomplete="off">
                 <option value="" selected>Select a satellite</option>
@@ -64,13 +67,13 @@
           <label class="col-sm-3 control-label">Transmitter</label>
           <div class="col-sm-9">
             <select id="transmitter-selection" class="form-control selectpicker"
-                    disabled data-hide-disabled="true" name="transmitter" autocomplete="off">
-              <option id="no-transmitter" value="" disabled selected>No transmitter available</option>
+                    disabled name="transmitter" autocomplete="off">
+              <option id="no-transmitter" value="" selected>No transmitter available</option>
             </select>
             {% for satellite in satellites %}
               <small class="tle" data-norad="{{ satellite.norad_cat_id }}">
                 {% if satellite.tle_no %}
-                  Using TLE {{ satellite.tle_no }} issued
+                  Using TLE set {{ satellite.tle_no }} issued
                   {{ satellite.tle_epoch|timesince }} ago
                 {% endif %}
               </small>

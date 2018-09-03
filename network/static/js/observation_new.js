@@ -1,9 +1,14 @@
 /* global moment, d3, Slider, calcPolarPlotSVG */
 
 $(document).ready( function(){
-    function select_proper_transmitters(satellite){
+    function select_proper_transmitters(filters){
+        var url = '/transmitters/' + filters.satellite + '/';
+        if (filters.station) {
+            url = '/transmitters/' + filters.satellite + '/' + filters.station + '/';
+        }
+
         $.ajax({
-            url: '/transmitters/' + satellite + '/'
+            url: url
         }).done(function(data) {
             var transmitters_options = '';
             var max_good_count = 0;
@@ -14,7 +19,7 @@ $(document).ready( function(){
                     max_good_val = transmitter.uuid;
                 }
                 transmitters_options += `
-                    <option data-satellite="` + satellite + `"
+                    <option data-satellite="` + filters.satellite + `"
                             value="` + transmitter.uuid + `"
                             data-success-rate="` + transmitter.success_rate + `"
                             data-content='<div class="transmitter-option">
@@ -39,12 +44,24 @@ $(document).ready( function(){
                     </option>
                 `;
             });
-            $('#transmitter-selection').html(transmitters_options).prop('disabled', false);
-            $('#transmitter-selection').selectpicker('refresh');
-            $('#transmitter-selection').selectpicker('val', max_good_val);
+            if (data.transmitters.length > 0) {
+                $('#transmitter-selection').html(transmitters_options).prop('disabled', false);
+                $('#transmitter-selection').selectpicker('refresh');
+                if (filters.value && data.transmitters.findIndex(tr => tr.uuid == filters.value) > -1) {
+                    $('#transmitter-selection').selectpicker('val', filters.value);
+                } else {
+                    $('#transmitter-selection').selectpicker('val', max_good_val);
+                }
 
-            $('.tle').hide();
-            $('.tle[data-norad="' + satellite + '"]').show();
+                $('.tle').hide();
+                $('.tle[data-norad="' + filters.satellite + '"]').show();
+            } else {
+                $('#transmitter-selection').html(`<option id="no-transmitter"
+                                                          value="" selected>
+                                                    No transmitter available
+                                                  </option>`).prop('disabled', true);
+                $('#transmitter-selection').selectpicker('refresh');
+            }
         });
     }
 
@@ -117,16 +134,18 @@ $(document).ready( function(){
         $('#windows-data').append('<input type="hidden" name="total" value="' + obs_counter + '">');
     });
 
-    var satellite;
-
     var obs_filter = $('#form-obs').data('obs-filter');
     var obs_filter_dates = $('#form-obs').data('obs-filter-dates');
     var obs_filter_station = $('#form-obs').data('obs-filter-station');
+    var obs_filter_satellite = $('#form-obs').data('obs-filter-satellite');
+    var obs_filter_transmitter = $('#form-obs').data('obs-filter-transmitter');
 
     if (obs_filter) {
-        satellite = $('input[name="satellite"]').val();
-        select_proper_transmitters(satellite);
-        var ground_station = $('input[name="ground_station"]').val();
+        select_proper_transmitters({
+            satellite: obs_filter_satellite,
+            value: obs_filter_transmitter,
+            station: obs_filter_station
+        });
     }
 
     if (!obs_filter_dates) {
@@ -160,8 +179,16 @@ $(document).ready( function(){
     }
 
     $('#satellite-selection').on('changed.bs.select', function() {
-        satellite = $(this).find(':selected').data('norad');
-        select_proper_transmitters(satellite);
+        var satellite = $(this).find(':selected').data('norad');
+        var station = $('#form-obs').data('obs-filter-station');
+        select_proper_transmitters({
+            satellite: satellite,
+            station: station
+        });
+        $('.calculation-result').hide();
+        $('#timeline').empty();
+        $('#hover-obs').hide();
+        $('#windows-data').empty();
     });
 
     $('#calculate-observation').click( function(){
@@ -172,11 +199,19 @@ $(document).ready( function(){
         var start_time = $('#datetimepicker-start input').val();
         var end_time = $('#datetimepicker-end input').val();
         var transmitter = $('#transmitter-selection').find(':selected').val();
+        var satellite = $('#satellite-selection').val();
 
         var url = '/prediction_windows/' + satellite + '/' + transmitter + '/' + start_time + '/' + end_time + '/';
 
         if (obs_filter_station) {
-            url = '/prediction_windows/' + satellite + '/' + transmitter + '/' + start_time + '/' + end_time + '/' + ground_station + '/';
+            url = '/prediction_windows/' + satellite + '/' + transmitter + '/' + start_time + '/' + end_time + '/' + obs_filter_station + '/';
+        }
+        if (satellite.length == 0) {
+            $('#windows-data').html('<span class="text-danger">You should select a Satellite first.</span>');
+            return;
+        } else if (transmitter.length == 0) {
+            $('#windows-data').html('<span class="text-danger">You should select a Transmitter first.</span>');
+            return;
         }
 
         $.ajax({

@@ -351,6 +351,7 @@ def observation_new(request):
             start_date = filter_form.cleaned_data['start_date']
             end_date = filter_form.cleaned_data['end_date']
             ground_station = filter_form.cleaned_data['ground_station']
+            transmitter = filter_form.cleaned_data['transmitter']
             norad = filter_form.cleaned_data['norad']
 
             if start_date:
@@ -365,6 +366,8 @@ def observation_new(request):
             obs_filter['end_date'] = end_date
             if ground_station:
                 obs_filter['ground_station'] = ground_station
+            if norad:
+                obs_filter['transmitter'] = transmitter
         else:
             obs_filter['exists'] = False
 
@@ -883,7 +886,7 @@ def satellite_view(request, id):
     return JsonResponse(data, safe=False)
 
 
-def transmitters_view(request, id):
+def transmitters_view(request, id, station_id=None):
     try:
         sat = Satellite.objects.get(norad_cat_id=id)
     except Satellite.DoesNotExist:
@@ -893,9 +896,18 @@ def transmitters_view(request, id):
         return JsonResponse(data, safe=False)
 
     transmitters = Transmitter.objects.filter(satellite=sat)
-
-    data = {
-        'transmitters': TransmittersSerializer(transmitters, many=True).data,
-    }
+    transmitters_filtered = Transmitter.objects.none()
+    if station_id:
+        station = Station.objects.get(id=station_id)
+        for gs_antenna in station.antenna.all():
+            transmitters_filtered = transmitters_filtered | transmitters.filter(
+                downlink_low__range=(gs_antenna.frequency, gs_antenna.frequency_max))
+        data = {
+            'transmitters': TransmittersSerializer(transmitters_filtered, many=True).data,
+        }
+    else:
+        data = {
+            'transmitters': TransmittersSerializer(transmitters, many=True).data,
+        }
 
     return JsonResponse(data, safe=False)
