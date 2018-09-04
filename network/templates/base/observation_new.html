@@ -44,7 +44,7 @@
             {% if obs_filter.norad %}
               {% for satellite in satellites %}
                 {% ifequal satellite.norad_cat_id obs_filter.norad %}
-                  <select id="satellite-selection" class="form-control selectpicker" name="satellite" disabled>
+                  <select id="satellite-selection" class="form-control selectpicker" name="satellite">
                     <option data-norad="{{ satellite.norad_cat_id }}" value="{{ satellite.norad_cat_id }}" selected>
                       {{ satellite.norad_cat_id }} - {{ satellite.name }}
                     </option>
