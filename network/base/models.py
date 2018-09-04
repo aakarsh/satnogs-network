@@ -3,6 +3,7 @@ from datetime import datetime, timedelta
 from PIL import Image
 import requests
 from shortuuidfield import ShortUUIDField
+import logging
 
 from django.conf import settings
 from django.core.cache import cache
@@ -539,7 +540,14 @@ class Observation(models.Model):
         if self.has_audio:
             if self.archive_url:
                 r = requests.get(self.archive_url, allow_redirects=False)
-                return r.headers['Location']
+                try:
+                    url = r.headers['Location']
+                    return url
+                except Exception:
+                    logger = logging.getLogger(__name__)
+                    logger.warning("Request to '%s' returned status code: %s",
+                                   r.url, r.status_code)
+                    return ''
             else:
                 return self.payload.url
         return ''
