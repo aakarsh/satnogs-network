@@ -248,6 +248,9 @@ def create_new_observation(station_id,
 
 def observation_new_post(request):
     total = int(request.POST.get('total'))
+    if total == 0:
+        messages.error(request, 'Please select at least one observation.')
+        return redirect(reverse('base:observation_new'))
 
     new_observations = []
     for item in range(total):
@@ -323,7 +326,7 @@ def observation_new_post(request):
         messages.success(request, 'Observation was scheduled successfully.')
         return redirect(reverse('base:observation_view', kwargs={'id': new_observations[0].id}))
 
-    messages.success(request, 'Observations were scheduled successfully.')
+    messages.success(request, str(total) + ' Observations were scheduled successfully.')
     return redirect(reverse('base:observations_list'))
 
 
