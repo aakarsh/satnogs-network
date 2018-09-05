@@ -1,6 +1,8 @@
 $(document).ready(function() {
     'use strict';
 
+    $('.selectpicker').selectpicker();
+
     $('#observation-filter').submit(function () {
         var the_form = $(this);
 
