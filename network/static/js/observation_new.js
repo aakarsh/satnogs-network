@@ -188,6 +188,7 @@ $(document).ready( function(){
 
     function calculate_observation(){
         $('.calculation-result').show();
+        $('#obs-selection-tools').hide();
         $('#timeline').empty();
         $('#hover-obs').hide();
         $('#windows-data').empty();
@@ -337,6 +338,9 @@ $(document).ready( function(){
                 }
             })
             .click(function(d, i, datum){
+                if ($('rect').length == 1) {
+                    return;
+                }
                 if(Array.isArray(d)){
                     $.each(datum.times, function(i, observation){
                         if(!$('#' + observation.id).hasClass('filtered-out')){
@@ -385,6 +389,9 @@ $(document).ready( function(){
             });
         });
         $('#schedule-observation').removeAttr('disabled');
+        if ($('rect').length > 1) {
+            $('#obs-selection-tools').show();
+        }
     }
 
     $('#calculate-observation').click( function(){
