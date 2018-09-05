@@ -1,7 +1,7 @@
 /* global moment, d3, Slider, calcPolarPlotSVG */
 
 $(document).ready( function(){
-    function select_proper_transmitters(filters){
+    function select_proper_transmitters(filters, callback){
         var url = '/transmitters/' + filters.satellite + '/';
         if (filters.station) {
             url = '/transmitters/' + filters.satellite + '/' + filters.station + '/';
@@ -61,6 +61,9 @@ $(document).ready( function(){
                                                     No transmitter available
                                                   </option>`).prop('disabled', true);
                 $('#transmitter-selection').selectpicker('refresh');
+            }
+            if (callback) {
+                callback();
             }
         });
     }
@@ -140,14 +143,6 @@ $(document).ready( function(){
     var obs_filter_satellite = $('#form-obs').data('obs-filter-satellite');
     var obs_filter_transmitter = $('#form-obs').data('obs-filter-transmitter');
 
-    if (obs_filter) {
-        select_proper_transmitters({
-            satellite: obs_filter_satellite,
-            value: obs_filter_transmitter,
-            station: obs_filter_station
-        });
-    }
-
     if (!obs_filter_dates) {
         var minStart = $('#datetimepicker-start').data('date-minstart');
         var minEnd = $('#datetimepicker-end').data('date-minend');
@@ -191,7 +186,7 @@ $(document).ready( function(){
         $('#windows-data').empty();
     });
 
-    $('#calculate-observation').click( function(){
+    function calculate_observation(){
         $('.calculation-result').show();
         $('#timeline').empty();
         $('#hover-obs').hide();
@@ -276,7 +271,7 @@ $(document).ready( function(){
                 }
             }
         });
-    });
+    }
 
     function timeline_init(start, end, payload){
         var start_time_timeline = moment.utc(start).valueOf();
@@ -392,12 +387,29 @@ $(document).ready( function(){
         $('#schedule-observation').removeAttr('disabled');
     }
 
+    $('#calculate-observation').click( function(){
+        calculate_observation();
+    });
+
+    if (obs_filter) {
+        select_proper_transmitters({
+            satellite: obs_filter_satellite,
+            value: obs_filter_transmitter,
+            station: obs_filter_station
+        }, function(){
+            if (obs_filter_dates && obs_filter_station && obs_filter_satellite){
+                $('#calculate-observation').hide();
+                $('#obs-selection-tools').hide();
+                calculate_observation();
+            }
+        });
+    }
+
     // Hotkeys bindings
     $(document).bind('keyup', function(event){
         if(document.activeElement.tagName != 'INPUT'){
             if (event.which == 67) {
-                var link_calculate = $('#calculate-observation');
-                link_calculate[0].click();
+                calculate_observation();
             } else if (event.which == 83) {
                 var link_schedule = $('#schedule-observation');
                 link_schedule[0].click();

@@ -354,20 +354,22 @@ def observation_new(request):
             transmitter = filter_form.cleaned_data['transmitter']
             norad = filter_form.cleaned_data['norad']
 
-            if start_date:
+            obs_filter['dates'] = False
+            if start_date and end_date:  # Either give both dates or ignore if only one is given
                 start_date = datetime.strptime(start_date,
                                                '%Y/%m/%d %H:%M').strftime('%Y-%m-%d %H:%M')
-            if end_date:
                 end_date = (datetime.strptime(end_date, '%Y/%m/%d %H:%M') +
                             timedelta(minutes=1)).strftime('%Y-%m-%d %H:%M')
+                obs_filter['start_date'] = start_date
+                obs_filter['end_date'] = end_date
+                obs_filter['dates'] = True
+
             obs_filter['exists'] = True
-            obs_filter['norad'] = norad
-            obs_filter['start_date'] = start_date
-            obs_filter['end_date'] = end_date
+            if norad:
+                obs_filter['norad'] = norad
+                obs_filter['transmitter'] = transmitter  # Add transmitter only if norad exists
             if ground_station:
                 obs_filter['ground_station'] = ground_station
-            if norad:
-                obs_filter['transmitter'] = transmitter
         else:
             obs_filter['exists'] = False
 

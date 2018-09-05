@@ -34,7 +34,7 @@
 
   <form class="form-horizontal" role="form" action="{% url 'base:observation_new' %}"
         method="post" data-obs-filter="{{ obs_filter.exists|lower }}" data-obs-filter-station="{{ obs_filter.ground_station }}"
-        data-obs-filter-dates="{{ obs_filter.start_date }}" data-obs-filter-transmitter="{{ obs_filter.transmitter }}"
+        data-obs-filter-dates="{{ obs_filter.dates|lower }}" data-obs-filter-transmitter="{{ obs_filter.transmitter }}"
         data-obs-filter-satellite="{{ obs_filter.norad }}" id="form-obs">{% csrf_token %}
     <div class="row">
       <div class="col-md-6">
@@ -87,7 +87,7 @@
           <div class="col-sm-9">
             <div class='input-group date' id="datetimepicker-start"
                  data-date-minstart="{{ date_min_start }}">
-              {% if obs_filter.start_date %}
+              {% if obs_filter.dates %}
                 <input type="text" class="form-control" name="start-time"
                        value="{{ obs_filter.start_date}}" readonly>
               {% else %}
@@ -109,7 +109,7 @@
             <div class='input-group date' id="datetimepicker-end"
                  data-date-maxrange="{{ date_max_range }}"
                  data-date-minend="{{ date_min_end }}">
-              {% if obs_filter.end_date %}
+              {% if obs_filter.dates %}
                 <input type="text" class="form-control" name="end-time"
                        value="{{ obs_filter.end_date}}" readonly>
               {% else %}
