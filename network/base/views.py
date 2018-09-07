@@ -232,18 +232,22 @@ def create_new_observation(station_id,
                               str(sat.latest_tle.tle1),
                               str(sat.latest_tle.tle2))
     observer = ephem.Observer()
-    observer.date = str(start_time)
     observer.lon = str(ground_station.lng)
     observer.lat = str(ground_station.lat)
     observer.elevation = ground_station.alt
-    tr, azr, tt, altt, ts, azs = observer.next_pass(sat_ephem)
+
+    mid_pass_time = start_time + (end_time - start_time) / 2
+
+    rise_azimuth = get_azimuth(observer, sat_ephem, start_time)
+    max_altitude = get_elevation(observer, sat_ephem, mid_pass_time)
+    set_azimuth = get_azimuth(observer, sat_ephem, end_time)
 
     return Observation(satellite=sat, transmitter=trans, tle=tle, author=author,
                        start=start_time, end=end_time,
                        ground_station=ground_station,
-                       rise_azimuth=format(math.degrees(azr), '.0f'),
-                       max_altitude=format(math.degrees(altt), '.0f'),
-                       set_azimuth=format(math.degrees(azs), '.0f'))
+                       rise_azimuth=rise_azimuth,
+                       max_altitude=max_altitude,
+                       set_azimuth=set_azimuth)
 
 
 def observation_new_post(request):
