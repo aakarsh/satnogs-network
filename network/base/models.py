@@ -516,6 +516,17 @@ class Observation(models.Model):
         return self.vetted_status == 'failed'
 
     @property
+    def has_waterfall(self):
+        """Run some checks on the waterfall for existence of data."""
+        if self.waterfall is None:
+            return False
+        if not os.path.isfile(os.path.join(settings.MEDIA_ROOT, self.waterfall.name)):
+            return False
+        if self.waterfall.size == 0:
+            return False
+        return True
+
+    @property
     def has_audio(self):
         """Run some checks on the payload for existence of data."""
         if self.archive_url:

@@ -1,37 +1,43 @@
 $(document).ready(function() {
     'use strict';
 
-    $('.selectpicker').selectpicker();
-
-    $('#observation-filter').submit(function () {
-        var the_form = $(this);
-
-        the_form.find('input[type="checkbox"]').each( function () {
-            var the_checkbox = $(this);
-
-            if( the_checkbox.is(':checked') === true ) {
-                the_checkbox.attr('value','1');
-            } else {
-                the_checkbox.prop('checked',true);
-                // Check the checkbox but change it's value to 0
-                the_checkbox.attr('value','0');
-            }
+    $(function () {
+        $('#datetimepicker-start').datetimepicker({
+            useCurrent: false //https://github.com/Eonasdan/bootstrap-datetimepicker/issues/1075
+        });
+        $('#datetimepicker-end').datetimepicker({
+            useCurrent: false //https://github.com/Eonasdan/bootstrap-datetimepicker/issues/1075
+        });
+        $('#datetimepicker-start').on('dp.change', function (e) {
+            $('#datetimepicker-end').data('DateTimePicker').minDate(e.date);
+        });
+        $('#datetimepicker-end').on('dp.change', function (e) {
+            $('#datetimepicker-start').data('DateTimePicker').maxDate(e.date);
         });
     });
+    $('.selectpicker').selectpicker();
 
-    // Filters submits
-    $('.filter-section input[type=checkbox]').change(function() {
-        $('#observation-filter').submit();
+
+    $('.filter-section #status-selector label').click(function() {
+        var checkbox = $(this);
+        var input = checkbox.find('input[type="checkbox"]');
+
+        if (input.prop('checked')) {
+            checkbox.removeClass('btn-inactive');
+        } else {
+            checkbox.addClass('btn-inactive');
+        }
     });
 
-    $('#satellite-selection').bind('keyup change', function() {
-        $('#observation-filter').submit();
-    });
-    $('#observer-selection').bind('keyup change', function() {
-        $('#observation-filter').submit();
-    });
-    $('#station-selection').bind('keyup change', function() {
-        $('#observation-filter').submit();
+    $('.filter-section #results-selector label').click(function() {
+        var checkbox = $(this);
+        var input = checkbox.find('input[type="checkbox"]');
+
+        if (input.prop('checked')) {
+            checkbox.addClass('btn-inactive');
+        } else {
+            checkbox.removeClass('btn-inactive');
+        }
     });
 
     // Check if filters should be displayed

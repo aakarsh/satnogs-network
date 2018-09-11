@@ -6,6 +6,7 @@
 {% block title %} - Observations{% endblock %}
 
 {% block css %}
+  <link href="{% static 'lib/eonasdan-bootstrap-datetimepicker/build/css/bootstrap-datetimepicker.min.css' %}" rel="stylesheet">
   <link rel="stylesheet" href="{% static 'lib/bootstrap-select/dist/css/bootstrap-select.min.css' %}">
 {% endblock css %}
 
@@ -53,53 +54,54 @@
   </div>
 
   <div class="collapse{% if norad %} in{% endif %}" id="collapseFilters" data-filtered="{{ filtered }}">
-    <div class="filter-section row">
+    <div class="filter-section well well-sm row">
       <form id="observation-filter" class="form" methon="get" action="{% url 'base:observations_list' %}">
         <div class="form-group status-filter col-md-3">
-          <label for="data-selector">Status</label>
-          <div id="data-selector" class="btn-group" data-toggle="buttons">
-            <label class="btn btn-future btn-sm {% if future == '1' %}active{% else %}btn-inactive{% endif %}"
+          <label for="status-selector">Status</label>
+          <div id="status-selector" class="btn-group" data-toggle="buttons">
+            <label class="btn btn-future btn-sm {% if future == '0' %}active btn-inactive{% endif %}"
                    aria-expanded="true"
                    aria-controls="future"
                    data-toggle="tooltip"
                    data-placement="bottom"
                    title="Future">
-              <input type="checkbox" name="future" {% if future == '1' %}checked{% endif %} autocomplete="off">
+              <input type="checkbox" name="future" value="0" {% if future == '0' %}checked{% endif %} autocomplete="off">
               <span class="glyphicon glyphicon-time" aria-hidden="true"></span>
             </label>
-            <label class="btn btn-good btn-sm {% if good == '1' %}active{% else %}btn-inactive{% endif %}"
+            <label class="btn btn-good btn-sm {% if good == '0' %}active btn-inactive{% endif %}"
                    aria-expanded="true"
                    aria-controls="good"
                    data-toggle="tooltip"
                    data-placement="bottom"
                    title="Good">
-              <input type="checkbox" name="good" {% if good == '1' %}checked{% endif %} autocomplete="off">
+              <input type="checkbox" name="good" value="0" {% if good == '0' %}checked{% endif %} autocomplete="off">
               <span class="glyphicon glyphicon-ok" aria-hidden="true"></span>
             </label>
-            <label class="btn btn-bad btn-sm {% if bad == '1' %}active{% else %}btn-inactive{% endif %}"
+            <label class="btn btn-bad btn-sm {% if bad == '0' %}active btn-inactive{% endif %}"
                    aria-expanded="true"
                    aria-controls="bad"
                    data-toggle="tooltip"
                    data-placement="bottom"
                    title="Bad">
-              <input type="checkbox" name="bad" {% if bad == '1' %}checked{% endif %} autocomplete="off">
+              <input type="checkbox" name="bad" value="0" {% if bad == '0' %}checked{% endif %} autocomplete="off">
               <span class="glyphicon glyphicon-remove" aria-hidden="true"></span>
             </label>
-            <label class="btn btn-unknown btn-sm {% if unvetted == '1' %}active{% else %}btn-inactive{% endif %}"
+            <label class="btn btn-unknown btn-sm {% if unvetted == '0' %}active btn-inactive{% endif %}"
                    aria-expanded="true"
                    aria-controls="unvetted"
                    data-toggle="tooltip"
                    data-placement="bottom"
                    title="Unvetted">
-              <input type="checkbox" name="unvetted" {% if unvetted == '1' %}checked{% endif %} autocomplete="off">?
+              <input type="checkbox" name="unvetted" value="0" {% if unvetted == '0' %}checked{% endif %} autocomplete="off">
+              <span class="glyphicon glyphicon-question-sign" aria-hidden="true"></span>
             </label>
-            <label class="btn btn-failed btn-sm {% if failed == '1' %}active{% else %}btn-inactive{% endif %}"
+            <label class="btn btn-failed btn-sm {% if failed == '0' %}active btn-inactive{% endif %}"
                    aria-expanded="true"
                    aria-controls="failed"
                    data-toggle="tooltip"
                    data-placement="bottom"
                    title="Failed">
-              <input type="checkbox" name="failed" {% if failed == '1' %}checked{% endif %} autocomplete="off">
+              <input type="checkbox" name="failed" value="0" {% if failed == '0' %}checked{% endif %} autocomplete="off">
               <span class="glyphicon glyphicon-alert" aria-hidden="true"></span>
             </label>
           </div>
@@ -139,6 +141,73 @@
               </option>
             {% endfor %}
           </select>
+        </div>
+        <div class="form-group status-filter col-md-3">
+          <label for="results-selector">Results</label>
+          <div id="results-selector" class="btn-group" data-toggle="buttons">
+            <label class="btn btn-default btn-sm {% if waterfall == '1' %}active{% else %}btn-inactive{% endif %}"
+                   aria-expanded="true"
+                   aria-controls="waterfall"
+                   data-toggle="tooltip"
+                   data-placement="bottom"
+                   title="Waterfall">
+              <input type="checkbox" name="waterfall" value="1" {% if waterfall == '1' %}checked{% endif %} autocomplete="off">
+              <span class="glyphicon glyphicon-picture" aria-hidden="true"></span>
+            </label>
+            <label class="btn btn-default btn-sm {% if audio == '1' %}active{% else %}btn-inactive{% endif %}"
+                   aria-expanded="true"
+                   aria-controls="audio"
+                   data-toggle="tooltip"
+                   data-placement="bottom"
+                   title="Audio">
+              <input type="checkbox" name="audio" value="1" {% if audio == '1' %}checked{% endif %} autocomplete="off">
+              <span class="glyphicon glyphicon-volume-up" aria-hidden="true"></span>
+            </label>
+            <label class="btn btn-default btn-sm {% if data == '1' %}active{% else %}btn-inactive{% endif %}"
+                   aria-expanded="true"
+                   aria-controls="data"
+                   data-toggle="tooltip"
+                   data-placement="bottom"
+                   title="Data">
+              <input type="checkbox" name="data" value="1" {% if data == '1' %}checked{% endif %} autocomplete="off">
+              <span class="glyphicon glyphicon-file" aria-hidden="true"></span>
+            </label>
+          </div>
+        </div>
+        <div class="form-group col-sm-3 ">
+          <label class="control-label">Start Time</label>
+          <div class='input-group date' id="datetimepicker-start">
+            <input type="text"
+                   class="form-control"
+                   name="start-time"
+                   data-date-format="YYYY-MM-DD HH:mm"
+                   {% if start_time is not None %}
+                     value = "{{ start_time }}"
+                   {% endif %}
+                   autocomplete="off"/>
+            <span class="input-group-addon">
+              <span class="glyphicon glyphicon-calendar"></span>
+            </span>
+          </div>
+        </div>
+        <div class="form-group col-sm-3 ">
+          <label class="control-label">End Time</label>
+          <div class='input-group date' id="datetimepicker-end">
+            <input type="text"
+                   class="form-control"
+                   name="end-time"
+                   data-date-format="YYYY-MM-DD HH:mm"
+                   {% if end_time is not None %}
+                     value = "{{ end_time }}"
+                   {% endif %}
+                   autocomplete="off"/>
+            <span class="input-group-addon">
+              <span class="glyphicon glyphicon-calendar"></span>
+            </span>
+          </div>
+        </div>
+        <div class="form-group col-sm-12">
+          <button type="submit" class="btn btn-primary pull-right">Update filters</button>
         </div>
       </form>
     </div>
@@ -195,7 +264,7 @@
                   </span>
                 </td>
                 <td>
-                  {% if observation.waterfall %}
+                  {% if observation.has_waterfall %}
                     <span class="glyphicon glyphicon-picture" aria-hidden="true"
                           data-toggle="tooltip" data-placement="bottom"
                           title="Waterfall uploaded"></span>
@@ -239,6 +308,8 @@
 {% endblock content %}
 
 {% block javascript %}
+  <script src="{% static 'lib/moment/min/moment.min.js' %}"></script>
+  <script src="{% static 'lib/eonasdan-bootstrap-datetimepicker/build/js/bootstrap-datetimepicker.min.js' %}"></script>
   <script src="{% static 'lib/bootstrap-select/dist/js/bootstrap-select.min.js' %}"></script>
   <script src="{% static 'js/observations.js' %}"></script>
   <script src="{% static 'js/satellite.js' %}"></script>
