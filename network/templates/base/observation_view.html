@@ -375,7 +375,15 @@
   </div>
   <div class="row tle-data">
     <div class="col-md-12">
-      <h3>TLE used <small>by Celestrak</small></h3>
+      <h3>
+        TLE used
+        <small>
+          fetched from Celestrak
+          <span data-toggle="tooltip" data-placement="bottom" title="{{ observation.tle.updated|date:"Y-m-d H:i:s" }}">
+            {{ observation.tle.updated|naturaltime }}
+          </span>
+        </small>
+      </h3>
       <pre>{{ observation.tle.tle1 }}<br>{{ observation.tle.tle2 }}</pre>
     </div>
   </div>
