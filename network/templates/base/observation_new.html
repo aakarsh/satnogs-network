@@ -2,6 +2,7 @@
 
 {% load staticfiles %}
 {% load tags %}
+{% load humanize %}
 
 {% block title %} - New Observation{% endblock %}
 
@@ -73,8 +74,10 @@
             {% for satellite in satellites %}
               <small class="tle" data-norad="{{ satellite.norad_cat_id }}">
                 {% if satellite.tle_no %}
-                  Using TLE set {{ satellite.tle_no }} issued
-                  {{ satellite.tle_epoch|timesince }} ago
+                  Using TLE fetched
+                  <span data-toggle="tooltip" data-placement="bottom" title="{{ satellite.tle_epoch|date:"Y-m-d H:i:s" }}">
+                    {{ satellite.tle_epoch|naturaltime }}
+                  </span>
                 {% endif %}
               </small>
             {% endfor %}
