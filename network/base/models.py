@@ -29,6 +29,7 @@ ANTENNA_TYPES = (
     ('discone', 'Discone'),
     ('ground', 'Ground Plane'),
     ('yagi', 'Yagi'),
+    ('cross-yagi', 'Cross Yagi'),
     ('helical', 'Helical'),
     ('parabolic', 'Parabolic'),
     ('vertical', 'Verical'),
