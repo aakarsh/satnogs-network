@@ -286,7 +286,7 @@ class Satellite(models.Model):
     def tle_no(self):
         try:
             line = self.latest_tle.tle1
-            return line[65:68]
+            return line[64:68]
         except AttributeError:
             return False
 
