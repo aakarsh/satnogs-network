@@ -8,7 +8,8 @@ $(document).ready(function() {
         var minute = Math.floor(timeSeconds / 60);
         var tmp = Math.round(timeSeconds - (minute * 60));
         var second = (tmp < 10 ? '0' : '') + tmp;
-        return String(minute + ':' + second);
+        var seconds_rounded = Math.round(timeSeconds);
+        return String(minute + ':' + second + ' / ' + seconds_rounded + ' s');
     }
 
     // Set width for not selected tabs
