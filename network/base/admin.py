@@ -2,6 +2,7 @@ from django.contrib import admin
 
 from network.base.models import (Antenna, Satellite, Station, Transmitter,
                                  Observation, Mode, Tle, Rig, DemodData)
+from network.base.utils import export_as_csv
 
 
 @admin.register(Rig)
@@ -30,12 +31,20 @@ class AntennaAdmin(admin.ModelAdmin):
 
 @admin.register(Station)
 class StationAdmin(admin.ModelAdmin):
-    list_display = ('id', 'name', 'owner', 'lng', 'lat', 'qthlocator', 'client_version',
-                    'created_date', 'state')
+    list_display = ('id', 'name', 'owner', 'get_email', 'lng', 'lat', 'qthlocator',
+                    'client_version', 'created_date', 'state')
     list_filter = ('status', 'created', 'client_version')
+
+    actions = [export_as_csv]
+    export_as_csv.short_description = "Export selected as CSV"
 
     def created_date(self, obj):
         return obj.created.strftime('%d.%m.%Y, %H:%M')
+
+    def get_email(self, obj):
+        return obj.owner.email
+    get_email.admin_order_field = 'email'
+    get_email.short_description = 'Owner Email'
 
 
 @admin.register(Satellite)
