@@ -170,7 +170,7 @@ def demod_to_db(frame_id):
     params['noradID'] = sat.norad_cat_id
     params['source'] = ground_station.name
     params['timestamp'] = submit_datetime
-    params['locator'] = ground_station.qthlocator
+    params['locator'] = 'longLat'
     params['longitude'] = ground_station.lng
     params['latitude'] = ground_station.lat
     params['frame'] = frame.display_payload().replace(' ', '')
