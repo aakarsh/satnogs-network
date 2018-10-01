@@ -20,6 +20,10 @@ class ObservationView(viewsets.ModelViewSet, mixins.UpdateModelMixin):
     pagination_class = pagination.LinkedHeaderPageNumberPagination
 
     def update(self, request, *args, **kwargs):
+        if request.data.get('client_version'):
+            instance = self.get_object()
+            instance.ground_station.client_version = request.data.get('client_version')
+            instance.ground_station.save()
         if request.data.get('demoddata'):
             instance = self.get_object()
             instance.demoddata.create(payload_demod=request.data.get('demoddata'))

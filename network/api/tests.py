@@ -83,6 +83,7 @@ class StationViewApiTest(TestCase):
         station_serialized = {
             u'altitude': self.station.alt,
             u'antenna': ser_ants,
+            u'client_version': self.station.client_version,
             u'created': self.encoder.default(self.station.created),
             u'description': self.station.description,
             u'id': self.station.id,

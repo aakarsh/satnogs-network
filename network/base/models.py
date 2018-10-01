@@ -76,10 +76,6 @@ def _observation_post_save(sender, instance, created, **kwargs):
         instance.vetted_status = 'good'
         instance.vetted_datetime = now()
         instance.save()
-    if instance.client_version:
-        instance.ground_station.client_version = instance.client_version
-        instance.save()
-        instance.ground_station.save()
     post_save.connect(_observation_post_save, sender=Observation)
 
 
