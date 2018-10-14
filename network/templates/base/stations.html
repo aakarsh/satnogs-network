@@ -69,25 +69,13 @@
                 </td>
               {% endif %}
               <td>
-                <a href="{% url 'base:observations_list' %}?station={{ station.id }}">
-                  {% if not station.success_rate %}
-                    <span class="badge total-pill" data-toggle="tooltip" data-placement="bottom"
-                          title="No data">
-                      {{ station.total_obs }}
-                    </span>
-                  {% else %}
-                    <span class="badge total-pill" data-toggle="tooltip" data-placement="bottom"
-                          title="{{ station.success_rate }}% Success">
-                      {{ station.total_obs }}
-                    </span>
-                  {% endif %}
+                <a href="{% url 'base:observations_list' %}?station={{ station.id }}" class="badge total-pill" data-toggle="tooltip" data-placement="bottom" title={% if not station.success_rate %} "No data" {%else %} "{{station.success_rate}}% Success" {% endif %}>
+                  {{ station.total_obs }}
                 </a>
               </td>
               <td>
-                <a href="{% url 'base:observations_list' %}?future=1&good=0&bad=0&unvetted=0&failed=0&station={{ station.id }}">
-                  <span class="badge badge-info">
-                    {{ station.observations_future_count }}
-                  </span>
+                <a href="{% url 'base:observations_list' %}?future=1&good=0&bad=0&unvetted=0&failed=0&station={{ station.id }}" class="badge badge-info">
+                  {{ station.observations_future_count }}
                 </a>
               </td>
               <td class="station-antennas">
