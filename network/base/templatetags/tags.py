@@ -36,3 +36,11 @@ def truncatesecs(value):
         return value[:-3]
     except (TypeError, ValueError):
         return value
+
+
+@register.filter
+def sortdemoddata(demoddata):
+    try:
+        return sorted(list(demoddata), key=lambda x: str(x.payload_demod).split('/', 2)[2:])
+    except (TypeError, ValueError):
+        return demoddata
