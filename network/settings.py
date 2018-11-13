@@ -303,7 +303,7 @@ CSP_STYLE_SRC = (
     "'self'",
     "'unsafe-inline'",
 )
-CSP_CHILD_SRC = (
+CSP_WORKER_SRC = (
     'blob:',
 )
 
