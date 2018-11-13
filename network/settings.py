@@ -7,7 +7,7 @@ import raven
 ROOT = Path(__file__).parent.parent
 
 ENVIRONMENT = config('ENVIRONMENT', default='dev')
-DEBUG = config('DEBUG', default=False, cast=bool)
+DEBUG = config('DEBUG', default=True, cast=bool)
 
 # Apps
 DJANGO_APPS = (
@@ -70,12 +70,13 @@ SERVER_EMAIL = DEFAULT_FROM_EMAIL
 # Cache
 CACHES = {
     'default': {
-        'BACKEND': config('CACHE_BACKEND', default='redis_cache.RedisCache'),
-        'LOCATION': config('CACHE_LOCATION', default='unix://var/run/redis/redis.sock'),
+        'BACKEND': config('CACHE_BACKEND',
+                          default='django.core.cache.backends.locmem.LocMemCache'),
+        'LOCATION': config('CACHE_LOCATION', default='unique-location'),
         'OPTIONS': {
             'MAX_ENTRIES': 5000,
             'CLIENT_CLASS': config('CACHE_CLIENT_CLASS',
-                                   default='django_redis.client.DefaultClient'),
+                                   default=''),
         },
         'KEY_PREFIX': 'network-{0}'.format(ENVIRONMENT),
     }
@@ -319,7 +320,7 @@ if DATABASES['default']['ENGINE'].split('.')[-1] == 'mysql':
 
 # Mapbox API
 MAPBOX_GEOCODE_URL = 'https://api.tiles.mapbox.com/v4/geocode/mapbox.places/'
-MAPBOX_MAP_ID = config('MAPBOX_MAP_ID', default='')
+MAPBOX_MAP_ID = config('MAPBOX_MAP_ID', default='pierros.jbf6la1j')
 MAPBOX_TOKEN = config('MAPBOX_TOKEN', default='')
 
 # Observations settings
