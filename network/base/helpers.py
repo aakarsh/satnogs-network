@@ -52,12 +52,12 @@ def resolve_overlaps(station, gs_data, start, end):
                     # In case of splitting the window  to two we
                     # check for overlaps for each generated window.
                     window1 = resolve_overlaps(station, gs_data,
-                                               start, datum.start - timedelta(seconds=10))
+                                               start, datum.start - timedelta(seconds=30))
                     window2 = resolve_overlaps(station, gs_data,
-                                               datum.end + timedelta(seconds=10), end)
+                                               datum.end + timedelta(seconds=30), end)
                     return (window1[0] + window2[0], True)
                 if datum.start <= start:
-                    start = datum.end + timedelta(seconds=10)
+                    start = datum.end + timedelta(seconds=30)
                 if datum.end >= end:
-                    end = datum.start - timedelta(seconds=10)
+                    end = datum.start - timedelta(seconds=30)
     return ([(start, end)], overlapped)
