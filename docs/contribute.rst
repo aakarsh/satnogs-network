@@ -51,9 +51,9 @@ When you want to start contributing, you should :doc:`follow the installation in
 
     $ git push origin my_branch
 
-#. Issue a pull request on Gitlab
+#. Issue a pull request on Gitlab to the dev branch (not master)
 
-#. Wait to hear from one of the core developers
+#. Wait to hear from one of the core developers. You can find us on irc or matrix in channel satnogs if you wish to discuss your MR in real time.
 
 If you're asked to change your commit message, you can amend the message and force commit::
 
