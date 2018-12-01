@@ -330,19 +330,31 @@
           </div>
           <div role="tabpanel" class="tab-pane tab-data" id="tab-data">
             {% if observation.demoddata.all %}
+              <div align="right">
+                <div class="btn-group btn-group-xs decode-btn-group" role="group">
+                  <button type="button" class="btn btn-default" id="asciibutton">ASCII</button>
+                  <button type="button" class="btn btn-primary" id="hexbutton" disabled>HEX</button>
+                </div>
+              </div>
               {% for demoddata in observation.demoddata.all|sortdemoddata %}
                 <span class="label label-default data-label">
                   <a href="{{ demoddata.payload_demod.url }}" class="data-link">
                     {{ demoddata.payload_demod }}
                   </a>
                 </span>
-                <div class="well well-sm data-well">
-                  {% if demoddata.is_image %}
+                {% if demoddata.is_image %}
+                  <div class="well well-sm data-well">
                     <img src="{{ demoddata.payload_demod.url }}" alt="observation-{{ observation.pk }}" class="img-responsive">
-                  {% else %}
+                  </div>
+                {% elif observation.transmitter.mode == 'CW' %}
+                  <div class="well well-sm data-well">
                     {{ demoddata.display_payload }}
-                  {% endif %}
-                </div>
+                  </div>
+                {% else %}
+                  <div class="well well-sm data-well hex">
+                    {{ demoddata.display_payload }}
+                  </div>
+                {% endif %}
               {% endfor %}
             {% else %}
               <div class="notice">

@@ -131,6 +131,41 @@ $(document).ready(function() {
 
     $('svg#polar').append(polarPlotSVG);
 
+    // Function to convert hex data in each data blob to ASCII, while storing
+    // the original blob in a jquery .data, for later reversal back to hex
+    // (see next function)
+    $('#asciibutton').click(function(){
+        $('.hex').each(function(){
+            $(this).data('hex', $(this).text());
+            var hex = $(this).text().replace(/ /g,'').replace(/\r?\n|\r/g, '');
+            var str = '';
+            for (var i = 0; i < hex.length; i += 2) {
+                str += String.fromCharCode(parseInt(hex.substr(i, 2), 16));
+            }
+            $(this).html(str);
+        });
+        $('#asciibutton').toggleClass('btn-default');
+        $('#asciibutton').toggleClass('btn-primary');
+        $('#hexbutton').toggleClass('btn-default');
+        $('#hexbutton').toggleClass('btn-primary');
+        $('#asciibutton').attr('disabled', 'disabled');
+        $('#hexbutton').removeAttr('disabled');
+    });
+
+    // retrieve saved hex data and replace the decoded blob with the original
+    // hex text
+    $('#hexbutton').click(function(){
+        $('.hex').each(function(){
+            $(this).html($(this).data('hex'));
+        });
+        $('#asciibutton').toggleClass('btn-default');
+        $('#asciibutton').toggleClass('btn-primary');
+        $('#hexbutton').toggleClass('btn-default');
+        $('#hexbutton').toggleClass('btn-primary');
+        $('#hexbutton').attr('disabled', 'disabled');
+        $('#asciibutton').removeAttr('disabled');
+    });
+
     // Hotkeys bindings
     $(document).bind('keyup', function(event){
         if (event.which == 88) {
