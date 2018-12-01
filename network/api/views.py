@@ -35,6 +35,7 @@ class ObservationView(viewsets.ModelViewSet, mixins.UpdateModelMixin):
 class StationView(viewsets.ModelViewSet, mixins.UpdateModelMixin):
     queryset = Station.objects.all()
     serializer_class = serializers.StationSerializer
+    filter_class = filters.StationViewFilter
     pagination_class = pagination.LinkedHeaderPageNumberPagination
 
 
