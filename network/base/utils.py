@@ -5,10 +5,6 @@ from django.contrib.admin.helpers import label_for_field
 
 
 def export_as_csv(modeladmin, request, queryset):
-    """
-    Generic csv export admin action.
-    based on http://djangosnippets.org/snippets/1697/ and /2020/
-    """
     if not request.user.is_staff:
         raise PermissionDenied
     opts = modeladmin.model._meta

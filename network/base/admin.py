@@ -55,11 +55,14 @@ class SatelliteAdmin(admin.ModelAdmin):
 
 @admin.register(Tle)
 class TleAdmin(admin.ModelAdmin):
-    list_display = ('tle0', 'tle1', 'updated_date')
-    list_filter = ('tle0', )
+    list_display = ('satellite_name', 'tle0', 'tle1', 'updated_date')
+    list_filter = ('satellite__name',)
 
     def updated_date(self, obj):
         return obj.updated.strftime('%d.%m.%Y, %H:%M')
+
+    def satellite_name(self, obj):
+        return obj.satellite.name
 
 
 @admin.register(Transmitter)
