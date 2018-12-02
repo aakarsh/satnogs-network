@@ -1,6 +1,6 @@
 from rest_framework import serializers
 
-from network.base.models import Observation, Station, DemodData, Antenna
+from network.base.models import Observation, Station, DemodData, Antenna, Transmitter
 
 
 class DemodDataSerializer(serializers.ModelSerializer):
@@ -161,3 +161,23 @@ class SettingsSerializer(serializers.ModelSerializer):
         model = Station
         fields = ('uuid', 'name', 'alt', 'lat', 'lng', 'rig',
                   'testing', 'antenna', 'id', 'description')
+
+
+class TransmitterSerializer(serializers.ModelSerializer):
+    mode = serializers.SerializerMethodField()
+    norad_cat_id = serializers.SerializerMethodField()
+
+    class Meta:
+        model = Transmitter
+        fields = ('uuid', 'description', 'alive', 'downlink_low', 'downlink_high',
+                  'mode', 'uplink_low', 'uplink_high', 'satellite', 'norad_cat_id',
+                  'success_rate', 'bad_rate', 'unknown_rate', 'good_count',
+                  'bad_count', 'unknown_count', 'data_count')
+
+    def get_mode(self, obj):
+        if obj.mode is None:
+            return "No Mode"
+        return obj.mode.name
+
+    def get_norad_cat_id(self, obj):
+        return obj.satellite.norad_cat_id

@@ -9,5 +9,6 @@ router.register(r'data', views.ObservationView, base_name='data')
 router.register(r'observations', views.ObservationView, base_name='observations')
 router.register(r'settings', views.SettingsView, base_name='settings')
 router.register(r'stations', views.StationView, base_name='stations')
+router.register(r'transmitters', views.TransmitterView, base_name='transmitters')
 
 api_urlpatterns = router.urls

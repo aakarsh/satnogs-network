@@ -1,9 +1,10 @@
+from django_filters.rest_framework import FilterSet
 import django_filters
 
-from network.base.models import Observation, Station
+from network.base.models import Observation, Station, Transmitter
 
 
-class ObservationViewFilter(django_filters.FilterSet):
+class ObservationViewFilter(FilterSet):
     start = django_filters.IsoDateTimeFilter(name='start', lookup_expr='gte')
     end = django_filters.IsoDateTimeFilter(name='end', lookup_expr='lte')
 
@@ -13,7 +14,13 @@ class ObservationViewFilter(django_filters.FilterSet):
                   'vetted_user', 'tle']
 
 
-class StationViewFilter(django_filters.FilterSet):
+class StationViewFilter(FilterSet):
     class Meta:
         model = Station
         fields = ['id', 'name', 'status', 'client_version']
+
+
+class TransmitterViewFilter(FilterSet):
+    class Meta:
+        model = Transmitter
+        fields = ['uuid', 'satellite__norad_cat_id']

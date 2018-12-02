@@ -7,7 +7,7 @@ from rest_framework.response import Response
 
 from network.api.perms import StationOwnerCanEditPermission
 from network.api import serializers, filters, pagination
-from network.base.models import Observation, Station
+from network.base.models import Observation, Station, Transmitter
 
 
 class ObservationView(viewsets.ModelViewSet, mixins.UpdateModelMixin):
@@ -36,6 +36,13 @@ class StationView(viewsets.ModelViewSet, mixins.UpdateModelMixin):
     queryset = Station.objects.all()
     serializer_class = serializers.StationSerializer
     filter_class = filters.StationViewFilter
+    pagination_class = pagination.LinkedHeaderPageNumberPagination
+
+
+class TransmitterView(viewsets.ModelViewSet, mixins.UpdateModelMixin):
+    queryset = Transmitter.objects.all().order_by('uuid')
+    serializer_class = serializers.TransmitterSerializer
+    filter_class = filters.TransmitterViewFilter
     pagination_class = pagination.LinkedHeaderPageNumberPagination
 
 
