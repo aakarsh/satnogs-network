@@ -255,6 +255,7 @@ class StationStatusLog(models.Model):
 class Satellite(models.Model):
     """Model for SatNOGS satellites."""
     norad_cat_id = models.PositiveIntegerField()
+    norad_follow_id = models.PositiveIntegerField(blank=True, null=True)
     name = models.CharField(max_length=45)
     names = models.TextField(blank=True)
     image = models.CharField(max_length=100, blank=True, null=True)

@@ -20,11 +20,14 @@ from network.celery import app
 @app.task(ignore_result=True)
 def update_all_tle():
     """Task to update all satellite TLEs"""
-    satellites = Satellite.objects.exclude(manual_tle=True)
+    satellites = Satellite.objects.exclude(manual_tle=True, norad_follow_id__isnull=True)
 
     for obj in satellites:
+        norad_id = obj.norad_cat_id
+        if (obj.manual_tle):
+            norad_id = obj.norad_follow_id
         try:
-            sat = satellite(obj.norad_cat_id)
+            sat = satellite(norad_id)
         except IndexError:
             continue
 
