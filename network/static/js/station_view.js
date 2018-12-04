@@ -14,11 +14,12 @@ $(document).ready(function() {
     var station_info = $('#station-info').data();
 
     // Confirm station deletion
-    var message = 'Do you really want to delete this Ground Station?';
     var actions = $('#station-delete');
     if (actions.length) {
         actions[0].addEventListener('click', function(e) {
-            if (! confirm(message)) {
+            if ($('#delete-confirm-id').val() != station_info.id ) {
+                $('#delete-confirm-id').val('');
+                $('#delete-confirm-id').attr('placeholder', 'Wrong ID!');
                 e.preventDefault();
             }
         });
