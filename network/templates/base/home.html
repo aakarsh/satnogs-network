@@ -16,19 +16,21 @@
 {% endblock prenav-content %}
 
 {% block content %}
-  <div class="call2action">
-    <div class="panel panel-default">
-      <h3 class="text-center">
-        Crowd-sourced satellite operations
-        <button type="button"
-                class="btn btn-primary"
-                data-toggle="modal"
-                data-target="#joinModal">
-          Join us!
-        </button>
-      </h3>
+  {% if request.user.is_anonymous %}
+    <div class="call2action">
+      <div class="panel panel-default">
+        <h3 class="text-center">
+          Crowd-sourced satellite operations
+          <button type="button"
+                  class="btn btn-primary"
+                  data-toggle="modal"
+                  data-target="#joinModal">
+            Join us!
+          </button>
+        </h3>
+      </div>
     </div>
-  </div>
+  {% endif %}
 
   <!-- Join Modal -->
   <div class="modal fade" id="joinModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">

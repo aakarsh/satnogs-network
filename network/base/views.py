@@ -64,9 +64,6 @@ def satellite_position(request, sat_id):
 
 def index(request):
     """View to render index page."""
-    if request.user.is_authenticated():
-        return redirect(reverse('users:view_user', kwargs={"username": request.user.username}))
-
     return render(request, 'base/home.html', {'mapbox_id': settings.MAPBOX_MAP_ID,
                                               'mapbox_token': settings.MAPBOX_TOKEN})
 
