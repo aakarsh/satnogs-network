@@ -29,7 +29,7 @@ from network.base.tasks import update_all_tle, fetch_data
 class StationSerializer(serializers.ModelSerializer):
     class Meta:
         model = Station
-        fields = ('name', 'lat', 'lng', 'id')
+        fields = ('name', 'lat', 'lng', 'id', 'status')
 
 
 class StationAllView(viewsets.ReadOnlyModelViewSet):
