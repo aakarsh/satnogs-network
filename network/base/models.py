@@ -101,6 +101,17 @@ def _station_post_save(sender, instance, created, **kwargs):
     post_save.connect(_station_post_save, sender=Station)
 
 
+def _tle_post_save(sender, instance, created, **kwargs):
+    """
+    Post save Tle operations
+    * Update TLE for future observations
+    """
+    if created:
+        start_time = now() + timedelta(minutes=10)
+        Observation.objects.filter(satellite=instance.satellite, start__gt=start_time) \
+                           .update(tle=instance.id)
+
+
 def validate_image(fieldfile_obj):
     filesize = fieldfile_obj.file.size
     megabyte_limit = 2.0
@@ -357,6 +368,9 @@ class Tle(models.Model):
     def __unicode__(self):
         uni_name = "%d - %s" % (self.id, self.tle0)
         return uni_name
+
+
+post_save.connect(_tle_post_save, sender=Tle)
 
 
 class Transmitter(models.Model):
