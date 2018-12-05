@@ -66,9 +66,9 @@ class TleAdmin(admin.ModelAdmin):
 @admin.register(Transmitter)
 class TransmitterAdmin(admin.ModelAdmin):
     list_display = ('id', 'uuid', 'description', 'satellite', 'uplink_low',
-                    'uplink_high', 'downlink_low', 'downlink_high')
+                    'uplink_high', 'downlink_low', 'downlink_high', 'alive')
     search_fields = ('satellite', 'uuid')
-    list_filter = ('mode', 'invert')
+    list_filter = ('mode', 'invert', 'alive')
     readonly_fields = ('uuid', 'description', 'satellite', 'uplink_low', 'uplink_high',
                        'downlink_low', 'downlink_high', 'baud', 'invert', 'alive', 'mode')
 
