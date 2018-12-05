@@ -355,7 +355,8 @@ class Tle(models.Model):
         ordering = ['tle0']
 
     def __unicode__(self):
-        return self.tle0
+        uni_name = "%d - %s" % (self.id, self.tle0)
+        return uni_name
 
 
 class Transmitter(models.Model):
