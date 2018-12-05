@@ -948,7 +948,7 @@ def transmitters_view(request, id, station_id=None):
         }
         return JsonResponse(data, safe=False)
 
-    transmitters = Transmitter.objects.filter(satellite=sat)
+    transmitters = Transmitter.objects.filter(satellite=sat, alive=True)
     transmitters_filtered = Transmitter.objects.none()
     if station_id:
         station = Station.objects.get(id=station_id)
