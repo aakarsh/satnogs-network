@@ -326,7 +326,7 @@ MAPBOX_TOKEN = config('MAPBOX_TOKEN', default='')
 # Observations settings
 # Datetimes in minutes for scheduling OPTIONS
 OBSERVATION_DATE_MIN_START = config('OBSERVATION_DATE_MIN_START', default=10, cast=int)
-OBSERVATION_DATE_MIN_END = config('OBSERVATION_DATE_MIN_END', default=370, cast=int)
+OBSERVATION_DATE_MIN_END = config('OBSERVATION_DATE_MIN_END', default=20, cast=int)
 # Deletion range in minutes
 OBSERVATION_DATE_MAX_RANGE = config('OBSERVATION_DATE_MAX_RANGE', default=2890, cast=int)
 # Clean up threshold in days
