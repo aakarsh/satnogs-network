@@ -10,13 +10,12 @@ from django.contrib.auth.models import Group
 from django.test import TestCase, Client
 from django.utils.timezone import now
 
-from network.base.models import (ANTENNA_BANDS, ANTENNA_TYPES, RIG_TYPES, OBSERVATION_STATUSES,
-                                 Rig, Mode, Antenna, Satellite, Tle, Station, Transmitter,
+from network.base.models import (ANTENNA_BANDS, ANTENNA_TYPES, OBSERVATION_STATUSES,
+                                 Mode, Antenna, Satellite, Tle, Station, Transmitter,
                                  Observation, DemodData)
 from network.users.tests import UserFactory
 
 
-RIG_TYPE_IDS = [c[0] for c in RIG_TYPES]
 ANTENNA_BAND_IDS = [c[0] for c in ANTENNA_BANDS]
 ANTENNA_TYPE_IDS = [c[0] for c in ANTENNA_TYPES]
 OBSERVATION_STATUS_IDS = [c[0] for c in OBSERVATION_STATUSES]
@@ -42,15 +41,6 @@ def get_valid_satellites():
     qs = Transmitter.objects.all()
     satellites = Satellite.objects.filter(transmitters__in=qs).distinct()
     return satellites
-
-
-class RigFactory(factory.django.DjangoModelFactory):
-    """Rig model factory."""
-    name = fuzzy.FuzzyChoice(choices=RIG_TYPE_IDS)
-    rictld_number = fuzzy.FuzzyInteger(1, 3)
-
-    class Meta:
-        model = Rig
 
 
 class ModeFactory(factory.django.DjangoModelFactory):
@@ -84,7 +74,6 @@ class StationFactory(factory.django.DjangoModelFactory):
     testing = fuzzy.FuzzyChoice(choices=[True, False])
     last_seen = fuzzy.FuzzyDateTime(now() - timedelta(days=3), now())
     horizon = fuzzy.FuzzyInteger(10, 20)
-    rig = factory.SubFactory(RigFactory)
 
     @factory.post_generation
     def antennas(self, create, extracted, **kwargs):

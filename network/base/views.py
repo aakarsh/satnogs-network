@@ -18,7 +18,7 @@ from django.views.generic import ListView
 
 from rest_framework import serializers, viewsets
 from network.base.models import (Station, Transmitter, Observation,
-                                 Satellite, Antenna, Tle, Rig, StationStatusLog)
+                                 Satellite, Antenna, Tle, StationStatusLog)
 from network.users.models import User
 from network.base.forms import StationForm, SatelliteFilterForm
 from network.base.decorators import admin_required, ajax_required
@@ -737,7 +737,6 @@ def station_view(request, id):
     station = get_object_or_404(Station, id=id)
     form = StationForm(instance=station)
     antennas = Antenna.objects.all()
-    rigs = Rig.objects.all()
     unsupported_frequencies = request.GET.get('unsupported_frequencies', '0')
 
     can_schedule = schedule_perms(request.user, station)
@@ -775,7 +774,7 @@ def station_view(request, id):
                   {'station': station, 'form': form, 'antennas': antennas,
                    'mapbox_id': settings.MAPBOX_MAP_ID,
                    'mapbox_token': settings.MAPBOX_TOKEN,
-                   'rigs': rigs, 'can_schedule': can_schedule,
+                   'can_schedule': can_schedule,
                    'unsupported_frequencies': unsupported_frequencies,
                    'uptime': uptime})
 
@@ -912,7 +911,6 @@ def station_edit(request, id=None):
     """Edit or add a single station."""
     station = None
     antennas = Antenna.objects.all()
-    rigs = Rig.objects.all()
     if id:
         station = get_object_or_404(Station, id=id, owner=request.user)
 
@@ -934,14 +932,14 @@ def station_edit(request, id=None):
             messages.error(request, ('Your Ground Station submission has some '
                                      'errors. {0}').format(form.errors))
             return render(request, 'base/station_edit.html',
-                          {'form': form, 'station': station, 'antennas': antennas, 'rigs': rigs})
+                          {'form': form, 'station': station, 'antennas': antennas})
     else:
         if station:
             form = StationForm(instance=station)
         else:
             form = StationForm()
         return render(request, 'base/station_edit.html',
-                      {'form': form, 'station': station, 'antennas': antennas, 'rigs': rigs})
+                      {'form': form, 'station': station, 'antennas': antennas})
 
 
 @login_required

@@ -68,19 +68,6 @@
           </select>
           <span class="help-block">{{ form.antenna.help_text|safe }}</span>
         </div>
-        {% if rigs %}
-          <div class="form-group">
-            <label for="rig" class="control-label">Rig</label>
-            <select class="form-control" name="rig">
-              <option value="" selected>---</option>
-              {% for rig in rigs %}
-                <option value="{{ rig.id }}" {% ifequal station.rig rig %}selected{% endifequal %}>
-                  {{ rig }}
-                </option>
-              {% endfor %}
-            </select>
-          </div>
-        {% endif %}
         <div class="form-group">
           <label for="description" class="control-label">Description</label>
           <textarea class="form-control" name="description"

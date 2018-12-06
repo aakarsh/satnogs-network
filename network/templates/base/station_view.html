@@ -81,14 +81,6 @@
           {{ station.horizon }}°
         </span>
       </div>
-      {% if station.rig %}
-        <div class="front-line">
-          <span class="label label-default">Rig</span>
-          <span class="front-data">
-            {{ station.rig|default:"-" }}
-          </span>
-        </div>
-      {% endif %}
       {% if station.antenna %}
         <div class="font-line station-antennas">
           <span class="label label-default">Antennas</span>

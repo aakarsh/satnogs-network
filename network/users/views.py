@@ -11,7 +11,7 @@ from rest_framework.authtoken.models import Token
 from network.users.forms import UserForm
 from network.users.models import User
 from network.base.forms import StationForm
-from network.base.models import Station, Observation, Antenna, Rig
+from network.base.models import Station, Observation, Antenna
 from network.base.perms import schedule_perms
 
 
@@ -55,9 +55,8 @@ def view_user(request, username):
                 token = Token.objects.create(user=user)
     form = StationForm()
     antennas = Antenna.objects.all()
-    rigs = Rig.objects.all()
 
     return render(request, 'users/user_detail.html',
                   {'user': user, 'observations': observations, 'stations': stations,
                    'token': token, 'form': form, 'antennas': antennas,
-                   'rigs': rigs, 'can_schedule': can_schedule})
+                   'can_schedule': can_schedule})

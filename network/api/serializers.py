@@ -159,7 +159,7 @@ class JobSerializer(serializers.ModelSerializer):
 class SettingsSerializer(serializers.ModelSerializer):
     class Meta:
         model = Station
-        fields = ('uuid', 'name', 'alt', 'lat', 'lng', 'rig',
+        fields = ('uuid', 'name', 'alt', 'lat', 'lng',
                   'testing', 'antenna', 'id', 'description')
 
 

@@ -21,7 +21,6 @@ from network.base.helpers import get_apikey
 from network.base.managers import ObservationManager
 
 
-RIG_TYPES = ['Radio', 'SDR']
 ANTENNA_BANDS = ['HF', 'VHF', 'UHF', 'L', 'S', 'C', 'X', 'KU']
 ANTENNA_TYPES = (
     ('dipole', 'Dipole'),
@@ -119,15 +118,6 @@ def validate_image(fieldfile_obj):
         raise ValidationError("Max file size is %sMB" % str(megabyte_limit))
 
 
-class Rig(models.Model):
-    """Model for Rig types."""
-    name = models.CharField(choices=zip(RIG_TYPES, RIG_TYPES), max_length=10)
-    rictld_number = models.PositiveIntegerField(blank=True, null=True)
-
-    def __unicode__(self):
-        return '{0}: {1}'.format(self.name, self.rictld_number)
-
-
 class Mode(models.Model):
     """Model for Modes."""
     name = models.CharField(max_length=10, unique=True)
@@ -175,8 +165,6 @@ class Station(models.Model):
     status = models.IntegerField(choices=STATION_STATUSES, default=0)
     horizon = models.PositiveIntegerField(help_text='In degrees above 0', default=10)
     uuid = models.CharField(db_index=True, max_length=100, blank=True)
-    rig = models.ForeignKey(Rig, related_name='ground_stations',
-                            on_delete=models.SET_NULL, null=True, blank=True)
     description = models.TextField(max_length=500, blank=True, help_text='Max 500 characters')
     client_version = models.CharField(max_length=45, blank=True)
 
