@@ -539,39 +539,41 @@ def prediction_windows(request, sat_id, transmitter, start_date, end_date,
 
             # no match if the sat will not rise above the configured min horizon
             elevation = float(format(math.degrees(altt), '.0f'))
-            if ephem.Date(tr).datetime() < end_date:
-                if ephem.Date(ts).datetime() > end_date:
-                    break
-                else:
-                    time_start_new = ephem.Date(ts).datetime() + timedelta(minutes=1)
-                    observer.date = time_start_new.strftime("%Y-%m-%d %H:%M:%S.%f")
-
-                if (elevation >= station.horizon and
-                        ephem.Date(tr).datetime() < ephem.Date(ts).datetime()):
-
-                    # Adjust or discard window if overlaps exist
-                    window_start = make_aware(ephem.Date(tr).datetime(), utc)
-                    window_end = make_aware(ephem.Date(ts).datetime(), utc)
-                    max_elevation_time = make_aware(ephem.Date(tt).datetime(), utc)
-
-                    # Check if overlaps with existing scheduled observations
-                    gs_data = Observation.objects \
-                        .filter(ground_station=station) \
-                        .filter(end__gt=now())
-                    windows = resolve_overlaps(station, gs_data, window_start, window_end)
-
-                    if len(windows[0]) > 0:
-                        for window in windows[0]:
-                            station_windows.extend(create_station_window(
-                                window, windows[1], azr, azs, elevation, max_elevation_time,
-                                observer, satellite, sat.latest_tle, station
-                            ))
-                else:
-                    # did not rise above user configured horizon
-                    continue
-            else:
+            if ephem.Date(tr).datetime() >= end_date:
                 # window start outside of window bounds
                 break
+
+            if ephem.Date(ts).datetime() > end_date:
+                break
+
+            time_start_new = ephem.Date(ts).datetime() + timedelta(minutes=1)
+            observer.date = time_start_new.strftime("%Y-%m-%d %H:%M:%S.%f")
+
+            if elevation < station.horizon:
+                # did not rise above user configured horizon
+                continue
+
+            if ephem.Date(tr).datetime() > ephem.Date(ts).datetime():
+                # set time before rise time (bug in pyephem)
+                continue
+
+            # Adjust or discard window if overlaps exist
+            window_start = make_aware(ephem.Date(tr).datetime(), utc)
+            window_end = make_aware(ephem.Date(ts).datetime(), utc)
+            max_elevation_time = make_aware(ephem.Date(tt).datetime(), utc)
+
+            # Check if overlaps with existing scheduled observations
+            gs_data = Observation.objects \
+                .filter(ground_station=station) \
+                .filter(end__gt=now())
+            windows = resolve_overlaps(station, gs_data, window_start, window_end)
+
+            if len(windows[0]) > 0:
+                for window in windows[0]:
+                    station_windows.extend(create_station_window(
+                        window, windows[1], azr, azs, elevation, max_elevation_time,
+                        observer, satellite, sat.latest_tle, station
+                    ))
 
         if station_windows:
             data.append({'id': station.id,
