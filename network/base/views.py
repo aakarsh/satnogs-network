@@ -526,7 +526,7 @@ def prediction_windows(request, sat_id, transmitter, start_date, end_date,
         observer.lat = str(station.lat)
         observer.elevation = station.alt
         observer.date = str(start_date)
-        station_match = False
+        station_windows = []
         while True:
             try:
                 tr, azr, tt, altt, ts, azs = observer.next_pass(satellite)
@@ -561,20 +561,8 @@ def prediction_windows(request, sat_id, transmitter, start_date, end_date,
                     windows = resolve_overlaps(station, gs_data, window_start, window_end)
 
                     if len(windows[0]) > 0:
-                        if not station_match:
-                            station_windows = {
-                                'id': station.id,
-                                'name': station.name,
-                                'status': station.status,
-                                'lng': station.lng,
-                                'lat': station.lat,
-                                'alt': station.alt,
-                                'window': []
-                            }
-                            station_match = True
-
                         for window in windows[0]:
-                            station_windows['window'].extend(create_station_window(
+                            station_windows.extend(create_station_window(
                                 window, windows[1], azr, azs, elevation, max_elevation_time,
                                 observer, satellite, sat.latest_tle, station
                             ))
@@ -585,8 +573,14 @@ def prediction_windows(request, sat_id, transmitter, start_date, end_date,
                 # window start outside of window bounds
                 break
 
-        if station_match:
-            data.append(station_windows)
+        if station_windows:
+            data.append({'id': station.id,
+                         'name': station.name,
+                         'status': station.status,
+                         'lng': station.lng,
+                         'lat': station.lat,
+                         'alt': station.alt,
+                         'window': station_windows})
 
     return JsonResponse(data, safe=False)
 
