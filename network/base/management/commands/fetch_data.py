@@ -1,5 +1,4 @@
-import json
-import urllib2
+import requests
 
 from django.core.management.base import BaseCommand, CommandError
 from django.conf import settings
@@ -8,24 +7,29 @@ from network.base.models import Mode, Satellite, Transmitter
 
 
 class Command(BaseCommand):
-    help = 'Provide DB API endpoint'
+    help = 'Fetch Modes, Satellites and Transmitters from satnogs-db'
 
     def handle(self, *args, **options):
-        apiurl = settings.DB_API_ENDPOINT
-        modes_url = "{0}modes".format(apiurl)
-        satellites_url = "{0}satellites".format(apiurl)
-        transmitters_url = "{0}transmitters".format(apiurl)
+        db_api_url = settings.DB_API_ENDPOINT
 
-        self.stdout.write("==Fetching from: {0}==".format(apiurl))
+        mode_url = '{}modes'.format(db_api_url)
+        satellites_url = "{}satellites".format(db_api_url)
+        transmitters_url = "{}transmitters".format(db_api_url)
+
         try:
-            modes = urllib2.urlopen(modes_url).read()
-            satellites = urllib2.urlopen(satellites_url).read()
-            transmitters = urllib2.urlopen(transmitters_url).read()
-        except urllib2.URLError:
+            self.stdout.write("Fetching Modes from {}".format(mode_url))
+            r_modes = requests.get(mode_url)
+
+            self.stdout.write("Fetching Satellites from {}".format(satellites_url))
+            r_satellites = requests.get(satellites_url)
+
+            self.stdout.write("Fetching Transmitters from {}".format(transmitters_url))
+            r_transmitters = requests.get(transmitters_url)
+        except requests.exceptions.ConnectionError:
             raise CommandError('API is unreachable')
 
         # Fetch Modes
-        for mode in json.loads(modes):
+        for mode in r_modes.json():
             id = mode['id']
             name = mode['name']
             try:
@@ -38,7 +42,7 @@ class Command(BaseCommand):
                 self.stdout.write('Mode {0} added'.format(name))
 
         # Fetch Satellites
-        for satellite in json.loads(satellites):
+        for satellite in r_satellites.json():
             norad_cat_id = satellite['norad_cat_id']
             name = satellite['name']
             try:
@@ -51,7 +55,7 @@ class Command(BaseCommand):
                 self.stdout.write('Satellite {0}-{1} added'.format(norad_cat_id, name))
 
         # Fetch Transmitters
-        for transmitter in json.loads(transmitters):
+        for transmitter in r_transmitters.json():
             norad_cat_id = transmitter['norad_cat_id']
             uuid = transmitter['uuid']
             description = transmitter['description']
