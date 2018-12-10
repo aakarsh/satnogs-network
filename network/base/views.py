@@ -568,14 +568,17 @@ def prediction_windows(request, sat_id, transmitter, start_date, end_date,
             gs_data = Observation.objects \
                 .filter(ground_station=station) \
                 .filter(end__gt=now())
-            windows = resolve_overlaps(station, gs_data, window_start, window_end)
+            windows, windows_changed = resolve_overlaps(station, gs_data, window_start, window_end)
 
-            if len(windows[0]) > 0:
-                for window in windows[0]:
-                    station_windows.extend(create_station_window(
-                        window, windows[1], azr, azs, elevation, max_elevation_time,
-                        observer, satellite, sat.latest_tle, station
-                    ))
+            if len(windows) == 0:
+                # No non-overlapping windows found
+                continue
+
+            for window in windows:
+                station_windows.extend(create_station_window(
+                    window, windows_changed, azr, azs, elevation, max_elevation_time,
+                    observer, satellite, sat.latest_tle, station
+                ))
 
         if station_windows:
             data.append({'id': station.id,
