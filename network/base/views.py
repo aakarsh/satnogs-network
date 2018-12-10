@@ -540,10 +540,11 @@ def prediction_windows(request, sat_id, transmitter, start_date, end_date,
             # no match if the sat will not rise above the configured min horizon
             elevation = float(format(math.degrees(altt), '.0f'))
             if ephem.Date(tr).datetime() >= end_date:
-                # window start outside of window bounds
+                # start of next pass outside of window bounds
                 break
 
             if ephem.Date(ts).datetime() > end_date:
+                # end of next pass outside of window bounds
                 break
 
             time_start_new = ephem.Date(ts).datetime() + timedelta(minutes=1)
@@ -557,12 +558,13 @@ def prediction_windows(request, sat_id, transmitter, start_date, end_date,
                 # set time before rise time (bug in pyephem)
                 continue
 
-            # Adjust or discard window if overlaps exist
+            # Convert output times from pyephems next_pass result into processible values
             window_start = make_aware(ephem.Date(tr).datetime(), utc)
             window_end = make_aware(ephem.Date(ts).datetime(), utc)
             max_elevation_time = make_aware(ephem.Date(tt).datetime(), utc)
 
             # Check if overlaps with existing scheduled observations
+            # Adjust or discard window if overlaps exist
             gs_data = Observation.objects \
                 .filter(ground_station=station) \
                 .filter(end__gt=now())
