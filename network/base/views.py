@@ -429,43 +429,33 @@ def observation_new(request):
                    'date_max_range': settings.OBSERVATION_DATE_MAX_RANGE})
 
 
-def create_station_window(window, overlapped, azr, azs, elevation, max_elevation_time,
-                          observer, satellite, tle, station):
-    window_start = window[0]
-    window_end = window[1]
-    if overlapped:
-        # In this case this is an overlapped observation
-        # re-calculate elevation and start/end azimuth
-        if window_start > max_elevation_time:
-            elevation = get_elevation(observer, satellite, window_start)
-        elif window_end < max_elevation_time:
-            elevation = get_elevation(observer, satellite, window_end)
-        if elevation >= station.horizon:
-            return [{
-                'start': window_start.strftime("%Y-%m-%d %H:%M:%S.%f"),
-                'end': window_end.strftime("%Y-%m-%d %H:%M:%S.%f"),
-                'az_start': get_azimuth(observer, satellite, window_start),
-                'az_end': get_azimuth(observer, satellite, window_end),
-                'elev_max': elevation,
-                'tle0': tle.tle0,
-                'tle1': tle.tle1,
-                'tle2': tle.tle2,
-                'overlapped': True
-            }]
-        else:
-            return []
+def max_elevation_in_window(observer, satellite, pass_tca, window_start, window_end):
+    # In this case this is an overlapped observation
+    # re-calculate elevation and start/end azimuth
+    if window_start > pass_tca:
+        # Observation window in the second half of the pass
+        # Thus highest elevation right at the beginning of the window
+        return get_elevation(observer, satellite, window_start)
+    elif window_end < pass_tca:
+        # Observation window in the first half of the pass
+        # Thus highest elevation right at the end of the window
+        return get_elevation(observer, satellite, window_end)
     else:
-        return [{
-            'start': window_start.strftime("%Y-%m-%d %H:%M:%S.%f"),
+        return get_elevation(observer, satellite, pass_tca)
+
+
+def create_station_window(window_start, window_end, overlapped,
+                          azr, azs, elevation,
+                          tle):
+    return {'start': window_start.strftime("%Y-%m-%d %H:%M:%S.%f"),
             'end': window_end.strftime("%Y-%m-%d %H:%M:%S.%f"),
-            'az_start': float(format(math.degrees(azr), '.0f')),
-            'az_end': float(format(math.degrees(azs), '.0f')),
+            'az_start': azr,
+            'az_end': azs,
             'elev_max': elevation,
             'tle0': tle.tle0,
             'tle1': tle.tle1,
             'tle2': tle.tle2,
-            'overlapped': False
-        }]
+            'overlapped': overlapped}
 
 
 @ajax_required
@@ -558,26 +548,48 @@ def prediction_windows(request, sat_id, transmitter, start_date, end_date,
                 # set time before rise time (bug in pyephem)
                 continue
 
-            # Convert output times from pyephems next_pass result into processible values
-            window_start = make_aware(ephem.Date(tr).datetime(), utc)
-            window_end = make_aware(ephem.Date(ts).datetime(), utc)
-            max_elevation_time = make_aware(ephem.Date(tt).datetime(), utc)
+            # Convert output of pyephems.next_pass into processible values
+            pass_start = make_aware(ephem.Date(tr).datetime(), utc)
+            pass_end = make_aware(ephem.Date(ts).datetime(), utc)
+            pass_tca = make_aware(ephem.Date(tt).datetime(), utc)
+            pass_azr = float(format(math.degrees(azr), '.0f'))
+            pass_azs = float(format(math.degrees(azs), '.0f'))
 
             # Check if overlaps with existing scheduled observations
             # Adjust or discard window if overlaps exist
             gs_data = Observation.objects \
                 .filter(ground_station=station) \
                 .filter(end__gt=now())
-            windows, windows_changed = resolve_overlaps(station, gs_data, window_start, window_end)
+            windows, windows_changed = resolve_overlaps(station, gs_data, pass_start, pass_end)
 
             if len(windows) == 0:
                 # No non-overlapping windows found
                 continue
 
-            for window in windows:
-                station_windows.extend(create_station_window(
-                    window, windows_changed, azr, azs, elevation, max_elevation_time,
-                    observer, satellite, sat.latest_tle, station
+            if windows_changed:
+                # Windows changed due to overlap, recalculate observation parameters
+                for window_start, window_end in windows:
+                    elevation = max_elevation_in_window(observer, satellite,
+                                                        pass_tca, window_start, window_end)
+                    if elevation < station.horizon:
+                        continue
+
+                    # Add a window for a partial pass
+                    station_windows.append(create_station_window(
+                        window_start, window_end, False,
+                        get_azimuth(observer, satellite, window_start),
+                        get_azimuth(observer, satellite, window_end),
+                        elevation,
+                        sat.latest_tle
+                    ))
+            else:
+                # Add a window for a full pass
+                station_windows.append(create_station_window(
+                    pass_start, pass_end, False,
+                    pass_azr,
+                    pass_azs,
+                    elevation,
+                    sat.latest_tle
                 ))
 
         if station_windows:
