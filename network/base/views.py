@@ -537,11 +537,7 @@ def prediction_windows(request, sat_id, transmitter, start_date, end_date,
         return JsonResponse(data, safe=False)
 
     try:
-        satellite = ephem.readtle(
-            str(sat.latest_tle.tle0),
-            str(sat.latest_tle.tle1),
-            str(sat.latest_tle.tle2)
-        )
+        tle = sat.latest_tle.str_array
     except (ValueError, AttributeError):
         data = {
             'error': 'No TLEs for this satellite yet.'
@@ -558,11 +554,15 @@ def prediction_windows(request, sat_id, transmitter, start_date, end_date,
 
     end_date = make_aware(datetime.strptime(end_date, '%Y-%m-%d %H:%M'), utc)
 
+    # Initialize pyehem Satellite for propagation
+    satellite = ephem.readtle(*tle)
+
     data = []
 
     stations = Station.objects.all()
     if station_id:
         stations = stations.filter(id=station_id)
+
     for station in stations:
         if not schedule_perms(request.user, station):
             continue
@@ -577,11 +577,13 @@ def prediction_windows(request, sat_id, transmitter, start_date, end_date,
         if not frequency_supported:
             continue
 
+        # Initialize pyephem Observer for propagation
         observer = ephem.Observer()
         observer.lon = str(station.lng)
         observer.lat = str(station.lat)
         observer.elevation = station.alt
         observer.date = str(start_date)
+
         station_windows = []
         while True:
             try:

@@ -369,6 +369,11 @@ class Tle(models.Model):
         uni_name = "%d - %s" % (self.id, self.tle0)
         return uni_name
 
+    @property
+    def str_array(self):
+        # tle fields are unicode, pyephem and others expect python strings
+        return [str(self.tle0), str(self.tle1), str(self.tle2)]
+
 
 post_save.connect(_tle_post_save, sender=Tle)
 
