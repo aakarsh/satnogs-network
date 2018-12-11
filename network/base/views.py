@@ -461,7 +461,7 @@ def create_station_window(window_start, window_end, overlapped,
 def create_station_windows(station, existing_observations,
                            pass_start, pass_end, pass_tca,
                            pass_azr, pass_azs, pass_elevation,
-                           observer, satellite, sat):
+                           observer, satellite, tle):
     station_windows = []
 
     windows, windows_changed = resolve_overlaps(station, existing_observations,
@@ -485,7 +485,7 @@ def create_station_windows(station, existing_observations,
                 get_azimuth(observer, satellite, window_start),
                 get_azimuth(observer, satellite, window_end),
                 elevation,
-                sat.latest_tle
+                tle
             ))
     else:
         # Add a window for a full pass
@@ -494,7 +494,7 @@ def create_station_windows(station, existing_observations,
             pass_azr,
             pass_azs,
             pass_elevation,
-            sat.latest_tle
+            tle
         ))
     return station_windows
 
@@ -605,7 +605,7 @@ def prediction_windows(request, sat_id, transmitter, start_date, end_date,
             station_windows.extend(create_station_windows(station, existing_observations,
                                    pass_start, pass_end, pass_tca,
                                    pass_azr, pass_azs, pass_elevation,
-                                   observer, satellite, sat))
+                                   observer, satellite, sat.latest_tle))
 
         if station_windows:
             data.append({'id': station.id,
