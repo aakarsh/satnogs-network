@@ -459,13 +459,12 @@ def create_station_window(window_start, window_end, overlapped,
 
 
 def create_station_windows(station, existing_observations,
-                           pass_start, pass_end, pass_tca,
-                           pass_azr, pass_azs, pass_elevation,
-                           observer, satellite, tle):
+                           pass_params, observer, satellite, tle):
     station_windows = []
 
     windows, windows_changed = resolve_overlaps(station, existing_observations,
-                                                pass_start, pass_end)
+                                                pass_params['rise_time'],
+                                                pass_params['set_time'])
 
     if len(windows) == 0:
         # No non-overlapping windows found
@@ -475,7 +474,8 @@ def create_station_windows(station, existing_observations,
         # Windows changed due to overlap, recalculate observation parameters
         for window_start, window_end in windows:
             elevation = max_elevation_in_window(observer, satellite,
-                                                pass_tca, window_start, window_end)
+                                                pass_params['tca_time'],
+                                                window_start, window_end)
             if elevation < station.horizon:
                 continue
 
@@ -490,13 +490,38 @@ def create_station_windows(station, existing_observations,
     else:
         # Add a window for a full pass
         station_windows.append(create_station_window(
-            pass_start, pass_end, False,
-            pass_azr,
-            pass_azs,
-            pass_elevation,
+            pass_params['rise_time'],
+            pass_params['set_time'],
+            False,
+            pass_params['rise_az'],
+            pass_params['set_az'],
+            pass_params['tca_alt'],
             tle
         ))
     return station_windows
+
+
+def next_pass(observer, satellite):
+    tr, azr, tt, altt, ts, azs = observer.next_pass(satellite)
+
+    # Convert output of pyephems.next_pass into processible values
+    pass_start = make_aware(ephem.Date(tr).datetime(), utc)
+    pass_end = make_aware(ephem.Date(ts).datetime(), utc)
+    pass_tca = make_aware(ephem.Date(tt).datetime(), utc)
+    pass_azr = float(format(math.degrees(azr), '.0f'))
+    pass_azs = float(format(math.degrees(azs), '.0f'))
+    pass_elevation = float(format(math.degrees(altt), '.0f'))
+
+    if ephem.Date(tr).datetime() > ephem.Date(ts).datetime():
+        # set time before rise time (bug in pyephem)
+        raise ValueError
+
+    return {'rise_time': pass_start,
+            'set_time': pass_end,
+            'tca_time': pass_tca,
+            'rise_az': pass_azr,
+            'set_az': pass_azs,
+            'tca_alt': pass_elevation}
 
 
 @ajax_required
@@ -531,7 +556,7 @@ def prediction_windows(request, sat_id, transmitter, start_date, end_date,
         }
         return JsonResponse(data, safe=False)
 
-    end_date = datetime.strptime(end_date, '%Y-%m-%d %H:%M')
+    end_date = make_aware(datetime.strptime(end_date, '%Y-%m-%d %H:%M'), utc)
 
     data = []
 
@@ -560,41 +585,25 @@ def prediction_windows(request, sat_id, transmitter, start_date, end_date,
         station_windows = []
         while True:
             try:
-                tr, azr, tt, altt, ts, azs = observer.next_pass(satellite)
+                pass_params = next_pass(observer, satellite)
             except ValueError:
-                if len(stations) == 1:
-                    data = [{
-                        'error': 'That satellite seems to stay always below your horizon.'
-                    }]
                 break
 
             # no match if the sat will not rise above the configured min horizon
-            pass_elevation = float(format(math.degrees(altt), '.0f'))
-            if ephem.Date(tr).datetime() >= end_date:
+            if pass_params['rise_time'] >= end_date:
                 # start of next pass outside of window bounds
                 break
 
-            if ephem.Date(ts).datetime() > end_date:
+            if pass_params['set_time'] > end_date:
                 # end of next pass outside of window bounds
                 break
 
-            time_start_new = ephem.Date(ts).datetime() + timedelta(minutes=1)
+            time_start_new = pass_params['set_time'] + timedelta(minutes=1)
             observer.date = time_start_new.strftime("%Y-%m-%d %H:%M:%S.%f")
 
-            if pass_elevation < station.horizon:
+            if pass_params['tca_alt'] < station.horizon:
                 # did not rise above user configured horizon
                 continue
-
-            if ephem.Date(tr).datetime() > ephem.Date(ts).datetime():
-                # set time before rise time (bug in pyephem)
-                continue
-
-            # Convert output of pyephems.next_pass into processible values
-            pass_start = make_aware(ephem.Date(tr).datetime(), utc)
-            pass_end = make_aware(ephem.Date(ts).datetime(), utc)
-            pass_tca = make_aware(ephem.Date(tt).datetime(), utc)
-            pass_azr = float(format(math.degrees(azr), '.0f'))
-            pass_azs = float(format(math.degrees(azs), '.0f'))
 
             # Check if overlaps with existing scheduled observations
             # Adjust or discard window if overlaps exist
@@ -603,9 +612,7 @@ def prediction_windows(request, sat_id, transmitter, start_date, end_date,
                 .filter(end__gt=now())
 
             station_windows.extend(create_station_windows(station, existing_observations,
-                                   pass_start, pass_end, pass_tca,
-                                   pass_azr, pass_azs, pass_elevation,
-                                   observer, satellite, sat.latest_tle))
+                                   pass_params, observer, satellite, sat.latest_tle))
 
         if station_windows:
             data.append({'id': station.id,
@@ -615,6 +622,11 @@ def prediction_windows(request, sat_id, transmitter, start_date, end_date,
                          'lat': station.lat,
                          'alt': station.alt,
                          'window': station_windows})
+
+    if len(stations) == 1 and not data:
+        data = [{
+            'error': 'That satellite seems to stay always below your horizon.'
+        }]
 
     return JsonResponse(data, safe=False)
 
