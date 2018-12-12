@@ -3,6 +3,7 @@ import ephem
 import math
 from operator import itemgetter
 from datetime import datetime, timedelta
+from collections import defaultdict
 
 from django.db.models import Count
 from django.conf import settings
@@ -563,6 +564,8 @@ def prediction_windows(request, sat_id, transmitter, start_date, end_date,
     if station_id:
         stations = stations.filter(id=station_id)
 
+    passes_found = defaultdict(list)
+    stations_available = []
     for station in stations:
         if not schedule_perms(request.user, station):
             continue
@@ -577,6 +580,7 @@ def prediction_windows(request, sat_id, transmitter, start_date, end_date,
         if not frequency_supported:
             continue
 
+        stations_available.append(station.id)
         # Initialize pyephem Observer for propagation
         observer = ephem.Observer()
         observer.lon = str(station.lng)
@@ -599,6 +603,8 @@ def prediction_windows(request, sat_id, transmitter, start_date, end_date,
             if pass_params['set_time'] > end_date:
                 # end of next pass outside of window bounds
                 break
+
+            passes_found[station.id].append(pass_params)
 
             time_start_new = pass_params['set_time'] + timedelta(minutes=1)
             observer.date = time_start_new.strftime("%Y-%m-%d %H:%M:%S.%f")
@@ -625,10 +631,23 @@ def prediction_windows(request, sat_id, transmitter, start_date, end_date,
                          'alt': station.alt,
                          'window': station_windows})
 
-    if len(stations) == 1 and not data:
-        data = [{
-            'error': 'That satellite seems to stay always below your horizon.'
-        }]
+    if not data:
+        error_message = 'Satellite is always below horizon or ' \
+                        'no free observation time available on visible stations.'
+        error_details = {}
+        for station in stations:
+            if station.id not in stations_available:
+                # Scheduling wasn't attempted (either due to missing permissions
+                # or missing receiver capability of the gs for the requested transmitter
+                pass
+            elif station.id not in passes_found.keys():
+                error_details[station.id] = 'Satellite is always above or below horizon.\n'
+            else:
+                error_details[station.id] = 'No free observation time during passes available.\n'
+
+        data = [{'error': error_message,
+                 'error_details': error_details,
+                 'passes_found': passes_found}]
 
     return JsonResponse(data, safe=False)
 
