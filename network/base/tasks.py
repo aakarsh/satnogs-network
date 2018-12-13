@@ -20,7 +20,11 @@ from network.celery import app
 @app.task(ignore_result=True)
 def update_all_tle():
     """Task to update all satellite TLEs"""
-    satellites = Satellite.objects.exclude(manual_tle=True, norad_follow_id__isnull=True)
+    satellites = Satellite.objects.exclude(manual_tle=True,
+                                           norad_follow_id__isnull=True)
+
+    # Skip satellites with temporary NORAD IDs
+    satellites = satellites.exclude(norad_cat_id__gte=80000)
 
     for obj in satellites:
         norad_id = obj.norad_cat_id
