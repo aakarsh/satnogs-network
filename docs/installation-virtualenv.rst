@@ -3,13 +3,13 @@ VirtualEnv Installation
 
 #. **Install the requirements**
 
-   Generic requirements which you will need:: 
+   Generic requirements which you will need::
 
      python, python-virtualenvwrapper, pip and git, libmysqlclient-dev (mysql_config)
 
    Debian Stretch (9) specific requirements ::
 
-     $ sudo apt-get install libmariadbclient-dev python-pip virtualenvwrapper 
+     $ sudo apt-get install libmariadbclient-dev python-pip virtualenvwrapper
 
 #. **Build the environment**
 
@@ -32,7 +32,7 @@ VirtualEnv Installation
 
    Install local development requirements::
 
-     $ (satnogs-network)$ pip install --require-hashes --no-deps -r requirements/dev.txt
+     $ (satnogs-network)$ pip install -r requirements/dev.txt
 
 
 #. **Database**

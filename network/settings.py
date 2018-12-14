@@ -8,6 +8,7 @@ ROOT = Path(__file__).parent.parent
 
 ENVIRONMENT = config('ENVIRONMENT', default='dev')
 DEBUG = config('DEBUG', default=True, cast=bool)
+AUTH0 = config('AUTH0', default=False, cast=bool)
 
 # Apps
 DJANGO_APPS = (
@@ -37,6 +38,10 @@ LOCAL_APPS = (
     'network.base',
     'network.api',
 )
+
+if AUTH0:
+    THIRD_PARTY_APPS += ('social_django',)
+    LOCAL_APPS += ('auth0login',)
 
 INSTALLED_APPS = DJANGO_APPS + THIRD_PARTY_APPS + LOCAL_APPS
 
@@ -110,6 +115,7 @@ TEMPLATES = [
                 'network.base.context_processors.analytics',
                 'network.base.context_processors.stage_notice',
                 'network.base.context_processors.user_processor',
+                'network.base.context_processors.auth_block',
             ],
             'loaders': [
                 ('django.template.loaders.cached.Loader', [
@@ -157,8 +163,10 @@ TEST_RUNNER = 'django.test.runner.DiscoverRunner'
 # Auth
 AUTHENTICATION_BACKENDS = (
     'django.contrib.auth.backends.ModelBackend',
-    'allauth.account.auth_backends.AuthenticationBackend',
 )
+if AUTH0:
+    AUTHENTICATION_BACKENDS += ('auth0login.auth0backend.Auth0',)
+
 ACCOUNT_ADAPTER = 'allauth.account.adapter.DefaultAccountAdapter'
 ACCOUNT_AUTHENTICATION_METHOD = 'username'
 ACCOUNT_EMAIL_REQUIRED = True
@@ -166,6 +174,8 @@ ACCOUNT_EMAIL_VERIFICATION = 'mandatory'
 AUTH_USER_MODEL = 'users.User'
 LOGIN_REDIRECT_URL = 'users:redirect_user'
 LOGIN_URL = 'account_login'
+LOGIN_URL = "/login/auth0"
+LOGOUT_REDIRECT_URL = "/"
 AUTOSLUG_SLUGIFY_FUNCTION = 'slugify.slugify'
 
 # Logging
@@ -353,6 +363,33 @@ S3_ACCESS_KEY = config('S3_ACCESS_KEY', default='')
 S3_SECRET_KEY = config('S3_SECRET_KEY', default='')
 ARCHIVE_COLLECTION = config('ARCHIVE_COLLECTION', default='test_collection')
 ARCHIVE_URL = 'https://archive.org/download/'
+
+if AUTH0:
+    SOCIAL_AUTH_TRAILING_SLASH = False             # Remove end slash from routes
+    SOCIAL_AUTH_AUTH0_DOMAIN = config('SOCIAL_AUTH_AUTH0_DOMAIN', default='YOUR_AUTH0_DOMAIN')
+    SOCIAL_AUTH_AUTH0_KEY = config('SOCIAL_AUTH_AUTH0_KEY', default='YOUR_CLIENT_ID')
+    SOCIAL_AUTH_AUTH0_SECRET = config('SOCIAL_AUTH_AUTH0_SECRET', default='YOUR_CLIENT_SECRET')
+    SOCIAL_AUTH_REDIRECT_IS_HTTPS = True
+    SOCIAL_AUTH_PROTECTED_USER_FIELDS = ['email', 'first_name', 'last_name']
+
+    SOCIAL_AUTH_PIPELINE = (
+        'social_core.pipeline.social_auth.social_details',
+        'social_core.pipeline.social_auth.social_uid',
+        'social_core.pipeline.social_auth.auth_allowed',
+        'social_core.pipeline.social_auth.social_user',
+        'social_core.pipeline.social_auth.associate_by_email',
+        'social_core.pipeline.user.get_username',
+        'social_core.pipeline.user.create_user',
+        'social_core.pipeline.social_auth.associate_user',
+        'social_core.pipeline.social_auth.load_extra_data',
+        'social_core.pipeline.user.user_details',
+    )
+
+    SOCIAL_AUTH_AUTH0_SCOPE = [
+        'openid',
+        'email',
+        'profile',
+    ]
 
 if ENVIRONMENT == 'dev':
     # Disable template caching

@@ -7,7 +7,7 @@ stages:
 test:
   stage: test
   script:
-    - pip install --no-cache-dir --require-hashes --no-deps -r requirements/dev.txt
+    - pip install --no-cache-dir -r requirements/dev.txt
     - cp env-dist .env
     - flake8 .
     - pytest

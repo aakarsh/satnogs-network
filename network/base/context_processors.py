@@ -29,3 +29,11 @@ def user_processor(request):
         return {'owner_vetting_count': owner_vetting_count}
     else:
         return {'owner_vetting_count': ''}
+
+
+def auth_block(request):
+    """Displays auth links local vs auth0."""
+    if settings.AUTH0:
+        return {'auth_block': render_to_string('includes/auth_auth0.html')}
+    else:
+        return {'auth_block': render_to_string('includes/auth_local.html')}

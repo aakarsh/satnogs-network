@@ -25,6 +25,12 @@ urlpatterns = [
     url(r'^api/', include(api_urlpatterns))
 ]
 
+# Auth0
+if settings.AUTH0:
+    urlpatterns += [
+        url(r'^', include('auth0login.urls'))
+    ]
+
 if settings.DEBUG:
     urlpatterns += [
         url(r'^media/(?P<path>.*)$', serve,
