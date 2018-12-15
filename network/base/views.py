@@ -18,11 +18,12 @@ from django.views.generic import ListView
 
 from rest_framework import serializers, viewsets
 from network.base.models import (Station, Transmitter, Observation,
-                                 Satellite, Antenna, Tle, StationStatusLog)
+                                 Satellite, Antenna, StationStatusLog)
 from network.users.models import User
 from network.base.forms import StationForm, SatelliteFilterForm
 from network.base.decorators import admin_required, ajax_required
-from network.base.helpers import resolve_overlaps, get_elevation, get_azimuth
+from network.base.scheduling import (create_station_windows, next_pass,
+                                     create_new_observation, ObservationOverlapError)
 from network.base.perms import schedule_perms, delete_perms, vet_perms
 from network.base.tasks import update_all_tle, fetch_data
 
@@ -36,10 +37,6 @@ class StationSerializer(serializers.ModelSerializer):
 class StationAllView(viewsets.ReadOnlyModelViewSet):
     queryset = Station.objects.exclude(status=0)
     serializer_class = StationSerializer
-
-
-class ObservationOverlapError(Exception):
-    pass
 
 
 @ajax_required
@@ -253,45 +250,6 @@ class ObservationListView(ListView):
         return context
 
 
-def create_new_observation(station_id,
-                           sat_id,
-                           trans_id,
-                           start_time,
-                           end_time,
-                           author):
-    ground_station = Station.objects.get(id=station_id)
-    gs_data = Observation.objects.filter(ground_station=ground_station).filter(end__gt=now())
-    window = resolve_overlaps(ground_station, gs_data, start_time, end_time)
-
-    if window[1]:
-        raise ObservationOverlapError
-
-    sat = Satellite.objects.get(norad_cat_id=sat_id)
-    trans = Transmitter.objects.get(uuid=trans_id)
-    tle = Tle.objects.get(id=sat.latest_tle.id)
-
-    sat_ephem = ephem.readtle(str(sat.latest_tle.tle0),
-                              str(sat.latest_tle.tle1),
-                              str(sat.latest_tle.tle2))
-    observer = ephem.Observer()
-    observer.lon = str(ground_station.lng)
-    observer.lat = str(ground_station.lat)
-    observer.elevation = ground_station.alt
-
-    mid_pass_time = start_time + (end_time - start_time) / 2
-
-    rise_azimuth = get_azimuth(observer, sat_ephem, start_time)
-    max_altitude = get_elevation(observer, sat_ephem, mid_pass_time)
-    set_azimuth = get_azimuth(observer, sat_ephem, end_time)
-
-    return Observation(satellite=sat, transmitter=trans, tle=tle, author=author,
-                       start=start_time, end=end_time,
-                       ground_station=ground_station,
-                       rise_azimuth=rise_azimuth,
-                       max_altitude=max_altitude,
-                       set_azimuth=set_azimuth)
-
-
 def observation_new_post(request):
     total = int(request.POST.get('total'))
     if total == 0:
@@ -428,101 +386,6 @@ def observation_new(request):
                    'date_min_start': settings.OBSERVATION_DATE_MIN_START,
                    'date_min_end': settings.OBSERVATION_DATE_MIN_END,
                    'date_max_range': settings.OBSERVATION_DATE_MAX_RANGE})
-
-
-def max_elevation_in_window(observer, satellite, pass_tca, window_start, window_end):
-    # In this case this is an overlapped observation
-    # re-calculate elevation and start/end azimuth
-    if window_start > pass_tca:
-        # Observation window in the second half of the pass
-        # Thus highest elevation right at the beginning of the window
-        return get_elevation(observer, satellite, window_start)
-    elif window_end < pass_tca:
-        # Observation window in the first half of the pass
-        # Thus highest elevation right at the end of the window
-        return get_elevation(observer, satellite, window_end)
-    else:
-        return get_elevation(observer, satellite, pass_tca)
-
-
-def create_station_window(window_start, window_end, overlapped,
-                          azr, azs, elevation,
-                          tle):
-    return {'start': window_start.strftime("%Y-%m-%d %H:%M:%S.%f"),
-            'end': window_end.strftime("%Y-%m-%d %H:%M:%S.%f"),
-            'az_start': azr,
-            'az_end': azs,
-            'elev_max': elevation,
-            'tle0': tle.tle0,
-            'tle1': tle.tle1,
-            'tle2': tle.tle2,
-            'overlapped': overlapped}
-
-
-def create_station_windows(station, existing_observations,
-                           pass_params, observer, satellite, tle):
-    station_windows = []
-
-    windows, windows_changed = resolve_overlaps(station, existing_observations,
-                                                pass_params['rise_time'],
-                                                pass_params['set_time'])
-
-    if len(windows) == 0:
-        # No non-overlapping windows found
-        return []
-
-    if windows_changed:
-        # Windows changed due to overlap, recalculate observation parameters
-        for window_start, window_end in windows:
-            elevation = max_elevation_in_window(observer, satellite,
-                                                pass_params['tca_time'],
-                                                window_start, window_end)
-            if elevation < station.horizon:
-                continue
-
-            # Add a window for a partial pass
-            station_windows.append(create_station_window(
-                window_start, window_end, False,
-                get_azimuth(observer, satellite, window_start),
-                get_azimuth(observer, satellite, window_end),
-                elevation,
-                tle
-            ))
-    else:
-        # Add a window for a full pass
-        station_windows.append(create_station_window(
-            pass_params['rise_time'],
-            pass_params['set_time'],
-            False,
-            pass_params['rise_az'],
-            pass_params['set_az'],
-            pass_params['tca_alt'],
-            tle
-        ))
-    return station_windows
-
-
-def next_pass(observer, satellite):
-    tr, azr, tt, altt, ts, azs = observer.next_pass(satellite)
-
-    # Convert output of pyephems.next_pass into processible values
-    pass_start = make_aware(ephem.Date(tr).datetime(), utc)
-    pass_end = make_aware(ephem.Date(ts).datetime(), utc)
-    pass_tca = make_aware(ephem.Date(tt).datetime(), utc)
-    pass_azr = float(format(math.degrees(azr), '.0f'))
-    pass_azs = float(format(math.degrees(azs), '.0f'))
-    pass_elevation = float(format(math.degrees(altt), '.0f'))
-
-    if ephem.Date(tr).datetime() > ephem.Date(ts).datetime():
-        # set time before rise time (bug in pyephem)
-        raise ValueError
-
-    return {'rise_time': pass_start,
-            'set_time': pass_end,
-            'tca_time': pass_tca,
-            'rise_az': pass_azr,
-            'set_az': pass_azs,
-            'tca_alt': pass_elevation}
 
 
 @ajax_required
