@@ -47,7 +47,8 @@
               <li class="{% active request 'base:about' %}"><a href="{% url 'base:about' %}">About</a></li>
               <li class="{% active request 'base:observations_list' %}"><a href="{% url 'base:observations_list' %}">Observations</a></li>
               <li class="{% active request 'base:stations_list' %}"><a href="{% url 'base:stations_list' %}">Ground Stations</a></li>
-              <li><a href="https://community.satnogs.org/" target="_blank" class="hidden-sm">Community</a></li>
+              <li><a href="https://community.libre.space/" target="_blank" class="hidden-sm">Community</a></li>
+              <li><a href="https://wiki.satnogs.org/" target="_blank" class="hidden-sm">Wiki</a></li>
             </ul>
             <ul class="nav navbar-nav navbar-right">
               {% if request.user.is_authenticated %}
