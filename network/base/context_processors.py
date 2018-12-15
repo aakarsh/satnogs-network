@@ -37,3 +37,11 @@ def auth_block(request):
         return {'auth_block': render_to_string('includes/auth_auth0.html')}
     else:
         return {'auth_block': render_to_string('includes/auth_local.html')}
+
+
+def logout_block(request):
+    """Displays logout links local vs auth0."""
+    if settings.AUTH0:
+        return {'logout_block': render_to_string('includes/logout_auth0.html')}
+    else:
+        return {'logout_block': render_to_string('includes/logout_local.html')}

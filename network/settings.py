@@ -116,6 +116,7 @@ TEMPLATES = [
                 'network.base.context_processors.stage_notice',
                 'network.base.context_processors.user_processor',
                 'network.base.context_processors.auth_block',
+                'network.base.context_processors.logout_block',
             ],
             'loaders': [
                 ('django.template.loaders.cached.Loader', [
@@ -174,10 +175,12 @@ ACCOUNT_EMAIL_VERIFICATION = 'mandatory'
 AUTH_USER_MODEL = 'users.User'
 LOGIN_REDIRECT_URL = 'users:redirect_user'
 if AUTH0:
-    LOGIN_URL = "/login/auth0"
+    LOGIN_URL = '/login/auth0'
+    LOGOUT_REDIRECT_URL = 'https://' + config('SOCIAL_AUTH_AUTH0_DOMAIN') + \
+                          '/v2/logout?returnTo=' + config('SITE_URL')
 else:
     LOGIN_URL = 'account_login'
-LOGOUT_REDIRECT_URL = "/"
+    LOGOUT_REDIRECT_URL = '/'
 AUTOSLUG_SLUGIFY_FUNCTION = 'slugify.slugify'
 
 # Logging

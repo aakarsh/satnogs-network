@@ -74,7 +74,7 @@
                     {% if request.user.is_superuser %}
                       <li><a href="{% url 'base:settings_site' %}">Site Settings</a></li>
                     {% endif %}
-                    <li><a href="{% url 'account_logout' %}">Logout</a></li>
+                    {{ logout_block }}
                 </ul>
               </li>
               {% else %}
