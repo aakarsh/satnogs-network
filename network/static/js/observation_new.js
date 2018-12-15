@@ -186,6 +186,14 @@ $(document).ready( function(){
         $('#windows-data').empty();
     });
 
+    function sort_stations(a, b){
+        if( a.status > b.status){
+            return -1;
+        } else {
+            return a.id - b.id;
+        }
+    }
+
     function calculate_observation(){
         $('.calculation-result').show();
         $('#obs-selection-tools').hide();
@@ -222,6 +230,7 @@ $(document).ready( function(){
                 suggested_data = [];
                 var dc = 0; // Data counter
                 $('#windows-data').empty();
+                data.sort(sort_stations);
                 $.each(data, function(i, k){
                     var label = k.id + ' - ' + k.name;
                     var times = [];
