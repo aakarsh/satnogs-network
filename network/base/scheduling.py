@@ -93,6 +93,13 @@ def create_station_window(window_start, window_end, overlapped,
 
 def create_station_windows(station, existing_observations,
                            pass_params, observer, satellite, tle):
+    """
+    This function takes a pre-calculated pass (described by pass_params) over a certain station
+    and a list of already scheduled observations, and calculates observation windows during which
+    the station is available to observe the pass.
+
+    Returns the list of all available observation windows
+    """
     station_windows = []
 
     windows, windows_changed = resolve_overlaps(station, existing_observations,
