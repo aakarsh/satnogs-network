@@ -173,8 +173,10 @@ ACCOUNT_EMAIL_REQUIRED = True
 ACCOUNT_EMAIL_VERIFICATION = 'mandatory'
 AUTH_USER_MODEL = 'users.User'
 LOGIN_REDIRECT_URL = 'users:redirect_user'
-LOGIN_URL = 'account_login'
-LOGIN_URL = "/login/auth0"
+if AUTH0:
+    LOGIN_URL = "/login/auth0"
+else:
+    LOGIN_URL = 'account_login'
 LOGOUT_REDIRECT_URL = "/"
 AUTOSLUG_SLUGIFY_FUNCTION = 'slugify.slugify'
 
