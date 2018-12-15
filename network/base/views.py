@@ -553,6 +553,7 @@ def prediction_windows(request, sat_id, transmitter, start_date, end_date,
         }
         return JsonResponse(data, safe=False)
 
+    start_date = make_aware(datetime.strptime(start_date, '%Y-%m-%d %H:%M'), utc)
     end_date = make_aware(datetime.strptime(end_date, '%Y-%m-%d %H:%M'), utc)
 
     # Initialize pyehem Satellite for propagation
@@ -586,7 +587,7 @@ def prediction_windows(request, sat_id, transmitter, start_date, end_date,
         observer.lon = str(station.lng)
         observer.lat = str(station.lat)
         observer.elevation = station.alt
-        observer.date = str(start_date)
+        observer.date = ephem.Date(start_date)
 
         station_windows = []
         while True:
