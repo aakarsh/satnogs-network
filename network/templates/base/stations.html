@@ -12,11 +12,21 @@
   <h2>
     Ground Stations
     <button type="button" class="btn btn-sm btn-default map-modal-reveal" data-toggle="modal" data-target="#MapModal">
-      <span class="glyphicon glyphicon-map-marker" aria-hidden="true"></span>
+      <span class="glyphicon glyphicon-map-marker" aria-hidden="true"></span> Map
     </button>
     <div class="stations-totals">
-      <span class="label label-online">{{ online }}</span> online
-      <span class="label label-testing">{{ testing }}</span> testing
+      <button type="button" id="stations-online" class="btn btn-sm btn-default active">
+        <span class="label label-online">{{ online }}</span> Online
+      </button>
+      <button type="button" id="stations-testing" class="btn btn-sm btn-default active">
+        <span class="label label-testing">{{ testing }}</span> Testing
+      </button>
+      <button type="button" id="stations-offline" class="btn btn-sm btn-default">
+        <span class="label label-offline">0</span> Offline
+      </button>
+      <button type="button" id="stations-future" class="btn btn-sm btn-default">
+        <span class="label label-future">0</span> Future
+      </button>
     </div>
   </h2>
 
@@ -34,10 +44,15 @@
         </thead>
         <tbody>
           {% for station in stations.all %}
-            <tr class="clickable-row" data-href="{% url 'base:station_view' id=station.id %}">
+            <tr class="station-row clickable-row" data-href="{% url 'base:station_view' id=station.id %}">
               <td>
                 <a href="{% url 'base:station_view' id=station.id %}">
-                  <span class="label label-{{ station.get_status_display|lower }}"
+                  <span class="station
+                               {% if station.last_seen %}
+                                 label label-{{ station.get_status_display|lower }}
+                               {% else %}
+                                 label label-future
+                               {% endif %}"
                         data-toggle="tooltip"
                         data-placement="bottom"
                         title="{% if station.last_seen %}
@@ -120,5 +135,6 @@
 
 {% block javascript %}
   <script src="{% static 'lib/mapbox-gl/dist/mapbox-gl.js' %}"></script>
+  <script src="{% static 'js/stations.js' %}"></script>
   <script src="{% static 'js/map.js' %}"></script>
 {% endblock %}
