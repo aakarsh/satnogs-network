@@ -31,10 +31,10 @@ $(document).ready( function(){
                                                 data-toggle="tooltip" data-placement="bottom"
                                                 title="` + transmitter.success_rate + '% (' + transmitter.good_count + `) Good"
                                                 style="width:` + transmitter.success_rate + `%"></div>
-                                              <div class="progress-bar progress-bar-warning transmitter-unknown"
+                                              <div class="progress-bar progress-bar-warning transmitter-unvetted"
                                                 data-toggle="tooltip" data-placement="bottom"
-                                                title="` + transmitter.unknown_rate + '% (' + transmitter.unknown_count + `) Unknown"
-                                                style="width:` + transmitter.unknown_rate + `%"></div>
+                                                title="` + transmitter.unvetted_rate + '% (' + transmitter.unvetted_count + `) Unvetted"
+                                                style="width:` + transmitter.unvetted_rate + `%"></div>
                                               <div class="progress-bar progress-bar-danger transmitter-bad"
                                                 data-toggle="tooltip" data-placement="bottom"
                                                 title="` + transmitter.bad_rate + '% (' + transmitter.bad_count + `) Bad"

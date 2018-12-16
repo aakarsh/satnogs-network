@@ -171,8 +171,8 @@ class TransmitterSerializer(serializers.ModelSerializer):
         model = Transmitter
         fields = ('uuid', 'description', 'alive', 'downlink_low', 'downlink_high',
                   'mode', 'uplink_low', 'uplink_high', 'satellite', 'norad_cat_id',
-                  'success_rate', 'bad_rate', 'unknown_rate', 'good_count',
-                  'bad_count', 'unknown_count', 'data_count')
+                  'success_rate', 'bad_rate', 'unvetted_rate', 'good_count',
+                  'bad_count', 'unvetted_count', 'data_count')
 
     def get_mode(self, obj):
         if obj.mode is None:

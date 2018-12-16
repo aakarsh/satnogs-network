@@ -313,9 +313,15 @@ class Satellite(models.Model):
         return data.filter(vetted_status='bad').count()
 
     @property
-    def unknown_count(self):
+    def unvetted_count(self):
         data = Observation.objects.filter(satellite=self)
         return data.filter(vetted_status='unknown').count()
+
+    @property
+    def future_count(self):
+        data = Observation.objects.filter(satellite=self)
+        return data.filter(id__in=(o.id for
+                                   o in data if o.is_future)).count()
 
     @property
     def success_rate(self):
@@ -332,9 +338,9 @@ class Satellite(models.Model):
             return 0
 
     @property
-    def unknown_rate(self):
+    def unvetted_rate(self):
         try:
-            return int(100 * (float(self.unknown_count) / float(self.data_count)))
+            return int(100 * (float(self.unvetted_count) / float(self.data_count)))
         except (ZeroDivisionError, TypeError):
             return 0
 
@@ -408,7 +414,7 @@ class Transmitter(models.Model):
         return data
 
     @property
-    def unknown_count(self):
+    def unvetted_count(self):
         data = cache.get('tr-{0}-unk-count'.format(self.uuid))
         if data is None:
             obs = Observation.objects.filter(transmitter=self)
@@ -444,11 +450,11 @@ class Transmitter(models.Model):
         return rate
 
     @property
-    def unknown_rate(self):
+    def unvetted_rate(self):
         rate = cache.get('tr-{0}-unk-rate'.format(self.uuid))
         if rate is None:
             try:
-                rate = int(100 * (float(self.unknown_count) / float(self.data_count)))
+                rate = int(100 * (float(self.unvetted_count) / float(self.data_count)))
                 cache.set('tr-{0}-unk-rate'.format(self.uuid), rate, 3600)
                 return rate
             except (ZeroDivisionError, TypeError):

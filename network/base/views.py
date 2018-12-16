@@ -704,12 +704,12 @@ def pass_predictions(request, id):
                                 'name': str(satellite.name),
                                 'id': str(satellite.id),
                                 'success_rate': str(satellite.success_rate),
-                                'unknown_rate': str(satellite.unknown_rate),
+                                'unvetted_rate': str(satellite.unvetted_rate),
                                 'bad_rate': str(satellite.bad_rate),
                                 'data_count': str(satellite.data_count),
                                 'good_count': str(satellite.good_count),
                                 'bad_count': str(satellite.bad_count),
-                                'unknown_count': str(satellite.unknown_count),
+                                'unvetted_count': str(satellite.unvetted_count),
                                 'norad_cat_id': str(satellite.norad_cat_id),
                                 'tle1': str(satellite.latest_tle.tle1),
                                 'tle2': str(satellite.latest_tle.tle2),
@@ -788,8 +788,8 @@ class TransmittersSerializer(serializers.ModelSerializer):
     class Meta:
         model = Transmitter
         fields = ('uuid', 'description', 'alive', 'downlink_low', 'mode',
-                  'success_rate', 'bad_rate', 'unknown_rate', 'good_count',
-                  'bad_count', 'unknown_count', 'data_count')
+                  'success_rate', 'bad_rate', 'unvetted_rate', 'good_count',
+                  'bad_count', 'unvetted_count', 'data_count')
 
     def get_mode(self, obj):
         if obj.mode is None:
@@ -816,7 +816,7 @@ def satellite_view(request, id):
         'success_rate': sat.success_rate,
         'good_count': sat.good_count,
         'bad_count': sat.bad_count,
-        'unknown_count': sat.unknown_count,
+        'unvetted_count': sat.unvetted_count,
         'data_count': sat.data_count,
         'transmitters': TransmittersSerializer(transmitters, many=True).data,
     }

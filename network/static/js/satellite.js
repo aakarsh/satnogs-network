@@ -16,12 +16,12 @@ $(document).ready(function() {
             modal.find('#new-obs-link').attr('href', '/observations/new/?norad=' + satlink.data('id'));
             modal.find('#old-obs-link').attr('href', '/observations/?norad=' + satlink.data('id'));
             modal.find('#good-sat-obs').attr('href', '/observations/?future=0&good=1&bad=0&unvetted=0&failed=0&norad=' + satlink.data('id'));
-            modal.find('#unknown-sat-obs').attr('href', '/observations/?future=0&good=0&bad=0&unvetted=1&failed=0&norad=' + satlink.data('id'));
+            modal.find('#unvetted-sat-obs').attr('href', '/observations/?future=0&good=0&bad=0&unvetted=1&failed=0&norad=' + satlink.data('id'));
             modal.find('#bad-sat-obs').attr('href', '/observations/?future=0&good=0&bad=1&unvetted=0&failed=0&norad=' + satlink.data('id'));
             modal.find('.satellite-success-rate').text(data.success_rate + '%');
             modal.find('.satellite-total-obs').text(data.data_count);
             modal.find('.satellite-good').text(data.good_count);
-            modal.find('.satellite-unknown').text(data.unknown_count);
+            modal.find('.satellite-unvetted').text(data.unvetted_count);
             modal.find('.satellite-bad').text(data.bad_count);
             modal.find('#transmitters').empty();
             $.each(data.transmitters, function(i, transmitter){
@@ -30,11 +30,11 @@ $(document).ready(function() {
                     transmitter_status = '-success';
                 }
                 var good_percentage = 0;
-                var unknown_percentage = 0;
+                var unvetted_percentage = 0;
                 var bad_percentage = 0;
                 if(transmitter.data_count > 0){
                     good_percentage = Math.round((transmitter.good_count / transmitter.data_count) * 100);
-                    unknown_percentage = Math.round((transmitter.unknown_count / transmitter.data_count) * 100);
+                    unvetted_percentage = Math.round((transmitter.unvetted_count / transmitter.data_count) * 100);
                     bad_percentage = Math.round((transmitter.bad_count / transmitter.data_count) * 100);
                 }
                 modal.find('#transmitters').append(`
@@ -52,10 +52,10 @@ $(document).ready(function() {
                                           data-toggle="tooltip" data-placement="bottom"
                                           title="` + good_percentage  + '% (' + transmitter.good_count + `) Good"
                                           style="width:` + good_percentage + `%"></div>
-                              <div class="progress-bar progress-bar-warning transmitter-unknown"
+                              <div class="progress-bar progress-bar-warning transmitter-unvetted"
                                           data-toggle="tooltip" data-placement="bottom"
-                                          title="` + unknown_percentage  + '% (' + transmitter.unknown_count + `) Unknown"
-                                          style="width:` + unknown_percentage + `%"></div>
+                                          title="` + unvetted_percentage  + '% (' + transmitter.unvetted_count + `) Unvetted"
+                                          style="width:` + unvetted_percentage + `%"></div>
                               <div class="progress-bar progress-bar-danger transmitter-bad"
                                           data-toggle="tooltip" data-placement="bottom"
                                           title="` + bad_percentage  + '% (' + transmitter.bad_count + `) Bad"
