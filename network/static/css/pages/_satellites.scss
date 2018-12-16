@@ -2,6 +2,10 @@
     margin-bottom: 5px;
 }
 
+.satellite-title-wrap {
+    margin-top: 0px;
+}
+
 .satellite-title {
     font-weight: bold;
     font-size: 1.2em;
@@ -16,6 +20,15 @@
     width: 100%;
     max-width: 300px;
     border-radius: 5px;
+}
+
+.panel-satellite-img {
+    padding-left: 30px;
+}
+
+.panel-satellite-info {
+    padding-right: 30px;
+    padding-left: 30px;
 }
 
 .satellite-success {

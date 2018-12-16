@@ -2,18 +2,29 @@
   <div class="modal-dialog">
     <div class="modal-content">
       <div class="modal-header">
-        <button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
-        <h4 class="modal-title" id="SatelliteModalTitle"></h4>
+        <span class="pull-left">
+          <h4 class="modal-title" id="SatelliteModalTitle"></h4>
+        </span>
+        <span class="pull-right">
+          {% if can_schedule %}
+            <a class="btn btn-sm btn-primary" href="/observations/new/" id="new-obs-link">
+              <span class="glyphicon glyphicon-plus" aria-hidden="true"></span> New Observation
+            </a>
+          {% endif %}
+          <a class="btn btn-sm btn-default" href="https://db.satnogs.org/" target="_blank" id="db-link">
+            <span class="glyphicon glyphicon-new-window" aria-hidden="true"></span> SatNOGS DB
+          </a>
+        </span>
       </div>
         <div class="modal-body">
           <div class="row panel-body">
-            <div class="col-md-4 panel-satellite">
+            <div class="col-md-4 panel-satellite-img">
               <div>
                 <img class="satellite-img-full">
               </div>
             </div>
-            <div class="col-md-8">
-              <div class="front-line">
+            <div class="col-md-8 panel-satellite-info">
+              <div class="front-line satellite-title-wrap">
                 <span class="satellite-title"></span>
                 <span class="satellite-names"></span>
               </div>
@@ -28,32 +39,28 @@
               <div class="front-line">
                 <span class="label label-default">Observations</span>
                 <span class="front-data">
-                  <span class="satellite-total-obs"></span>
+                  <a href="/observations/" id="old-obs-link">
+                    <button type="button" class="btn btn-xs btn-default satellite-total-obs" data-toggle="tooltip" data-placement="bottom" title="View all"></button>
+                  </a>
                   <span class="pull-right">
-                    <a  href="/observations" id="good-sat-obs">
+                    <a href="/observations" id="good-sat-obs">
                       <button type="button" class="btn btn-xs btn-success satellite-good" data-toggle="tooltip" data-placement="bottom" title="Successful observations"></button>
                     </a>
                     <a href="/observations" id="unvetted-sat-obs">
                       <button type="button" class="btn btn-xs btn-warning satellite-unvetted" data-toggle="tooltip" data-placement="bottom" title="Unvetted observations"></button>
                     </a>
-                    <a  href="/observations" id="bad-sat-obs">
+                    <a href="/observations" id="bad-sat-obs">
                       <button type="button" class="btn btn-xs btn-bad satellite-bad" data-toggle="tooltip" data-placement="bottom" title="Bad observations"></button>
                     </a>
-                    <a href="/observations/" id="old-obs-link">
-                      <button type="button" class="btn btn-xs btn-info">View all</button>
+                    <a href="/observations" id="future-sat-obs">
+                      <button type="button" class="btn btn-xs btn-info satellite-future" data-toggle="tooltip" data-placement="bottom" title="Future observations"></button>
                     </a>
                   </span>
                 </span>
               </div>
-              <div class="front-line">
-                <span class="glyphicon glyphicon-plus" aria-hidden="true"></span>
-                <a href="/observations/new/" id="new-obs-link">Schedule new Observation</a>
-              </div>
-              <div class="front-line">
-                <span class="glyphicon glyphicon-new-window" aria-hidden="true"></span>
-                <a href="https://db.satnogs.org/" target="_blank" id="db-link">SatNOGS DB Entry & Data</a>
-              </div>
             </div>
+          </div>
+          <div class="row panel-body">
             <div class="col-md-12">
               <div id="transmitters"></div>
             </div>

@@ -18,11 +18,13 @@ $(document).ready(function() {
             modal.find('#good-sat-obs').attr('href', '/observations/?future=0&good=1&bad=0&unvetted=0&failed=0&norad=' + satlink.data('id'));
             modal.find('#unvetted-sat-obs').attr('href', '/observations/?future=0&good=0&bad=0&unvetted=1&failed=0&norad=' + satlink.data('id'));
             modal.find('#bad-sat-obs').attr('href', '/observations/?future=0&good=0&bad=1&unvetted=0&failed=0&norad=' + satlink.data('id'));
+            modal.find('#future-sat-obs').attr('href', '/observations/?future=1&good=0&bad=0&unvetted=0&failed=0&norad=' + satlink.data('id'));
             modal.find('.satellite-success-rate').text(data.success_rate + '%');
             modal.find('.satellite-total-obs').text(data.data_count);
             modal.find('.satellite-good').text(data.good_count);
             modal.find('.satellite-unvetted').text(data.unvetted_count);
             modal.find('.satellite-bad').text(data.bad_count);
+            modal.find('.satellite-future').text(data.future_count);
             modal.find('#transmitters').empty();
             $.each(data.transmitters, function(i, transmitter){
                 var transmitter_status = '-danger';

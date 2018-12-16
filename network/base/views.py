@@ -818,6 +818,7 @@ def satellite_view(request, id):
         'bad_count': sat.bad_count,
         'unvetted_count': sat.unvetted_count,
         'data_count': sat.data_count,
+        'future_count': sat.future_count,
         'transmitters': TransmittersSerializer(transmitters, many=True).data,
     }
 
