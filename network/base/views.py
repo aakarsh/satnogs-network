@@ -22,8 +22,8 @@ from network.base.models import (Station, Transmitter, Observation,
 from network.users.models import User
 from network.base.forms import StationForm, SatelliteFilterForm
 from network.base.decorators import admin_required, ajax_required
-from network.base.scheduling import (create_station_windows, next_pass,
-                                     create_new_observation, ObservationOverlapError)
+from network.base.scheduling import (create_new_observation, ObservationOverlapError,
+                                     predict_available_observation_windows)
 from network.base.perms import schedule_perms, delete_perms, vet_perms
 from network.base.tasks import update_all_tle, fetch_data
 
@@ -445,47 +445,12 @@ def prediction_windows(request, sat_id, transmitter, start_date, end_date,
             continue
 
         stations_available.append(station.id)
-        # Initialize pyephem Observer for propagation
-        observer = ephem.Observer()
-        observer.lon = str(station.lng)
-        observer.lat = str(station.lat)
-        observer.elevation = station.alt
-        observer.date = ephem.Date(start_date)
-
-        station_windows = []
-        while True:
-            try:
-                pass_params = next_pass(observer, satellite)
-            except ValueError:
-                break
-
-            # no match if the sat will not rise above the configured min horizon
-            if pass_params['rise_time'] >= end_date:
-                # start of next pass outside of window bounds
-                break
-
-            if pass_params['set_time'] > end_date:
-                # end of next pass outside of window bounds
-                break
-
-            passes_found[station.id].append(pass_params)
-
-            time_start_new = pass_params['set_time'] + timedelta(minutes=1)
-            observer.date = time_start_new.strftime("%Y-%m-%d %H:%M:%S.%f")
-
-            if pass_params['tca_alt'] < station.horizon:
-                # did not rise above user configured horizon
-                continue
-
-            # Check if overlaps with existing scheduled observations
-            # Adjust or discard window if overlaps exist
-            existing_observations = Observation.objects \
-                .filter(ground_station=station) \
-                .filter(end__gt=now())
-
-            station_windows.extend(create_station_windows(station, existing_observations,
-                                   pass_params, observer, satellite, sat.latest_tle))
-
+        station_passes, station_windows = predict_available_observation_windows(station,
+                                                                                satellite,
+                                                                                start_date,
+                                                                                end_date,
+                                                                                sat)
+        passes_found[station.id] = station_passes
         if station_windows:
             data.append({'id': station.id,
                          'name': station.name,
