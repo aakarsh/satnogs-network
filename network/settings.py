@@ -321,6 +321,9 @@ CSP_STYLE_SRC = (
 CSP_WORKER_SRC = (
     'blob:',
 )
+CSP_CHILD_SRC = (
+    'blob:',
+)
 
 # Database
 DATABASE_URL = config('DATABASE_URL', default='sqlite:///db.sqlite3')
