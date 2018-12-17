@@ -121,7 +121,7 @@ def create_station_windows(station, existing_observations,
 
             # Add a window for a partial pass
             station_windows.append(create_station_window(
-                window_start, window_end, False,
+                window_start, window_end, True,
                 get_azimuth(observer, satellite, window_start),
                 get_azimuth(observer, satellite, window_end),
                 elevation,
