@@ -23,9 +23,6 @@ def update_all_tle():
     satellites = Satellite.objects.exclude(manual_tle=True,
                                            norad_follow_id__isnull=True)
 
-    # Skip satellites with temporary NORAD IDs
-    satellites = satellites.exclude(norad_cat_id__gte=80000)
-
     for obj in satellites:
         norad_id = obj.norad_cat_id
         if (obj.manual_tle):
