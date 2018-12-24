@@ -1,1 +1,2 @@
 * text=auto
+network/_version.py export-subst
