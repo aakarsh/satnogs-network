@@ -50,7 +50,7 @@ $(document).ready(function() {
             },
             'layout': {
                 'icon-image': 'online',
-                'icon-size': 0.3,
+                'icon-size': 0.25,
                 'icon-allow-overlap': true
             }
         };
@@ -67,7 +67,7 @@ $(document).ready(function() {
             },
             'layout': {
                 'icon-image': 'testing',
-                'icon-size': 0.3,
+                'icon-size': 0.25,
                 'icon-allow-overlap': true
             }
         };
@@ -105,8 +105,8 @@ $(document).ready(function() {
                 }
             });
 
-            map.addLayer(online_points);
             map.addLayer(testing_points);
+            map.addLayer(online_points);
             map.repaint = false;
 
         });
