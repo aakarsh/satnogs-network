@@ -1,6 +1,7 @@
 import math
 from datetime import timedelta
 
+from django.conf import settings
 from django.utils.timezone import now, make_aware, utc
 from network.base.models import Satellite, Station, Tle, Transmitter, Observation
 
@@ -25,6 +26,14 @@ def get_azimuth(observer, satellite, date):
     observer.date = date
     satellite.compute(observer)
     return float(format(math.degrees(satellite.az), '.0f'))
+
+
+def over_station_horizon(elevation, station):
+    return elevation > station.horizon
+
+
+def over_min_duration(duration):
+    return duration > settings.OBSERVATION_DURATION_MIN
 
 
 def max_elevation_in_window(observer, satellite, pass_tca, window_start, window_end):
@@ -116,7 +125,9 @@ def create_station_windows(station, existing_observations,
             elevation = max_elevation_in_window(observer, satellite,
                                                 pass_params['tca_time'],
                                                 window_start, window_end)
-            if elevation < station.horizon:
+            window_duration = (window_end - window_start).total_seconds()
+            if not (over_station_horizon(elevation, station) and
+                    over_min_duration(window_duration)):
                 continue
 
             # Add a window for a partial pass
@@ -183,6 +194,8 @@ def predict_available_observation_windows(station, satellite, start_date, end_da
     observer.lat = str(station.lat)
     observer.elevation = station.alt
     observer.date = ephem.Date(start_date)
+    observer.horizon = str(station.horizon)
+    satellite.compute(observer)
 
     station_windows = []
     while True:
@@ -205,8 +218,10 @@ def predict_available_observation_windows(station, satellite, start_date, end_da
         time_start_new = pass_params['set_time'] + timedelta(minutes=1)
         observer.date = time_start_new.strftime("%Y-%m-%d %H:%M:%S.%f")
 
-        if pass_params['tca_alt'] < station.horizon:
-            # did not rise above user configured horizon
+        elevation = pass_params['tca_alt']
+        window_duration = (pass_params['set_time'] - pass_params['rise_time']).total_seconds()
+        if not (over_station_horizon(elevation, station) and
+                over_min_duration(window_duration)):
             continue
 
         # Check if overlaps with existing scheduled observations

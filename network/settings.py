@@ -349,6 +349,8 @@ OBSERVATION_DATE_MIN_END = config('OBSERVATION_DATE_MIN_END', default=20, cast=i
 OBSERVATION_DATE_MAX_RANGE = config('OBSERVATION_DATE_MAX_RANGE', default=2890, cast=int)
 # Clean up threshold in days
 OBSERVATION_OLD_RANGE = config('OBSERVATION_OLD_RANGE', default=30, cast=int)
+# Minimum duration of observation in seconds
+OBSERVATION_DURATION_MIN = config('OBSERVATION_DURATION_MIN', default=120, cast=int)
 
 # Station settings
 # Heartbeat for keeping a station online in minutes
