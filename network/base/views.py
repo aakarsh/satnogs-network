@@ -393,25 +393,25 @@ def prediction_windows(request):
         sat = Satellite.objects.filter(transmitters__alive=True) \
             .filter(status='alive').distinct().get(norad_cat_id=sat_id)
     except Satellite.DoesNotExist:
-        data = {
+        data = [{
             'error': 'You should select a Satellite first.'
-        }
+        }]
         return JsonResponse(data, safe=False)
 
     try:
         tle = sat.latest_tle.str_array
     except (ValueError, AttributeError):
-        data = {
+        data = [{
             'error': 'No TLEs for this satellite yet.'
-        }
+        }]
         return JsonResponse(data, safe=False)
 
     try:
         downlink = Transmitter.objects.get(uuid=transmitter).downlink_low
     except Transmitter.DoesNotExist:
-        data = {
+        data = [{
             'error': 'You should select a Transmitter first.'
-        }
+        }]
         return JsonResponse(data, safe=False)
 
     start_date = make_aware(datetime.strptime(start_date, '%Y-%m-%d %H:%M'), utc)
