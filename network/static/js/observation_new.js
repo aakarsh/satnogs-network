@@ -212,10 +212,14 @@ $(document).ready( function(){
         var transmitter = $('#transmitter-selection').find(':selected').val();
         var satellite = $('#satellite-selection').val();
 
-        var url = '/prediction_windows/' + satellite + '/' + transmitter + '/' + start_time + '/' + end_time + '/';
-
+        var url = '/prediction_windows/';
+        var data = {};
+        data.satellite = satellite;
+        data.transmitter = transmitter;
+        data.start_time =start_time;
+        data.end_time = end_time;
         if (obs_filter_station) {
-            url = '/prediction_windows/' + satellite + '/' + transmitter + '/' + start_time + '/' + end_time + '/' + obs_filter_station + '/';
+            data.station_id = obs_filter_station;
         }
         if (satellite.length == 0) {
             $('#windows-data').html('<span class="text-danger">You should select a Satellite first.</span>');
@@ -226,8 +230,14 @@ $(document).ready( function(){
         }
 
         $.ajax({
+            type: 'POST',
             url: url,
-            beforeSend: function() { $('#loading').show(); }
+            data: data,
+            dataType: 'json',
+            beforeSend: function(xhr) {
+                xhr.setRequestHeader('X-CSRFToken', $('[name="csrfmiddlewaretoken"]').val());
+                $('#loading').show();
+            }
         }).done(function(data) {
             $('#loading').hide();
             if (data.length == 1 && data[0].error) {

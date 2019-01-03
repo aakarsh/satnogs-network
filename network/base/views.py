@@ -383,8 +383,12 @@ def observation_new(request):
 
 
 @ajax_required
-def prediction_windows(request, sat_id, transmitter, start_date, end_date,
-                       station_id=None):
+def prediction_windows(request):
+    sat_id = request.POST['satellite']
+    transmitter = request.POST['transmitter']
+    start_date = request.POST['start_time']
+    end_date = request.POST['end_time']
+    station_id = request.POST.get('station_id', None)
     try:
         sat = Satellite.objects.filter(transmitters__alive=True) \
             .filter(status='alive').distinct().get(norad_cat_id=sat_id)
