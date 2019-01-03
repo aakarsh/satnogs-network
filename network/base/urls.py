@@ -42,8 +42,5 @@ base_urlpatterns = ([
         name='satellite_position'),
 
     # Transmitters
-    url(r'^transmitters/(?P<id>[0-9]+)/$', views.transmitters_view,
-        name='transmitters_view'),
-    url(r'^transmitters/(?P<id>[0-9]+)/(?P<station_id>[\w.@+-]+)/$',
-        views.transmitters_view, name='transmitters_view_filtered'),
+    url(r'^transmitters/', views.transmitters_view, name='transmitters_view'),
 ], 'base')

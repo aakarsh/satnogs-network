@@ -2,13 +2,20 @@
 
 $(document).ready( function(){
     function select_proper_transmitters(filters, callback){
-        var url = '/transmitters/' + filters.satellite + '/';
+        var url = '/transmitters/';
+        var data = {'satellite': filters.satellite};
         if (filters.station) {
-            url = '/transmitters/' + filters.satellite + '/' + filters.station + '/';
+            data.station_id = filters.station;
         }
 
         $.ajax({
-            url: url
+            type: 'POST',
+            url: url,
+            data: data,
+            dataType: 'json',
+            beforeSend: function(xhr) {
+                xhr.setRequestHeader('X-CSRFToken', $('[name="csrfmiddlewaretoken"]').val());
+            }
         }).done(function(data) {
             var transmitters_options = '';
             var max_good_count = 0;
@@ -407,7 +414,7 @@ $(document).ready( function(){
         calculate_observation();
     });
 
-    if (obs_filter) {
+    if (obs_filter && obs_filter_satellite) {
         select_proper_transmitters({
             satellite: obs_filter_satellite,
             value: obs_filter_transmitter,

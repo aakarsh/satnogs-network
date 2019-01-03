@@ -819,9 +819,11 @@ def satellite_view(request, id):
     return JsonResponse(data, safe=False)
 
 
-def transmitters_view(request, id, station_id=None):
+def transmitters_view(request):
+    sat_id = request.POST['satellite']
+    station_id = request.POST.get('station_id', None)
     try:
-        sat = Satellite.objects.get(norad_cat_id=id)
+        sat = Satellite.objects.get(norad_cat_id=sat_id)
     except Satellite.DoesNotExist:
         data = {
             'error': 'Unable to find that satellite.'
