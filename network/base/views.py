@@ -422,9 +422,14 @@ def prediction_windows(request):
 
     data = []
 
-    stations = Station.objects.all()
+    stations = Station.objects.filter(status__gt=0)
     if station_id:
         stations = stations.filter(id=station_id)
+        if len(stations) == 0:
+            data = [{
+                'error': 'Station is offline or it doesn\'t exist.'
+            }]
+            return JsonResponse(data, safe=False)
 
     passes_found = defaultdict(list)
     stations_available = []
