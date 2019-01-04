@@ -343,7 +343,6 @@ def observation_new(request):
 
     satellites = Satellite.objects.filter(transmitters__alive=True) \
         .filter(status='alive').distinct()
-    transmitters = Transmitter.objects.filter(alive=True)
 
     obs_filter = {}
     if request.method == 'GET':
@@ -375,8 +374,7 @@ def observation_new(request):
             obs_filter['exists'] = False
 
     return render(request, 'base/observation_new.html',
-                  {'satellites': satellites,
-                   'transmitters': transmitters, 'obs_filter': obs_filter,
+                  {'satellites': satellites, 'obs_filter': obs_filter,
                    'date_min_start': settings.OBSERVATION_DATE_MIN_START,
                    'date_min_end': settings.OBSERVATION_DATE_MIN_END,
                    'date_max_range': settings.OBSERVATION_DATE_MAX_RANGE})
