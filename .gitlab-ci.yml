@@ -11,13 +11,19 @@ static_js_css:
     - npm install -g eslint stylelint
     - eslint 'network/static/js/*.js'
     - stylelint 'network/static/css/*.css' 'network/static/css/*.scss'
+static_python:
+  stage: static
+  image: python:2.7
+  before_script:
+    - pip install tox
+  script:
+    - tox -e flake8
 
 test:
   stage: test
   script:
     - pip install --no-cache-dir -r requirements/dev.txt
     - cp env-dist .env
-    - flake8 .
     - pytest
 
 stage:
