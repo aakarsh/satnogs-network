@@ -154,7 +154,11 @@ def next_pass(observer, satellite):
 
     if ephem.Date(tr).datetime() > ephem.Date(ts).datetime():
         # set time before rise time (bug in pyephem)
-        raise ValueError
+        # https://github.com/brandon-rhodes/pyephem/issues/105
+        # move observer time after the current pass end
+        time_start_new = pass_end + timedelta(minutes=1)
+        observer.date = time_start_new.strftime("%Y-%m-%d %H:%M:%S.%f")
+        return next_pass(observer, satellite)
 
     return {'rise_time': pass_start,
             'set_time': pass_end,
