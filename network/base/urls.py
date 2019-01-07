@@ -17,10 +17,10 @@ base_urlpatterns = ([
         name='observation_delete'),
     url(r'^observations/new/$', views.observation_new, name='observation_new'),
     url(r'^prediction_windows/(?P<sat_id>[\w.@+-]+)/(?P<transmitter>[\w.@+-]+)/'
-        '(?P<start_date>.+)/(?P<end_date>.+)/(?P<station_id>[\w.@+-]+)/$',
+        r'(?P<start_date>.+)/(?P<end_date>.+)/(?P<station_id>[\w.@+-]+)/$',
         views.prediction_windows, name='prediction_windows_filtered'),
     url(r'^prediction_windows/(?P<sat_id>[\w.@+-]+)/(?P<transmitter>[\w.@+-]+)/'
-        '(?P<start_date>.+)/(?P<end_date>.+)/$',
+        r'(?P<start_date>.+)/(?P<end_date>.+)/$',
         views.prediction_windows, name='prediction_windows'),
     url(r'^pass_predictions/(?P<id>[\w.@+-]+)/$',
         views.pass_predictions, name='pass_predictions'),
