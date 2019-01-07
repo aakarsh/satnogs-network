@@ -1,8 +1,16 @@
 image: registry.gitlab.com/librespacefoundation/satnogs/satnogs-network:latest
 
 stages:
+  - static
   - test
   - deploy
+static_js_css:
+  stage: static
+  image: node
+  script:
+    - npm install -g eslint stylelint
+    - eslint 'network/static/js/*.js'
+    - stylelint 'network/static/css/*.css' 'network/static/css/*.scss'
 
 test:
   stage: test
@@ -11,9 +19,6 @@ test:
     - cp env-dist .env
     - flake8 .
     - pytest
-    - eslint 'network/static/js/*.js'
-    - stylelint 'network/static/css/*.css'
-    - stylelint 'network/static/css/*.scss'
 
 stage:
   stage: deploy
