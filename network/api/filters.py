@@ -10,8 +10,8 @@ class ObservationViewFilter(FilterSet):
 
     class Meta:
         model = Observation
-        fields = ['ground_station', 'satellite__norad_cat_id', 'transmitter', 'vetted_status',
-                  'vetted_user']
+        fields = ['id', 'ground_station', 'satellite__norad_cat_id', 'transmitter',
+                  'vetted_status', 'vetted_user']
 
 
 class StationViewFilter(FilterSet):
