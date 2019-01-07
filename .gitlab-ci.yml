@@ -2,6 +2,7 @@ image: registry.gitlab.com/librespacefoundation/satnogs/satnogs-network:latest
 
 stages:
   - static
+  - build
   - test
   - deploy
 static_js_css:
@@ -18,6 +19,28 @@ static_python:
     - pip install tox
   script:
     - tox -e flake8
+build:
+  stage: build
+  image: python:2.7
+  script:
+    - rm -rf dist
+    - python setup.py sdist bdist_wheel
+  artifacts:
+    expire_in: 1 week
+    when: always
+    paths:
+      - dist
+build3:
+  stage: build
+  image: python:3.6
+  script:
+    - rm -rf dist
+    - python setup.py sdist bdist_wheel
+  artifacts:
+    expire_in: 1 week
+    when: always
+    paths:
+      - dist
 
 test:
   stage: test
