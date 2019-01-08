@@ -424,9 +424,6 @@ def prediction_windows(request):
     start_date = make_aware(datetime.strptime(start_date, '%Y-%m-%d %H:%M'), utc)
     end_date = make_aware(datetime.strptime(end_date, '%Y-%m-%d %H:%M'), utc)
 
-    # Initialize pyehem Satellite for propagation
-    satellite = ephem.readtle(*tle)
-
     data = []
 
     stations = Station.objects.filter(status__gt=0)
@@ -448,7 +445,7 @@ def prediction_windows(request):
     for station in available_stations:
         station_passes, station_windows = predict_available_observation_windows(station,
                                                                                 min_horizon,
-                                                                                satellite,
+                                                                                tle,
                                                                                 start_date,
                                                                                 end_date,
                                                                                 sat)

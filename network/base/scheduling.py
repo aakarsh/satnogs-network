@@ -180,8 +180,7 @@ def next_pass(observer, satellite):
             'tca_alt': pass_elevation}
 
 
-def predict_available_observation_windows(station, min_horizon, satellite,
-                                          start_date, end_date, sat):
+def predict_available_observation_windows(station, min_horizon, tle, start_date, end_date, sat):
     '''
     Calculates available observation windows for a certain station and satellite during
     the given time period.
@@ -189,6 +188,8 @@ def predict_available_observation_windows(station, min_horizon, satellite,
     Returns list of passes found and list of available observation windows
     '''
     passes_found = []
+    # Initialize pyehem Satellite for propagation
+    satellite = ephem.readtle(*tle)
     # Initialize pyephem Observer for propagation
     observer = ephem.Observer()
     observer.lon = str(station.lng)
