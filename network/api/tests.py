@@ -40,27 +40,6 @@ class JobViewApiTest(TestCase):
 
 
 @pytest.mark.django_db(transaction=True)
-class SettingsViewApiTest(TestCase):
-    """
-    Tests the Job View API
-    """
-    station = None
-
-    def setUp(self):
-        self.station = StationFactory()
-        self.station.uuid = 'test'
-        self.station.save()
-
-    def test_list(self):
-        response = self.client.get('/api/settings/')
-        self.assertEqual(response.status_code, 404)
-
-    def test_retrieve(self):
-        response = self.client.get('/api/settings/%s/' % self.station.uuid)
-        self.assertContains(response, self.station.name)
-
-
-@pytest.mark.django_db(transaction=True)
 class StationViewApiTest(TestCase):
     """
     Tests the Station View API

@@ -156,13 +156,6 @@ class JobSerializer(serializers.ModelSerializer):
         return obj.transmitter.baud
 
 
-class SettingsSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Station
-        fields = ('uuid', 'name', 'alt', 'lat', 'lng',
-                  'testing', 'antenna', 'id', 'description')
-
-
 class TransmitterSerializer(serializers.ModelSerializer):
     mode = serializers.SerializerMethodField()
     norad_cat_id = serializers.SerializerMethodField()

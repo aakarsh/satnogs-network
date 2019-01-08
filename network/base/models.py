@@ -165,7 +165,6 @@ class Station(models.Model):
     last_seen = models.DateTimeField(null=True, blank=True)
     status = models.IntegerField(choices=STATION_STATUSES, default=0)
     horizon = models.PositiveIntegerField(help_text='In degrees above 0', default=10)
-    uuid = models.CharField(db_index=True, max_length=100, blank=True)
     description = models.TextField(max_length=500, blank=True, help_text='Max 500 characters')
     client_version = models.CharField(max_length=45, blank=True)
 

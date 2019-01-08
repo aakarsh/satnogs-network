@@ -1,4 +1,3 @@
-from django.http import Http404
 from django.shortcuts import get_object_or_404
 from django.utils.timezone import now
 
@@ -61,16 +60,3 @@ class JobView(viewsets.ReadOnlyModelViewSet):
                 gs.last_seen = now()
                 gs.save()
         return queryset
-
-
-class SettingsView(viewsets.ReadOnlyModelViewSet):
-    queryset = Station.objects.all()
-    lookup_field = 'uuid'
-
-    def list(self, request):
-        raise Http404()
-
-    def retrieve(self, request, queryset=queryset, uuid=None):
-        station = get_object_or_404(queryset, uuid=uuid)
-        serializer = serializers.SettingsSerializer(station)
-        return Response(serializer.data)
