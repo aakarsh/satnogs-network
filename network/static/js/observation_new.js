@@ -1,6 +1,14 @@
 /* global moment, d3, Slider, calcPolarPlotSVG */
 
 $(document).ready( function(){
+    $('#advanced-options').click(function(){
+        if($('button span').hasClass('glyphicon-chevron-down')) {
+            $(this).html('<span class="glyphicon glyphicon-chevron-up"></span> Hide Advanced Options');
+        } else {
+            $(this).html('<span class="glyphicon glyphicon-chevron-down"></span> Show Advanced Options');
+        }
+    });
+
     $('#default-horizon').click(function() {
         $('#min-horizon').slider('destroy');
         $('#min-horizon').prop('disabled', true);

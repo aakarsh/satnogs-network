@@ -181,11 +181,23 @@ def next_pass(observer, satellite):
 
 
 def predict_available_observation_windows(station, min_horizon, tle, start_date, end_date, sat):
-    '''
-    Calculates available observation windows for a certain station and satellite during
+    '''Calculate available observation windows for a certain station and satellite during
     the given time period.
 
-    Returns list of passes found and list of available observation windows
+    :param station: Station for scheduling
+    :type station: Station django.db.model.Model
+    :param min_horizon: Overwrite station minimum horizon if defined
+    :type min_horizon: integer or None
+    :param tle: Satellite current TLE
+    :type tle: array of 3 strings
+    :param start_date: Start datetime of scheduling period
+    :type start_date: datetime string in '%Y-%m-%d %H:%M'
+    :param end_date: End datetime of scheduling period
+    :type end_date: datetime string in '%Y-%m-%d %H:%M'
+    :param sat: Satellite for scheduling
+    :type sat: Satellite django.db.model.Model
+
+    :return: List of passes found and list of available observation windows
     '''
     passes_found = []
     # Initialize pyehem Satellite for propagation
