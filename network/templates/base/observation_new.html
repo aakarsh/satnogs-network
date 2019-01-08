@@ -45,15 +45,17 @@
             {% if obs_filter.norad %}
               {% for satellite in satellites %}
                 {% ifequal satellite.norad_cat_id obs_filter.norad %}
-                  <select id="satellite-selection" class="form-control selectpicker" name="satellite">
+                  <select id="satellite-selection" class="form-control selectpicker" name="satellite" disabled>
                     <option data-norad="{{ satellite.norad_cat_id }}" value="{{ satellite.norad_cat_id }}" selected>
                       {{ satellite.norad_cat_id }} - {{ satellite.name }}
                     </option>
                   </select>
+                  <input type="hidden" name="satellite" value="{{ satellite.norad_cat_id }}">
                 {% endifequal %}
               {% endfor %}
             {% else %}
-              <select id="satellite-selection" class="form-control selectpicker" name="satellite" data-live-search="true" autocomplete="off">
+              <select id="satellite-selection" class="form-control selectpicker" name="satellite"
+                      data-live-search="true" autocomplete="off">
                 <option value="" selected>Select a satellite</option>
                 {% for satellite in satellites %}
                   <option data-norad="{{ satellite.norad_cat_id }}" value="{{ satellite.norad_cat_id }}">
@@ -71,16 +73,33 @@
                     disabled name="transmitter" autocomplete="off">
               <option id="no-transmitter" value="" selected>No transmitter available</option>
             </select>
-            {% for satellite in satellites %}
-              <small class="tle" data-norad="{{ satellite.norad_cat_id }}">
-                {% if satellite.tle_no %}
-                  Using TLE fetched
-                  <span data-toggle="tooltip" data-placement="bottom" title="{{ satellite.tle_epoch|date:"Y-m-d H:i:s" }}">
-                    {{ satellite.tle_epoch|naturaltime }}
-                  </span>
-                {% endif %}
-              </small>
-            {% endfor %}
+          </div>
+        </div>
+        <div class="form-group">
+          <label class="col-sm-3 control-label">Stations</label>
+          <div class="col-sm-9">
+            <select id="station-selection" class="form-control selectpicker" data-live-search="true" data-count-selected-text="Selected {0} of {1} stations"
+                    data-dropup-auto="false" multiple data-selected-text-format="count" data-actions-box="true" disabled name="station" autocomplete="off">
+              <option id="no-station" value="" selected>No station available</option>
+            </select>
+          </div>
+        </div>
+        <div class="form-group">
+          <label class="col-sm-3 control-label">Station Horizon</label>
+          <div class="col-sm-9" id="horizon-status">
+            <div class="btn-group btn-group-justified" data-toggle="buttons">
+              <label class="btn btn-default active" id="default-horizon">
+                <input type="radio" name="horizon" value="default" autocomplete="off" checked>
+                  Minimum of each Station
+                </input>
+              </label>
+              <label class="btn btn-default" id="custom-horizon">
+                <input type="radio" name="horizon" value="custom" autocomplete="off">
+                  Custom
+                </input>
+              </label>
+            </div>
+            <input type="hidden" id="min-horizon" disabled/>
           </div>
         </div>
       </div>

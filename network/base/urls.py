@@ -30,6 +30,7 @@ base_urlpatterns = ([
     url(r'^stations/edit/$', views.station_edit, name='station_edit'),
     url(r'^stations/edit/(?P<id>[0-9]+)/$', views.station_edit, name='station_edit'),
     url(r'^stations_all/$', views.StationAllView.as_view({'get': 'list'}), name='stations_all'),
+    url(r'^scheduling_stations/$', views.scheduling_stations, name='scheduling_stations'),
 
     # Satellites
     url(r'^satellites/(?P<id>[0-9]+)/$', views.satellite_view, name='satellite_view'),

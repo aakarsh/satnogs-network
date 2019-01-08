@@ -4,6 +4,7 @@ from datetime import timedelta
 from django.conf import settings
 from django.utils.timezone import now, make_aware, utc
 from network.base.models import Satellite, Station, Tle, Transmitter, Observation
+from network.base.perms import schedule_perms
 
 import ephem
 
@@ -179,7 +180,8 @@ def next_pass(observer, satellite):
             'tca_alt': pass_elevation}
 
 
-def predict_available_observation_windows(station, satellite, start_date, end_date, sat):
+def predict_available_observation_windows(station, min_horizon, satellite,
+                                          start_date, end_date, sat):
     '''
     Calculates available observation windows for a certain station and satellite during
     the given time period.
@@ -187,14 +189,16 @@ def predict_available_observation_windows(station, satellite, start_date, end_da
     Returns list of passes found and list of available observation windows
     '''
     passes_found = []
-
     # Initialize pyephem Observer for propagation
     observer = ephem.Observer()
     observer.lon = str(station.lng)
     observer.lat = str(station.lat)
     observer.elevation = station.alt
     observer.date = ephem.Date(start_date)
-    observer.horizon = str(station.horizon)
+    if min_horizon:
+        observer.horizon = str(min_horizon)
+    else:
+        observer.horizon = str(station.horizon)
     satellite.compute(observer)
 
     station_windows = []
@@ -272,3 +276,23 @@ def create_new_observation(station_id,
                        rise_azimuth=rise_azimuth,
                        max_altitude=max_altitude,
                        set_azimuth=set_azimuth)
+
+
+def get_available_stations(stations, downlink, user):
+    available_stations = []
+    for station in stations:
+        if not schedule_perms(user, station):
+            continue
+
+        # Skip if this station is not capable of receiving the frequency
+        if not downlink:
+            continue
+        frequency_supported = False
+        for gs_antenna in station.antenna.all():
+            if (gs_antenna.frequency <= downlink <= gs_antenna.frequency_max):
+                frequency_supported = True
+        if not frequency_supported:
+            continue
+
+        available_stations.append(station)
+    return available_stations

@@ -23,15 +23,23 @@ from network.users.models import User
 from network.base.forms import StationForm, SatelliteFilterForm
 from network.base.decorators import admin_required, ajax_required
 from network.base.scheduling import (create_new_observation, ObservationOverlapError,
-                                     predict_available_observation_windows)
+                                     predict_available_observation_windows, get_available_stations)
 from network.base.perms import schedule_perms, delete_perms, vet_perms
 from network.base.tasks import update_all_tle, fetch_data
 
 
 class StationSerializer(serializers.ModelSerializer):
+    status_display = serializers.SerializerMethodField()
+
     class Meta:
         model = Station
-        fields = ('name', 'lat', 'lng', 'id', 'status')
+        fields = ('name', 'lat', 'lng', 'id', 'status', 'status_display')
+
+    def get_status_display(self, obj):
+        try:
+            return obj.get_status_display()
+        except AttributeError:
+            return None
 
 
 class StationAllView(viewsets.ReadOnlyModelViewSet):
@@ -386,7 +394,8 @@ def prediction_windows(request):
     transmitter = request.POST['transmitter']
     start_date = request.POST['start_time']
     end_date = request.POST['end_time']
-    station_id = request.POST.get('station_id', None)
+    station_ids = request.POST.getlist('stations[]', [])
+    min_horizon = request.POST.get('min_horizon', None)
     try:
         sat = Satellite.objects.filter(transmitters__alive=True) \
             .filter(status='alive').distinct().get(norad_cat_id=sat_id)
@@ -421,32 +430,24 @@ def prediction_windows(request):
     data = []
 
     stations = Station.objects.filter(status__gt=0)
-    if station_id:
-        stations = stations.filter(id=station_id)
+    if len(station_ids) > 0 and station_ids != ['']:
+        stations = stations.filter(id__in=station_ids)
         if len(stations) == 0:
-            data = [{
-                'error': 'Station is offline or it doesn\'t exist.'
-            }]
+            if len(station_ids) == 1:
+                data = [{
+                    'error': 'Station is offline or it doesn\'t exist.'
+                }]
+            else:
+                data = [{
+                    'error': 'Stations are offline or they don\'t exist.'
+                }]
             return JsonResponse(data, safe=False)
 
     passes_found = defaultdict(list)
-    stations_available = []
-    for station in stations:
-        if not schedule_perms(request.user, station):
-            continue
-
-        # Skip if this station is not capable of receiving the frequency
-        if not downlink:
-            continue
-        frequency_supported = False
-        for gs_antenna in station.antenna.all():
-            if (gs_antenna.frequency <= downlink <= gs_antenna.frequency_max):
-                frequency_supported = True
-        if not frequency_supported:
-            continue
-
-        stations_available.append(station.id)
+    available_stations = get_available_stations(stations, downlink, request.user)
+    for station in available_stations:
         station_passes, station_windows = predict_available_observation_windows(station,
+                                                                                min_horizon,
                                                                                 satellite,
                                                                                 start_date,
                                                                                 end_date,
@@ -465,12 +466,8 @@ def prediction_windows(request):
         error_message = 'Satellite is always below horizon or ' \
                         'no free observation time available on visible stations.'
         error_details = {}
-        for station in stations:
-            if station.id not in stations_available:
-                # Scheduling wasn't attempted (either due to missing permissions
-                # or missing receiver capability of the gs for the requested transmitter
-                pass
-            elif station.id not in passes_found.keys():
+        for station in available_stations:
+            if station.id not in passes_found.keys():
                 error_details[station.id] = 'Satellite is always above or below horizon.\n'
             else:
                 error_details[station.id] = 'No free observation time during passes available.\n'
@@ -616,6 +613,26 @@ def station_log(request, id):
 
     return render(request, 'base/station_log.html',
                   {'station': station, 'station_log': station_log})
+
+
+@ajax_required
+def scheduling_stations(request):
+    """Returns json with stations on which user has permissions to schedule"""
+    transmitter = request.POST.get('transmitter', None)
+    try:
+        downlink = Transmitter.objects.get(uuid=transmitter).downlink_low
+    except Transmitter.DoesNotExist:
+        data = [{
+            'error': 'You should select a Transmitter first.'
+        }]
+        return JsonResponse(data, safe=False)
+    stations = Station.objects.filter(status__gt=0)
+    available_stations = get_available_stations(stations, downlink, request.user)
+    data = {
+        'stations': StationSerializer(available_stations, many=True).data,
+    }
+
+    return JsonResponse(data, safe=False)
 
 
 @ajax_required

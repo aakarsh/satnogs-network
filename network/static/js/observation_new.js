@@ -1,6 +1,111 @@
 /* global moment, d3, Slider, calcPolarPlotSVG */
 
 $(document).ready( function(){
+    $('#default-horizon').click(function() {
+        $('#min-horizon').slider('destroy');
+        $('#min-horizon').prop('disabled', true);
+    });
+
+    $('#custom-horizon').click(function() {
+        $('#min-horizon').prop('disabled', false);
+        $('#min-horizon').slider({
+            id: 'min-horizon-slider',
+            min: 0,
+            max: 90,
+            step: 1,
+            value: 0,
+            ticks: [0, 30, 60, 90],
+            ticks_labels: ['0', '30', '60', '90']
+        });
+    });
+
+    function create_station_option(station){
+        return `
+            <option value="` + station.id + `"
+                    data-content='<div class="station-option">
+                                    <span class="label label-` + station.status_display.toLowerCase() +`">
+                                      ` + station.id +
+                                    `</span>
+                                    <span class="station-description">
+                                      ` + station.name +
+                                    `</span>
+                                  </div>'>
+            </option>
+        `;
+    }
+
+    function select_proper_stations(filters, callback){
+        var url = '/scheduling_stations/';
+        var data = {'transmitter': filters.transmitter};
+        if (filters.station) {
+            data.station_id = filters.station;
+        }
+        $.ajax({
+            type: 'POST',
+            url: url,
+            data: data,
+            dataType: 'json',
+            beforeSend: function(xhr) {
+                xhr.setRequestHeader('X-CSRFToken', $('[name="csrfmiddlewaretoken"]').val());
+            }
+        }).done(function(data) {
+            if (data.stations.length > 0) {
+                var stations_options = '';
+                if (filters.station && data.stations.findIndex(st => st.id == filters.station) > -1) {
+                    var station = data.stations.find(st => st.id == filters.station);
+                    stations_options = create_station_option(station);
+                    $('#station-selection').html(stations_options);
+                    $('#station-selection').selectpicker('val', filters.station);
+                    $('#station-selection').selectpicker('refresh');
+                } else {
+                    $.each(data.stations, function (i, station) {
+                        stations_options += create_station_option(station);
+                    });
+                    $('#station-selection').html(stations_options).prop('disabled', false);
+                    $('#station-selection').selectpicker('refresh');
+                    $('#station-selection').selectpicker('selectAll');
+                }
+            } else {
+                $('#station-selection').html(`<option id="no-station"
+                                                          value="" selected>
+                                                    No station available
+                                                  </option>`).prop('disabled', true);
+                $('#station-selection').selectpicker('refresh');
+            }
+            if (callback) {
+                callback();
+            }
+        });
+    }
+
+    function create_transmitter_option(satellite, transmitter){
+        return `
+            <option data-satellite="` + satellite + `"
+                    value="` + transmitter.uuid + `"
+                    data-success-rate="` + transmitter.success_rate + `"
+                    data-content='<div class="transmitter-option">
+                                    <div class="transmitter-description">
+                                      ` + transmitter.description + ' - ' + (transmitter.downlink_low/1e6).toFixed(3) + ' MHz - ' + transmitter.mode +
+                                    `</div>
+                                    <div class="progress">
+                                      <div class="progress-bar progress-bar-success transmitter-good"
+                                        data-toggle="tooltip" data-placement="bottom"
+                                        title="` + transmitter.success_rate + '% (' + transmitter.good_count + `) Good"
+                                        style="width:` + transmitter.success_rate + `%"></div>
+                                      <div class="progress-bar progress-bar-warning transmitter-unvetted"
+                                        data-toggle="tooltip" data-placement="bottom"
+                                        title="` + transmitter.unvetted_rate + '% (' + transmitter.unvetted_count + `) Unvetted"
+                                        style="width:` + transmitter.unvetted_rate + `%"></div>
+                                      <div class="progress-bar progress-bar-danger transmitter-bad"
+                                        data-toggle="tooltip" data-placement="bottom"
+                                        title="` + transmitter.bad_rate + '% (' + transmitter.bad_count + `) Bad"
+                                        style="width:` + transmitter.bad_rate + `%"></div>
+                                    </div>
+                                  </div>'>
+            </option>
+        `;
+    }
+
     function select_proper_transmitters(filters, callback){
         var url = '/transmitters/';
         var data = {'satellite': filters.satellite};
@@ -17,49 +122,40 @@ $(document).ready( function(){
                 xhr.setRequestHeader('X-CSRFToken', $('[name="csrfmiddlewaretoken"]').val());
             }
         }).done(function(data) {
-            var transmitters_options = '';
-            var max_good_count = 0;
-            var max_good_val = '';
-            $.each(data.transmitters, function (i, transmitter) {
-                if (max_good_count <= transmitter.good_count) {
-                    max_good_count = transmitter.good_count;
-                    max_good_val = transmitter.uuid;
-                }
-                transmitters_options += `
-                    <option data-satellite="` + filters.satellite + `"
-                            value="` + transmitter.uuid + `"
-                            data-success-rate="` + transmitter.success_rate + `"
-                            data-content='<div class="transmitter-option">
-                                            <div class="transmitter-description">
-                                              ` + transmitter.description + ' - ' + (transmitter.downlink_low/1e6).toFixed(3) + ' MHz - ' + transmitter.mode +
-                                            `</div>
-                                            <div class="progress">
-                                              <div class="progress-bar progress-bar-success transmitter-good"
-                                                data-toggle="tooltip" data-placement="bottom"
-                                                title="` + transmitter.success_rate + '% (' + transmitter.good_count + `) Good"
-                                                style="width:` + transmitter.success_rate + `%"></div>
-                                              <div class="progress-bar progress-bar-warning transmitter-unvetted"
-                                                data-toggle="tooltip" data-placement="bottom"
-                                                title="` + transmitter.unvetted_rate + '% (' + transmitter.unvetted_count + `) Unvetted"
-                                                style="width:` + transmitter.unvetted_rate + `%"></div>
-                                              <div class="progress-bar progress-bar-danger transmitter-bad"
-                                                data-toggle="tooltip" data-placement="bottom"
-                                                title="` + transmitter.bad_rate + '% (' + transmitter.bad_count + `) Bad"
-                                                style="width:` + transmitter.bad_rate + `%"></div>
-                                            </div>
-                                          </div>'>
-                    </option>
-                `;
-            });
             if (data.transmitters.length > 0) {
-                $('#transmitter-selection').html(transmitters_options).prop('disabled', false);
-                $('#transmitter-selection').selectpicker('refresh');
-                if (filters.value && data.transmitters.findIndex(tr => tr.uuid == filters.value) > -1) {
-                    $('#transmitter-selection').selectpicker('val', filters.value);
+                var transmitters_options = '';
+                if (filters.transmitter){
+                    var is_transmitter_available = (data.transmitters.findIndex(tr => tr.uuid == filters.transmitter) > -1);
+                    if(is_transmitter_available) {
+                        var transmitter = data.transmitters.find(tr => tr.uuid == filters.transmitter);
+                        transmitters_options = create_transmitter_option(filters.satellite, transmitter);
+                        $('#transmitter-selection').html(transmitters_options);
+                        $('#transmitter-selection').selectpicker('val', filters.transmitter);
+                        var hidden_input='<input type="hidden" name="transmitter" value="'+ filters.transmitter + '">';
+                        $('#transmitter-selection').after(hidden_input);
+                        filters.transmitter = transmitter.uuid;
+                    } else {
+                        $('#transmitter-selection').html(`<option id="no-transmitter" value="" selected>
+                                                            No transmitter available
+                                                          </option>`).prop('disabled', true);
+                        delete filters.transmitter;
+                    }
+                    $('#transmitter-selection').selectpicker('refresh');
                 } else {
+                    var max_good_count = 0;
+                    var max_good_val = '';
+                    $.each(data.transmitters, function (i, transmitter) {
+                        if (max_good_count <= transmitter.good_count) {
+                            max_good_count = transmitter.good_count;
+                            max_good_val = transmitter.uuid;
+                        }
+                        transmitters_options += create_transmitter_option(filters.satellite, transmitter);
+                    });
+                    $('#transmitter-selection').html(transmitters_options).prop('disabled', false);
+                    $('#transmitter-selection').selectpicker('refresh');
                     $('#transmitter-selection').selectpicker('val', max_good_val);
+                    filters.transmitter = max_good_val;
                 }
-
                 $('.tle').hide();
                 $('.tle[data-norad="' + filters.satellite + '"]').show();
             } else {
@@ -70,7 +166,9 @@ $(document).ready( function(){
                 $('#transmitter-selection').selectpicker('refresh');
             }
             if (callback) {
-                callback();
+                select_proper_stations(filters,callback);
+            } else {
+                select_proper_stations(filters);
             }
         });
     }
@@ -193,6 +291,19 @@ $(document).ready( function(){
         $('#windows-data').empty();
     });
 
+    $('#transmitter-selection').on('changed.bs.select', function() {
+        var transmitter = $(this).find(':selected').val();
+        var station = $('#form-obs').data('obs-filter-station');
+        select_proper_stations({
+            transmitter: transmitter,
+            station: station
+        });
+        $('.calculation-result').hide();
+        $('#timeline').empty();
+        $('#hover-obs').hide();
+        $('#windows-data').empty();
+    });
+
     function sort_stations(a, b){
         if( a.status > b.status){
             return -1;
@@ -207,26 +318,26 @@ $(document).ready( function(){
         $('#timeline').empty();
         $('#hover-obs').hide();
         $('#windows-data').empty();
-        var start_time = $('#datetimepicker-start input').val();
-        var end_time = $('#datetimepicker-end input').val();
-        var transmitter = $('#transmitter-selection').find(':selected').val();
-        var satellite = $('#satellite-selection').val();
-
         var url = '/prediction_windows/';
         var data = {};
-        data.satellite = satellite;
-        data.transmitter = transmitter;
-        data.start_time =start_time;
-        data.end_time = end_time;
-        if (obs_filter_station) {
-            data.station_id = obs_filter_station;
-        }
-        if (satellite.length == 0) {
+        data.start_time = $('#datetimepicker-start input').val();
+        data.end_time = $('#datetimepicker-end input').val();
+        data.transmitter = $('#transmitter-selection').find(':selected').val();
+        data.satellite = $('#satellite-selection').val();
+        data.stations = $('#station-selection').val();
+        if (data.satellite.length == 0) {
             $('#windows-data').html('<span class="text-danger">You should select a Satellite first.</span>');
             return;
-        } else if (transmitter.length == 0) {
+        } else if (data.transmitter.length == 0) {
             $('#windows-data').html('<span class="text-danger">You should select a Transmitter first.</span>');
             return;
+        } else if (data.stations.length == 0 || (data.stations.length == 1 && data.stations[0] == '')) {
+            $('#windows-data').html('<span class="text-danger">You should select a Station first.</span>');
+            return;
+        }
+        var is_custom_horizon = $('#horizon-status input[type=radio]').filter(':checked').val() == 'custom';
+        if(is_custom_horizon) {
+            data.min_horizon = $('#min-horizon').val();
         }
 
         $.ajax({
@@ -238,17 +349,17 @@ $(document).ready( function(){
                 xhr.setRequestHeader('X-CSRFToken', $('[name="csrfmiddlewaretoken"]').val());
                 $('#loading').show();
             }
-        }).done(function(data) {
+        }).done(function(results) {
             $('#loading').hide();
-            if (data.length == 1 && data[0].error) {
-                var error_msg = data[0].error;
+            if (results.length == 1 && results[0].error) {
+                var error_msg = results[0].error;
                 $('#windows-data').html('<span class="text-danger">' + error_msg + '</span>');
             } else {
                 suggested_data = [];
                 var dc = 0; // Data counter
                 $('#windows-data').empty();
-                data.sort(sort_stations);
-                $.each(data, function(i, k){
+                results.sort(sort_stations);
+                $.each(results, function(i, k){
                     var label = k.id + ' - ' + k.name;
                     var times = [];
                     var selectedAll = true;
@@ -291,7 +402,7 @@ $(document).ready( function(){
                 });
 
                 if (dc > 0) {
-                    timeline_init(start_time, end_time, suggested_data);
+                    timeline_init(data.start_time, data.end_time, suggested_data);
                 } else {
                     var empty_msg = 'No Ground Station available for this observation window';
                     $('#windows-data').html('<span class="text-danger">' + empty_msg + '</span>');
@@ -427,11 +538,10 @@ $(document).ready( function(){
     if (obs_filter && obs_filter_satellite) {
         select_proper_transmitters({
             satellite: obs_filter_satellite,
-            value: obs_filter_transmitter,
+            transmitter: obs_filter_transmitter,
             station: obs_filter_station
         }, function(){
             if (obs_filter_dates && obs_filter_station && obs_filter_satellite){
-                $('#calculate-observation').hide();
                 $('#obs-selection-tools').hide();
                 calculate_observation();
             }
