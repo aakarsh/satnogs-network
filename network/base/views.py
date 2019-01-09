@@ -189,21 +189,15 @@ class ObservationListView(ListView):
         if not failed:
             observations = observations.exclude(vetted_status='failed')
         if not unvetted:
-            observations = observations.exclude(vetted_status='unknown',
-                                                id__in=(o.id for
-                                                        o in observations if o.is_past))
+            observations = observations.exclude(vetted_status='unknown', end__lte=datetime.now())
         if not future:
-            observations = observations.exclude(id__in=(o.id for
-                                                        o in observations if o.is_future))
+            observations = observations.exclude(vetted_status='unknown', end__gt=datetime.now())
         if not waterfall:
-            observations = observations.filter(id__in=(o.id for
-                                                       o in observations if o.has_waterfall))
+            observations = observations.exclude(waterfall='')
         if not audio:
-            observations = observations.filter(id__in=(o.id for
-                                                       o in observations if o.has_audio))
+            observations = observations.exclude(archived=False, payload='')
         if not data:
-            observations = observations.filter(id__in=(o.id for
-                                                       o in observations if o.has_demoddata))
+            observations = observations.exclude(demoddata__payload_demod__isnull=True)
         return observations
 
     def get_context_data(self, **kwargs):
