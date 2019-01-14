@@ -347,6 +347,10 @@ $(document).ready( function(){
         if(is_custom_horizon) {
             data.min_horizon = $('#min-horizon').val();
         }
+        var trancate_overlapped = $('#overlapped input[type=radio]').filter(':checked').val() == 'truncate-overlapped';
+        if(trancate_overlapped) {
+            data.overlapped = 1;
+        }
 
         $.ajax({
             type: 'POST',
@@ -372,29 +376,27 @@ $(document).ready( function(){
                     var times = [];
                     var selectedAll = true;
                     $.each(k.window, function(m, n){
-                        if(!n.overlapped || obs_filter_station){
-                            var starting_time = moment.utc(n.start).valueOf();
-                            var ending_time = moment.utc(n.end).valueOf();
-                            var selected = false;
-                            if(k.status !== 1 || obs_filter_station){
-                                selected = true;
-                            }
-                            selectedAll = selectedAll && selected;
-                            times.push({
-                                starting_time: starting_time,
-                                ending_time: ending_time,
-                                az_start: n.az_start,
-                                az_end: n.az_end,
-                                elev_max: n.elev_max,
-                                tle0: n.tle0,
-                                tle1: n.tle1,
-                                tle2: n.tle2,
-                                selected: selected,
-                                id: k.id + '_' + times.length
-                            });
-
-                            dc = dc + 1;
+                        var starting_time = moment.utc(n.start).valueOf();
+                        var ending_time = moment.utc(n.end).valueOf();
+                        var selected = false;
+                        if(k.status !== 1 || obs_filter_station){
+                            selected = true;
                         }
+                        selectedAll = selectedAll && selected;
+                        times.push({
+                            starting_time: starting_time,
+                            ending_time: ending_time,
+                            az_start: n.az_start,
+                            az_end: n.az_end,
+                            elev_max: n.elev_max,
+                            tle0: n.tle0,
+                            tle1: n.tle1,
+                            tle2: n.tle2,
+                            selected: selected,
+                            id: k.id + '_' + times.length
+                        });
+
+                        dc = dc + 1;
                     });
                     if(times.length > 0){
                         suggested_data.push({

@@ -396,6 +396,7 @@ def prediction_windows(request):
     end_date = request.POST['end_time']
     station_ids = request.POST.getlist('stations[]', [])
     min_horizon = request.POST.get('min_horizon', None)
+    overlapped = request.POST.get('overlapped', 0)
     try:
         sat = Satellite.objects.filter(transmitters__alive=True) \
             .filter(status='alive').distinct().get(norad_cat_id=sat_id)
@@ -445,6 +446,7 @@ def prediction_windows(request):
     for station in available_stations:
         station_passes, station_windows = predict_available_observation_windows(station,
                                                                                 min_horizon,
+                                                                                overlapped,
                                                                                 tle,
                                                                                 start_date,
                                                                                 end_date,

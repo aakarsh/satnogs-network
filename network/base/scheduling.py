@@ -29,10 +29,6 @@ def get_azimuth(observer, satellite, date):
     return float(format(math.degrees(satellite.az), '.0f'))
 
 
-def over_station_horizon(elevation, station):
-    return elevation > station.horizon
-
-
 def over_min_duration(duration):
     return duration > settings.OBSERVATION_DURATION_MIN
 
@@ -52,10 +48,10 @@ def max_elevation_in_window(observer, satellite, pass_tca, window_start, window_
         return get_elevation(observer, satellite, pass_tca)
 
 
-def resolve_overlaps(station, gs_data, start, end):
+def resolve_overlaps(scheduled_obs, start, end):
     """
-    This function checks for overlaps between all existing observations on `gs_data` and a
-    potential new observation with given `start` and `end` time.
+    This function checks for overlaps between all existing observations on `scheduled_obs`
+    and a potential new observation with given `start` and `end` time.
 
     Returns
     - ([], True)                                  if total overlap exists
@@ -66,8 +62,8 @@ def resolve_overlaps(station, gs_data, start, end):
     - ([(start, end)], False)                     if no overlap exists
     """
     overlapped = False
-    if gs_data:
-        for datum in gs_data:
+    if scheduled_obs:
+        for datum in scheduled_obs:
             if datum.start <= end and start <= datum.end:
                 overlapped = True
                 if datum.start <= start and datum.end >= end:
@@ -75,9 +71,9 @@ def resolve_overlaps(station, gs_data, start, end):
                 if start < datum.start and end > datum.end:
                     # In case of splitting the window  to two we
                     # check for overlaps for each generated window.
-                    window1 = resolve_overlaps(station, gs_data,
+                    window1 = resolve_overlaps(scheduled_obs,
                                                start, datum.start - timedelta(seconds=30))
-                    window2 = resolve_overlaps(station, gs_data,
+                    window2 = resolve_overlaps(scheduled_obs,
                                                datum.end + timedelta(seconds=30), end)
                     return (window1[0] + window2[0], True)
                 if datum.start <= start:
@@ -101,8 +97,7 @@ def create_station_window(window_start, window_end, overlapped,
             'overlapped': overlapped}
 
 
-def create_station_windows(station, existing_observations,
-                           pass_params, observer, satellite, tle):
+def create_station_windows(scheduled_obs, overlapped, pass_params, observer, satellite, tle):
     """
     This function takes a pre-calculated pass (described by pass_params) over a certain station
     and a list of already scheduled observations, and calculates observation windows during which
@@ -112,7 +107,7 @@ def create_station_windows(station, existing_observations,
     """
     station_windows = []
 
-    windows, windows_changed = resolve_overlaps(station, existing_observations,
+    windows, windows_changed = resolve_overlaps(scheduled_obs,
                                                 pass_params['rise_time'],
                                                 pass_params['set_time'])
 
@@ -122,13 +117,14 @@ def create_station_windows(station, existing_observations,
 
     if windows_changed:
         # Windows changed due to overlap, recalculate observation parameters
+        if overlapped == 0:
+            return []
         for window_start, window_end in windows:
             elevation = max_elevation_in_window(observer, satellite,
                                                 pass_params['tca_time'],
                                                 window_start, window_end)
             window_duration = (window_end - window_start).total_seconds()
-            if not (over_station_horizon(elevation, station) and
-                    over_min_duration(window_duration)):
+            if not over_min_duration(window_duration):
                 continue
 
             # Add a window for a partial pass
@@ -180,7 +176,8 @@ def next_pass(observer, satellite):
             'tca_alt': pass_elevation}
 
 
-def predict_available_observation_windows(station, min_horizon, tle, start_date, end_date, sat):
+def predict_available_observation_windows(station, min_horizon, overlapped, tle,
+                                          start_date, end_date, sat):
     '''Calculate available observation windows for a certain station and satellite during
     the given time period.
 
@@ -188,6 +185,9 @@ def predict_available_observation_windows(station, min_horizon, tle, start_date,
     :type station: Station django.db.model.Model
     :param min_horizon: Overwrite station minimum horizon if defined
     :type min_horizon: integer or None
+    :param overlapped: Calculate and return overlapped observations fully, truncated or not at all
+    :type overlapped: integer values:0, 1, 2
+    :param tle: Satellite current TLE
     :param tle: Satellite current TLE
     :type tle: array of 3 strings
     :param start_date: Start datetime of scheduling period
@@ -235,20 +235,18 @@ def predict_available_observation_windows(station, min_horizon, tle, start_date,
         time_start_new = pass_params['set_time'] + timedelta(minutes=1)
         observer.date = time_start_new.strftime("%Y-%m-%d %H:%M:%S.%f")
 
-        elevation = pass_params['tca_alt']
         window_duration = (pass_params['set_time'] - pass_params['rise_time']).total_seconds()
-        if not (over_station_horizon(elevation, station) and
-                over_min_duration(window_duration)):
+        if not over_min_duration(window_duration):
             continue
 
         # Check if overlaps with existing scheduled observations
         # Adjust or discard window if overlaps exist
-        existing_observations = Observation.objects \
+        scheduled_obs = Observation.objects \
             .filter(ground_station=station) \
             .filter(end__gt=now())
 
-        station_windows.extend(create_station_windows(station, existing_observations,
-                               pass_params, observer, satellite, sat.latest_tle))
+        station_windows.extend(create_station_windows(scheduled_obs, overlapped, pass_params,
+                                                      observer, satellite, sat.latest_tle))
     return passes_found, station_windows
 
 
@@ -259,8 +257,8 @@ def create_new_observation(station_id,
                            end_time,
                            author):
     ground_station = Station.objects.get(id=station_id)
-    gs_data = Observation.objects.filter(ground_station=ground_station).filter(end__gt=now())
-    window = resolve_overlaps(ground_station, gs_data, start_time, end_time)
+    scheduled_obs = Observation.objects.filter(ground_station=ground_station).filter(end__gt=now())
+    window = resolve_overlaps(scheduled_obs, start_time, end_time)
 
     if window[1]:
         raise ObservationOverlapError

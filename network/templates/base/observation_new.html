@@ -156,6 +156,29 @@
           </div>
         </div>
       </div>
+      <div class="col-md-6 collapse collapse-option">
+        <div class="form-group">
+          <label class="col-sm-3 control-label">Overlapped</label>
+          <div class="col-sm-9" id="overlapped">
+            <div class="btn-group btn-group-justified" data-toggle="buttons">
+              <label class="btn btn-default active" id="hide-overlapped">
+                <input type="radio" name="overlapped" value="hide-overlapped" autocomplete="off" checked>
+                  Hide
+                </input>
+              </label>
+              <label class="btn btn-default" id="truncate-overlapped">
+                <input type="radio" name="overlapped" value="truncate-overlapped" autocomplete="off">
+                  Show Truncated
+                </input>
+              </label>
+              <label class="btn btn-default" id="custom-horizon" disabled>
+                  <span data-toggle="tooltip" title="Not supported yet!">Show Overlapped</span>
+              </label>
+            </div>
+            <input type="hidden" id="min-horizon" disabled/>
+          </div>
+        </div>
+      </div>
     </div>
 
     {% if obs_filter.ground_station %}
