@@ -485,7 +485,7 @@ $(document).ready( function(){
                 }
             })
             .click(function(d, i, datum){
-                if ($('rect').length == 1) {
+                if ($('rect').length == 1 && obs_filter_station) {
                     return;
                 }
                 if(Array.isArray(d)){
