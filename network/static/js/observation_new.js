@@ -393,6 +393,7 @@ $(document).ready( function(){
                             tle1: n.tle1,
                             tle2: n.tle2,
                             selected: selected,
+                            overlapped: n.overlapped,
                             id: k.id + '_' + times.length
                         });
 
@@ -532,6 +533,9 @@ $(document).ready( function(){
             $.each(station.times, function(j, obs){
                 if(!obs.selected){
                     $('#' + obs.id).addClass('unselected-obs');
+                }
+                if(obs.overlapped){
+                    $('#' + obs.id).css({'stroke': 'red'});
                 }
             });
         });
