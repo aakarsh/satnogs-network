@@ -1,54 +1,43 @@
 VirtualEnv Installation
 =======================
 
-#. **Install the requirements**
+#. **Requirements**
 
-   Generic requirements which you will need::
+   You will need python, python-virtualenvwrapper, pip and git
 
-     python, python-virtualenvwrapper, pip and git, libmysqlclient-dev (mysql_config)
-
-   Debian Stretch (9) specific requirements ::
-
-     $ sudo apt-get install libmariadbclient-dev python-pip virtualenvwrapper
-
-#. **Build the environment**
+#. **Get the source code**
 
    Clone source code from the `repository <https://gitlab.com/librespacefoundation/satnogs/satnogs-network>`_::
 
      $ git clone https://gitlab.com/librespacefoundation/satnogs/satnogs-network.git
+     $ cd satnogs-network
+
+#. **Build the environment**
 
    Set up the virtual environment. On first run you should create it and link it to your project path.::
 
-     $ cd satnogs-network
      $ mkvirtualenv satnogs-network -a .
+
+#. **Configure settings**
 
    Set your environmental variables::
 
      $ cp env-dist .env
 
+#. **Run it!**
+
    Activate your python virtual environment::
 
      $ workon satnogs-network
 
-   Install local development requirements::
+   Just run it::
 
-     $ (satnogs-network)$ pip install -r requirements/dev.txt
+    (satnogs-network)$ ./bin/djangoctl.sh develop .
 
-
-#. **Database**
+#. **Populate database**
 
    Create, setup and populate the database with demo data::
 
-     (satnogs-network)$ ./manage.py initialize
+     (satnogs-network)$ ./bin/djangoctl.sh initialize
 
-   Note that the above command requires internet connection, since it fetches
-   Satellite and Transmitter data from `SatNOGS-DB <https://db.satnogs.org/>`_
-
-
-#. **Run it!**
-
-  Just run it::
-
-    (satnogs-network)$ ./manage.py runserver
-
-  Your satnogs-network development instance is available in localhost:8000. Go hack!
+   Your satnogs-network development instance is available in localhost:8000. Go hack!
