@@ -41,13 +41,15 @@ build3:
     when: always
     paths:
       - dist
-
 test:
   stage: test
+  image: python:2.7
+  before_script:
+    - pip install tox
+    - apt-get update
+    - apt-get install -y ruby-sass
   script:
-    - pip install --no-cache-dir -r requirements/dev.txt
-    - cp env-dist .env
-    - pytest
+    - tox -e deps,pytest
 
 stage:
   stage: deploy
