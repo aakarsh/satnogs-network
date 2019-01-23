@@ -7,3 +7,4 @@ satnogs-network
 
    installation
    contribute
+   maintenance
