@@ -30,6 +30,7 @@ THIRD_PARTY_APPS = (
     'crispy_forms',
     'allauth',
     'allauth.account',
+    'allauth.socialaccount',
     'compressor',
     'csp',
     'raven.contrib.django.raven_compat',
