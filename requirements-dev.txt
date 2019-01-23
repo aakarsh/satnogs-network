@@ -1,0 +1,31 @@
+# This is a generated file; DO NOT EDIT!
+#
+# Please edit 'setup.cfg' to add top-level extra dependencies and use
+# './contrib/refresh-requirements.sh to regenerate this file
+-r requirements.txt
+
+apipkg==1.5
+atomicwrites==1.2.1
+attrs==18.2.0
+coverage==4.5.2
+docopts==0.6.1
+execnet==1.5.0
+factory-boy==2.11.1
+Faker==0.8.18
+funcsigs==1.0.2
+ipaddress==1.0.22
+mock==2.0.0
+more-itertools==5.0.0
+pathlib2==2.3.3
+pbr==5.1.1
+pluggy==0.8.1
+pur==5.2.1
+py==1.7.0
+pytest==4.1.1
+pytest-cov==2.6.1
+pytest-django==3.4.5
+pytest-forked==0.2
+pytest-xdist==1.25.0
+python-dateutil==2.7.5
+scandir==1.9.0
+text-unidecode==1.2
