@@ -395,7 +395,7 @@ def prediction_windows(request):
     end_date = request.POST['end_time']
     station_ids = request.POST.getlist('stations[]', [])
     min_horizon = request.POST.get('min_horizon', None)
-    overlapped = request.POST.get('overlapped', 0)
+    overlapped = int(request.POST.get('overlapped', 0))
     try:
         sat = Satellite.objects.filter(transmitters__alive=True) \
             .filter(status='alive').distinct().get(norad_cat_id=sat_id)
@@ -692,7 +692,9 @@ def pass_predictions(request, id):
 
         if station_windows:
             for window in station_windows:
-                valid = window['start'] > observation_date_min_start
+                valid = window['start'] > observation_date_min_start and window['valid_duration']
+                window_start = datetime.strptime(window['start'], '%Y-%m-%d %H:%M:%S.%f')
+                window_end = datetime.strptime(window['end'], '%Y-%m-%d %H:%M:%S.%f')
                 sat_pass = {'name': str(satellite.name),
                             'id': str(satellite.id),
                             'success_rate': str(satellite.success_rate),
@@ -705,12 +707,14 @@ def pass_predictions(request, id):
                             'norad_cat_id': str(satellite.norad_cat_id),
                             'tle1': window['tle1'],
                             'tle2': window['tle2'],
-                            'tr': window['start'].replace(' ', 'T'),  # Rise time
-                            'azr': window['az_start'],         # Rise Azimuth
-                            'altt': window['elev_max'],        # Max altitude
-                            'ts': window['end'].replace(' ', 'T'),    # Set time
-                            'azs': window['az_end'],           # Set azimuth
-                            'valid': valid}
+                            'tr': window_start,          # Rise time
+                            'azr': window['az_start'],   # Rise Azimuth
+                            'altt': window['elev_max'],  # Max altitude
+                            'ts': window_end,            # Set time
+                            'azs': window['az_end'],     # Set azimuth
+                            'valid': valid,
+                            'overlapped': window['overlapped'],
+                            'overlap_ratio': window['overlap_ratio']}
                 nextpasses.append(sat_pass)
 
     data = {

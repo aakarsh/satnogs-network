@@ -150,38 +150,6 @@ $(document).ready(function() {
         $('#antenna-filter').submit();
     });
 
-    // Function for overlap check
-    function check_overlap(jobs, passstart, passend) {
-        var overlap = 0;
-        for (var i in jobs) {
-            var job_start = moment(jobs[i].start);
-            var job_end = moment(jobs[i].end);
-            // If scheduled ends before predicion, skip!
-            if (job_end.isBefore(passstart)) {continue;}
-
-            // If scheduled starts after prediction, skip!
-            if (job_start.isAfter(passend)) {continue;}
-
-            // If scheduled start is in prediction, calculate overlap
-            if (job_start.isBetween(passstart, passend, null, '[]')) {
-                overlap = Math.round((job_start.diff(passstart) / passend.diff(passstart)) * 100);
-                overlap = 100 - overlap;
-            }
-
-            // If scheduled end is in prediction, calculate overlap
-            if (job_end.isBetween(passstart, passend, null, '[]')) {
-                overlap = Math.round((passend.diff(job_end) / passend.diff(passstart)) * 100);
-                overlap = 100 - overlap;
-            }
-
-            // If prediction is within job, total overlap
-            if (job_start.isBefore(passstart) && job_end.isAfter(passend)) {
-                overlap = 100;
-            }
-        }
-        return overlap;
-    }
-
     // Pass predictions loading
     $('#loading-image').show();
     $.ajax({
@@ -192,19 +160,6 @@ $(document).ready(function() {
             var new_obs = $('#station-info').attr('data-new-obs');
             var station = $('#station-info').attr('data-id');
             var can_schedule =  $('#station-info').data('schedule');
-
-            var jobs = [];
-
-            $.ajax({
-                url: '/api/jobs/?ground_station=' + $('#station-info').attr('data-id'),
-                cache: false,
-                async: false,
-                success: function(data){
-                    jobs = data;
-                },
-                complete: function(){
-                }
-            });
 
             for (var i = 0; i <= len; i++) {
                 var schedulable = data.nextpasses[i].valid && can_schedule;
@@ -218,8 +173,9 @@ $(document).ready(function() {
                 var ts_svg = moment.utc(data.nextpasses[i].ts).format();
 
                 var overlap_style = null;
-                var overlap = check_overlap(jobs, moment.utc(data.nextpasses[i].tr), moment.utc(data.nextpasses[i].ts));
-                if (overlap >= 50) {
+                var overlap = 0;
+                if (data.nextpasses[i].overlapped) {
+                    overlap = Math.round(data.nextpasses[i].overlap_ratio * 100);
                     overlap_style = 'overlap';
                 }
                 $('#pass_predictions').append(`

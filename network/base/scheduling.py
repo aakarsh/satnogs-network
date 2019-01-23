@@ -84,7 +84,7 @@ def resolve_overlaps(scheduled_obs, start, end):
 
 
 def create_station_window(window_start, window_end, azr, azs, elevation, tle,
-                          overlapped, overlap_percentage=0):
+                          valid_duration, overlapped, overlap_ratio=0):
     return {'start': window_start.strftime("%Y-%m-%d %H:%M:%S.%f"),
             'end': window_end.strftime("%Y-%m-%d %H:%M:%S.%f"),
             'az_start': azr,
@@ -93,7 +93,9 @@ def create_station_window(window_start, window_end, azr, azs, elevation, tle,
             'tle0': tle.tle0,
             'tle1': tle.tle1,
             'tle2': tle.tle2,
-            'overlapped': overlapped}
+            'valid_duration': valid_duration,
+            'overlapped': overlapped,
+            'overlap_ratio': overlap_ratio}
 
 
 def create_station_windows(scheduled_obs, overlapped, pass_params, observer, satellite, tle):
@@ -113,7 +115,6 @@ def create_station_windows(scheduled_obs, overlapped, pass_params, observer, sat
     if len(windows) == 0:
         # No nonrlapping windows found
         return []
-
     if windows_changed:
         # Windows changed due to overlap, recalculate observation parameters
         if overlapped == 0:
@@ -137,13 +138,18 @@ def create_station_windows(scheduled_obs, overlapped, pass_params, observer, sat
                     elevation,
                     tle,
                     True,
-                    window_duration / initial_duration
+                    True,
+                    min(1, 1 - (window_duration / initial_duration))
                 ))
         elif overlapped == 2:
             initial_duration = (pass_params['set_time'] - pass_params['rise_time']).total_seconds()
+            total_window_duration = 0
             window_duration = 0
+            duration_validity = True
             for window_start, window_end in windows:
-                window_duration += (window_end - window_start).total_seconds()
+                window_duration = (window_end - window_start).total_seconds()
+                duration_validity = duration_validity and over_min_duration(window_duration)
+                total_window_duration += window_duration
 
             # Add a window for the overlapped pass
             station_windows.append(create_station_window(
@@ -153,21 +159,25 @@ def create_station_windows(scheduled_obs, overlapped, pass_params, observer, sat
                 pass_params['set_az'],
                 pass_params['tca_alt'],
                 tle,
+                duration_validity,
                 True,
-                window_duration / initial_duration
+                min(1, 1 - (window_duration / initial_duration))
             ))
     else:
-        # Add a window for a full pass
-        station_windows.append(create_station_window(
-            pass_params['rise_time'],
-            pass_params['set_time'],
-            pass_params['rise_az'],
-            pass_params['set_az'],
-            pass_params['tca_alt'],
-            tle,
-            False,
-            0
-        ))
+        window_duration = (windows[0][1] - windows[0][0]).total_seconds()
+        if over_min_duration(window_duration):
+            # Add a window for a full pass
+            station_windows.append(create_station_window(
+                pass_params['rise_time'],
+                pass_params['set_time'],
+                pass_params['rise_az'],
+                pass_params['set_az'],
+                pass_params['tca_alt'],
+                tle,
+                True,
+                False,
+                0
+            ))
     return station_windows
 
 

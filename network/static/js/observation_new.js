@@ -557,6 +557,7 @@ $(document).ready( function(){
         }, function(){
             if (obs_filter_dates && obs_filter_station && obs_filter_satellite){
                 $('#obs-selection-tools').hide();
+                $('#truncate-overlapped').click();
                 calculate_observation();
             }
         });
