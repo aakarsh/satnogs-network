@@ -4,7 +4,8 @@ from unipath import Path
 import os
 import raven
 
-ROOT = Path(__file__).parent.parent
+
+ROOT = Path(__file__).parent
 
 ENVIRONMENT = config('ENVIRONMENT', default='dev')
 DEBUG = config('DEBUG', default=True, cast=bool)
@@ -101,7 +102,7 @@ TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
         'DIRS': [
-            Path('network/templates').resolve(),
+            Path(ROOT).child('templates').resolve(),
         ],
         'OPTIONS': {
             'context_processors': [
@@ -130,17 +131,17 @@ TEMPLATES = [
 ]
 
 # Static & Media
-STATIC_ROOT = Path('staticfiles').resolve()
+STATIC_ROOT = config('STATIC_ROOT', default=Path('staticfiles').resolve())
 STATIC_URL = '/static/'
-STATICFILES_DIRS = (
-    Path('network/static').resolve(),
-)
+STATICFILES_DIRS = [
+    Path(ROOT).child('static').resolve(),
+]
 STATICFILES_FINDERS = (
     'django.contrib.staticfiles.finders.FileSystemFinder',
     'django.contrib.staticfiles.finders.AppDirectoriesFinder',
     'compressor.finders.CompressorFinder',
 )
-MEDIA_ROOT = Path('media').resolve()
+MEDIA_ROOT = config('MEDIA_ROOT', default=Path('media').resolve())
 MEDIA_URL = '/media/'
 CRISPY_TEMPLATE_PACK = 'bootstrap3'
 STATION_DEFAULT_IMAGE = '/static/img/ground_station_no_image.png'
