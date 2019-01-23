@@ -50,6 +50,31 @@ test:
     - apt-get install -y ruby-sass
   script:
     - tox -e deps,pytest
+docker:
+  stage: deploy
+  image: docker:latest
+  services:
+    - docker:dind
+  before_script:
+    - apk --update add py-pip
+    - pip install docker-compose
+  script:
+    - docker-compose build --no-cache --pull
+    - |
+      [ -z "$CI_REGISTRY_IMAGE" ] || {
+          docker login -u $CI_REGISTRY_USER -p $CI_JOB_TOKEN $CI_REGISTRY
+          docker tag satnogs-network:latest $CI_REGISTRY_IMAGE/satnogs-network:$CI_COMMIT_REF_NAME
+          docker push $CI_REGISTRY_IMAGE/satnogs-network:$CI_COMMIT_REF_NAME
+      }
+      [ -z "$DOCKERHUB_PASSWORD" ] || {
+          docker login -u $DOCKERHUB_USER -p $DOCKERHUB_PASSWORD
+          docker tag satnogs-network:latest librespace/satnogs-network:$CI_COMMIT_REF_NAME
+          docker push librespace/satnogs-network:$CI_COMMIT_REF_NAME
+      }
+  only:
+    refs:
+      - master
+      - dev
 
 stage:
   stage: deploy
