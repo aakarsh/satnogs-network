@@ -1,49 +1,57 @@
-version: '3.1'
+version: '3.2'
 services:
-
   db:
-    image: mariadb:10.3
-    container_name: satnogs_network_mysql
+    image: 'mariadb:10.4.1'
     environment:
-    - MYSQL_DATABASE=network
-    - MYSQL_USER=network
-    - MYSQL_PASSWORD=network
-    - MYSQL_ROOT_PASSWORD=toor
-
+      MYSQL_DATABASE: 'satnogsnetwork'
+      MYSQL_USER: 'satnogsnetwork'
+      MYSQL_PASSWORD: 'satnogsnetwork'
+      MYSQL_ROOT_PASSWORD: 'toor'
   redis:
-    image: redis:3.2.10
-    container_name: satnogs_network_redis
-
+    image: 'redis:3.2.12'
   celery:
     build:
-      context: .
-      dockerfile: docker/dev
-    container_name: satnogs_network_celery
-    volumes:
-      - .:/app
+      context: '.'
     links:
-      - db
-      - redis
+      - 'db'
+      - 'redis'
     environment:
-      - DATABASE_URL=mysql://network:network@db/network
-      - CELERY_BROKER_URL=redis://redis:6379/0
-      - CELERY_RESULT_BACKEND=redis://redis:6379/0
-    command:
-      ./bin/run-celery.sh
-
+      PYTHONDONTWRITEBYTECODE: '1'
+      DATABASE_URL: 'mysql://satnogsnetwork:satnogsnetwork@db/satnogsnetwork'
+      CELERY_BROKER_URL: 'redis://redis:6379/0'
+      CELERY_RESULT_BACKEND: 'redis://redis:6379/0'
+      CACHE_BACKEND: 'redis_cache.RedisCache'
+      CACHE_CLIENT_CLASS: 'django_redis.client.DefaultClient'
+      CACHE_LOCATION: 'redis://redis:6379/1'
+      MEDIA_ROOT: '/var/lib/satnogs-network/media'
+    command: ["djangoctl.sh", "develop_celery", "/usr/local/src/satnogs-network"]
+    volumes:
+      - '.:/usr/local/src/satnogs-network:z'
+      - 'media:/var/lib/satnogs-network/media'
   web:
     build:
-      context: .
-      dockerfile: docker/dev
-    container_name: satnogs_network_web
+      context: '.'
+    image: 'satnogs-network'
     ports:
-      - "8000:8000"
-    volumes:
-      - .:/app
+      - '8000:8000'
     links:
-      - db
-      - redis
+      - 'db'
+      - 'redis'
     environment:
-      - DATABASE_URL=mysql://network:network@db/network
-    command:
-      ./bin/run-docker.sh
+      PYTHONDONTWRITEBYTECODE: '1'
+      DATABASE_URL: 'mysql://satnogsnetwork:satnogsnetwork@db/satnogsnetwork'
+      CELERY_BROKER_URL: 'redis://redis:6379/0'
+      CELERY_RESULT_BACKEND: 'redis://redis:6379/0'
+      CACHE_BACKEND: 'redis_cache.RedisCache'
+      CACHE_CLIENT_CLASS: 'django_redis.client.DefaultClient'
+      CACHE_LOCATION: 'redis://redis:6379/1'
+      STATIC_ROOT: '/var/lib/satnogs-network/staticfiles'
+      MEDIA_ROOT: '/var/lib/satnogs-network/media'
+    command: ["djangoctl.sh", "develop", "/usr/local/src/satnogs-network"]
+    volumes:
+      - '.:/usr/local/src/satnogs-network:z'
+      - 'static:/var/lib/satnogs-network/static'
+      - 'media:/var/lib/satnogs-network/media'
+volumes:
+  static:
+  media:
