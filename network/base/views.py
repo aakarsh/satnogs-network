@@ -1,6 +1,5 @@
 import urllib2
 import ephem
-import math
 from operator import itemgetter
 from datetime import datetime, timedelta
 from collections import defaultdict
@@ -652,9 +651,15 @@ def pass_predictions(request, id):
     observer.lon = str(station.lng)
     observer.lat = str(station.lat)
     observer.elevation = station.alt
+    observer.horizon = str(station.horizon)
 
     nextpasses = []
-    passid = 0
+    start_date = make_aware(datetime.utcnow(), utc)
+    end_date = make_aware(datetime.utcnow() +
+                          timedelta(hours=settings.STATION_UPCOMING_END), utc)
+    observation_date_min_start = (
+        datetime.utcnow() + timedelta(minutes=settings.OBSERVATION_DATE_MIN_START)
+    ).strftime("%Y-%m-%d %H:%M:%S.%f")
 
     for satellite in satellites:
         # look for a match between transmitters from the satellite and
@@ -672,75 +677,41 @@ def pass_predictions(request, id):
             if not frequency_supported:
                 continue
 
-        observer.date = ephem.date(datetime.today())
-
         try:
-            sat_ephem = ephem.readtle(str(satellite.latest_tle.tle0),
-                                      str(satellite.latest_tle.tle1),
-                                      str(satellite.latest_tle.tle2))
+            tle = satellite.latest_tle.str_array
         except (ValueError, AttributeError):
             continue
 
-        # Here we are going to iterate over each satellite to
-        # find its appropriate passes within a given time constraint
-        keep_digging = True
-        while keep_digging:
-            try:
-                tr, azr, tt, altt, ts, azs = observer.next_pass(sat_ephem)
-            except ValueError:
-                break  # there will be sats in our list that fall below horizon, skip
-            except TypeError:
-                break  # if there happens to be a non-EarthSatellite object in the list
-            except Exception:
-                break
+        station_passes, station_windows = predict_available_observation_windows(station,
+                                                                                None,
+                                                                                2,
+                                                                                tle,
+                                                                                start_date,
+                                                                                end_date,
+                                                                                satellite)
 
-            if tr is None:
-                break
-
-            # using the angles module convert the sexagesimal degree into
-            # something more easily read by a human
-            try:
-                elevation = format(math.degrees(altt), '.0f')
-                azimuth_r = format(math.degrees(azr), '.0f')
-                azimuth_s = format(math.degrees(azs), '.0f')
-            except TypeError:
-                break
-            passid += 1
-
-            # show only if >= configured horizon and in next 6 hours,
-            # and not directly overhead (tr < ts see issue 199)
-            if tr < ephem.date(datetime.today() +
-                               timedelta(hours=settings.STATION_UPCOMING_END)):
-                if (float(elevation) >= station.horizon and tr < ts):
-                    valid = True
-                    if tr < ephem.Date(datetime.now() +
-                                       timedelta(minutes=settings.OBSERVATION_DATE_MIN_START)):
-                        valid = False
-                    sat_pass = {'passid': passid,
-                                'mytime': str(observer.date),
-                                'name': str(satellite.name),
-                                'id': str(satellite.id),
-                                'success_rate': str(satellite.success_rate),
-                                'unvetted_rate': str(satellite.unvetted_rate),
-                                'bad_rate': str(satellite.bad_rate),
-                                'data_count': str(satellite.data_count),
-                                'good_count': str(satellite.good_count),
-                                'bad_count': str(satellite.bad_count),
-                                'unvetted_count': str(satellite.unvetted_count),
-                                'norad_cat_id': str(satellite.norad_cat_id),
-                                'tle1': str(satellite.latest_tle.tle1),
-                                'tle2': str(satellite.latest_tle.tle2),
-                                'tr': tr.datetime(),  # Rise time
-                                'azr': azimuth_r,     # Rise Azimuth
-                                'tt': tt.datetime(),  # Max altitude time
-                                'altt': elevation,    # Max altitude
-                                'ts': ts.datetime(),  # Set time
-                                'azs': azimuth_s,     # Set azimuth
-                                'valid': valid}
-                    nextpasses.append(sat_pass)
-                observer.date = ephem.Date(ts).datetime() + timedelta(minutes=1)
-            else:
-                keep_digging = False
+        if station_windows:
+            for window in station_windows:
+                valid = window['start'] > observation_date_min_start
+                sat_pass = {'name': str(satellite.name),
+                            'id': str(satellite.id),
+                            'success_rate': str(satellite.success_rate),
+                            'unvetted_rate': str(satellite.unvetted_rate),
+                            'bad_rate': str(satellite.bad_rate),
+                            'data_count': str(satellite.data_count),
+                            'good_count': str(satellite.good_count),
+                            'bad_count': str(satellite.bad_count),
+                            'unvetted_count': str(satellite.unvetted_count),
+                            'norad_cat_id': str(satellite.norad_cat_id),
+                            'tle1': window['tle1'],
+                            'tle2': window['tle2'],
+                            'tr': window['start'].replace(' ', 'T'),  # Rise time
+                            'azr': window['az_start'],         # Rise Azimuth
+                            'altt': window['elev_max'],        # Max altitude
+                            'ts': window['end'].replace(' ', 'T'),    # Set time
+                            'azs': window['az_end'],           # Set azimuth
+                            'valid': valid}
+                nextpasses.append(sat_pass)
 
     data = {
         'id': id,

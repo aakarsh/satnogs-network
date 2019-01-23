@@ -83,9 +83,8 @@ def resolve_overlaps(scheduled_obs, start, end):
     return ([(start, end)], overlapped)
 
 
-def create_station_window(window_start, window_end, overlapped,
-                          azr, azs, elevation,
-                          tle):
+def create_station_window(window_start, window_end, azr, azs, elevation, tle,
+                          overlapped, overlap_percentage=0):
     return {'start': window_start.strftime("%Y-%m-%d %H:%M:%S.%f"),
             'end': window_end.strftime("%Y-%m-%d %H:%M:%S.%f"),
             'az_start': azr,
@@ -112,39 +111,62 @@ def create_station_windows(scheduled_obs, overlapped, pass_params, observer, sat
                                                 pass_params['set_time'])
 
     if len(windows) == 0:
-        # No non-overlapping windows found
+        # No nonrlapping windows found
         return []
 
     if windows_changed:
         # Windows changed due to overlap, recalculate observation parameters
         if overlapped == 0:
             return []
-        for window_start, window_end in windows:
-            elevation = max_elevation_in_window(observer, satellite,
-                                                pass_params['tca_time'],
-                                                window_start, window_end)
-            window_duration = (window_end - window_start).total_seconds()
-            if not over_min_duration(window_duration):
-                continue
+        elif overlapped == 1:
+            initial_duration = (pass_params['set_time'] - pass_params['rise_time']).total_seconds()
+            for window_start, window_end in windows:
+                elevation = max_elevation_in_window(observer, satellite,
+                                                    pass_params['tca_time'],
+                                                    window_start, window_end)
+                window_duration = (window_end - window_start).total_seconds()
+                if not over_min_duration(window_duration):
+                    continue
 
-            # Add a window for a partial pass
+                # Add a window for a partial pass
+                station_windows.append(create_station_window(
+                    window_start,
+                    window_end,
+                    get_azimuth(observer, satellite, window_start),
+                    get_azimuth(observer, satellite, window_end),
+                    elevation,
+                    tle,
+                    True,
+                    window_duration / initial_duration
+                ))
+        elif overlapped == 2:
+            initial_duration = (pass_params['set_time'] - pass_params['rise_time']).total_seconds()
+            window_duration = 0
+            for window_start, window_end in windows:
+                window_duration += (window_end - window_start).total_seconds()
+
+            # Add a window for the overlapped pass
             station_windows.append(create_station_window(
-                window_start, window_end, True,
-                get_azimuth(observer, satellite, window_start),
-                get_azimuth(observer, satellite, window_end),
-                elevation,
-                tle
+                pass_params['rise_time'],
+                pass_params['set_time'],
+                pass_params['rise_az'],
+                pass_params['set_az'],
+                pass_params['tca_alt'],
+                tle,
+                True,
+                window_duration / initial_duration
             ))
     else:
         # Add a window for a full pass
         station_windows.append(create_station_window(
             pass_params['rise_time'],
             pass_params['set_time'],
-            False,
             pass_params['rise_az'],
             pass_params['set_az'],
             pass_params['tca_alt'],
-            tle
+            tle,
+            False,
+            0
         ))
     return station_windows
 
@@ -186,7 +208,7 @@ def predict_available_observation_windows(station, min_horizon, overlapped, tle,
     :param min_horizon: Overwrite station minimum horizon if defined
     :type min_horizon: integer or None
     :param overlapped: Calculate and return overlapped observations fully, truncated or not at all
-    :type overlapped: integer values:0, 1, 2
+    :type overlapped: integer values: 0 (no return), 1(truncated overlaps), 2(full overlaps)
     :param tle: Satellite current TLE
     :param tle: Satellite current TLE
     :type tle: array of 3 strings
@@ -208,7 +230,7 @@ def predict_available_observation_windows(station, min_horizon, overlapped, tle,
     observer.lat = str(station.lat)
     observer.elevation = station.alt
     observer.date = ephem.Date(start_date)
-    if min_horizon:
+    if min_horizon is not None:
         observer.horizon = str(min_horizon)
     else:
         observer.horizon = str(station.horizon)
