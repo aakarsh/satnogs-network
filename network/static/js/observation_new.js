@@ -358,6 +358,12 @@ $(document).ready( function(){
         } else if (data.stations.length == 0 || (data.stations.length == 1 && data.stations[0] == '')) {
             $('#windows-data').html('<span class="text-danger">You should select a Station first.</span>');
             return;
+        } else if (data.start_time.length == 0) {
+            $('#windows-data').html('<span class="text-danger">You should select a Start Time first.</span>');
+            return;
+        } else if (data.end_time.length == 0) {
+            $('#windows-data').html('<span class="text-danger">You should select an End Time first.</span>');
+            return;
         }
         var is_custom_horizon = $('#horizon-status input[type=radio]').filter(':checked').val() == 'custom';
         if(is_custom_horizon) {
