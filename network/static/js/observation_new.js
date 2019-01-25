@@ -302,6 +302,19 @@ $(document).ready( function(){
         });
     }
 
+    function initiliaze_calculation(show_results){
+        if(show_results){
+            $('.calculation-result').show();
+        } else {
+            $('.calculation-result').hide();
+        }
+        $('#obs-selection-tools').hide();
+        $('#timeline').empty();
+        $('#hover-obs').hide();
+        $('#windows-data').empty();
+        $('#schedule-observation').prop('disabled', true);
+    }
+
     $('#satellite-selection').on('changed.bs.select', function() {
         var satellite = $(this).find(':selected').data('norad');
         var station = $('#form-obs').data('obs-filter-station');
@@ -309,10 +322,7 @@ $(document).ready( function(){
             satellite: satellite,
             station: station
         });
-        $('.calculation-result').hide();
-        $('#timeline').empty();
-        $('#hover-obs').hide();
-        $('#windows-data').empty();
+        initiliaze_calculation(false);
     });
 
     $('#transmitter-selection').on('changed.bs.select', function() {
@@ -322,10 +332,7 @@ $(document).ready( function(){
             transmitter: transmitter,
             station: station
         });
-        $('.calculation-result').hide();
-        $('#timeline').empty();
-        $('#hover-obs').hide();
-        $('#windows-data').empty();
+        initiliaze_calculation(false);
     });
 
     function sort_stations(a, b){
@@ -338,10 +345,7 @@ $(document).ready( function(){
 
     function calculate_observation(){
         $('.calculation-result').show();
-        $('#obs-selection-tools').hide();
-        $('#timeline').empty();
-        $('#hover-obs').hide();
-        $('#windows-data').empty();
+        initiliaze_calculation(true);
         var url = '/prediction_windows/';
         var data = {};
         data.start_time = $('#datetimepicker-start input').val();
