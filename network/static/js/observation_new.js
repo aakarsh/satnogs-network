@@ -184,6 +184,14 @@ $(document).ready( function(){
     var suggested_data = [];
     var elevation_slider = new Slider('#elevation-filter', { id: 'elevation-filter', min: 0, max: 90, step: 1, range: true, value: [0, 90] });
 
+    function update_schedule_button_status(){
+        if($('#timeline rect').not('.unselected-obs').length != 0){
+            $('#schedule-observation').prop('disabled', false);
+        } else {
+            $('#schedule-observation').prop('disabled', true);
+        }
+    }
+
     function filter_observations() {
         var elmin = elevation_slider.getValue()[0];
         var elmax = elevation_slider.getValue()[1];
@@ -205,10 +213,12 @@ $(document).ready( function(){
                 }
             });
         });
+        update_schedule_button_status();
     }
 
     elevation_slider.on('slideStop', function() {
         filter_observations();
+        update_schedule_button_status();
     });
 
     $('#select-all-observations').on('click', function(){
@@ -221,6 +231,7 @@ $(document).ready( function(){
             });
             station.selectedAll = true;
         });
+        update_schedule_button_status();
     });
 
     $('#select-none-observations').on('click', function(){
@@ -231,6 +242,7 @@ $(document).ready( function(){
             });
             station.selectedAll = false;
         });
+        update_schedule_button_status();
     });
 
     $('#form-obs').on('submit', function() {
@@ -515,6 +527,7 @@ $(document).ready( function(){
                         }
                     }
                 }
+                update_schedule_button_status();
             })
             .margin({left:140, right:10, top:0, bottom:50})
             .tickFormat({format: d3.time.format.utc('%H:%M'), tickTime: tick_time, tickInterval: tick_interval, tickSize: 6})
@@ -539,7 +552,7 @@ $(document).ready( function(){
                 }
             });
         });
-        $('#schedule-observation').removeAttr('disabled');
+        update_schedule_button_status();
         if ($('rect').length > 1) {
             $('#obs-selection-tools').show();
         }
