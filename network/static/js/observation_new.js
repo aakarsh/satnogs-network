@@ -260,6 +260,10 @@ $(document).ready( function(){
             });
         });
         $('#windows-data').append('<input type="hidden" name="total" value="' + obs_counter + '">');
+        //If there isn't any selected observation don't submit
+        if(obs_counter == 0){
+            return false;
+        }
     });
 
     var obs_filter = $('#form-obs').data('obs-filter');
