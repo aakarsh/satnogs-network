@@ -232,12 +232,39 @@
 
     <div class="row calculation-result">
       <div class="col-md-12">
-        <button type="submit" id="schedule-observation" class="btn btn-success pull-right" disabled="True">
+        <button type="button" id="schedule-observation" data-warn-min-obs="{{ warn_min_obs }}" class="btn btn-success pull-right" disabled="True">
           Schedule
         </button>
       </div>
     </div>
+
+    <!-- Confirmation Modal -->
+    <div class="modal" id="confirm-modal" tabindex="-1" role="dialog" aria-labelledby="confirm-modal">
+      <div class="modal-dialog modal-lg" role="document">
+        <div class="modal-content">
+          <div class="modal-header">
+            <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+            <h4 class="modal-title" id="myModalLabel">Do you really want to schedule <span class="counted-obs"></span> observations?</h4>
+          </div>
+          <div class="modal-body">
+            <p>WARNING: You are about to schedule <span class="counted-obs"></span> observations at <span class="counted-stations"/></span> different stations.</p>
+            <p>Several station owners have added requests in their station descriptions.</p>
+            <p>Before scheduling massively, please make sure you respect these requests.</p>
+            <p>Are you sure you want to continue and schedule all of them?</p>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>
+            <button type="submit" id="schedule-observation" class="btn btn-success">
+              Schedule
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
   </form>
+
+
 
   <!-- UTC Modal -->
   {% include 'includes/utc.html' %}

@@ -245,9 +245,13 @@ $(document).ready( function(){
         update_schedule_button_status();
     });
 
-    $('#form-obs').on('submit', function() {
+    $('#schedule-observation').on('click', function() {
+        $('#windows-data').empty();
         var obs_counter = 0;
+        var station_counter = 0;
+        var warn_min_obs = parseInt(this.dataset.warnMinObs);
         $.each(suggested_data, function(i, station){
+            let obs_counted = obs_counter;
             $.each(station.times, function(j, observation){
                 if(observation.selected){
                     var start = moment.utc(observation.starting_time).format('YYYY-MM-DD HH:mm:ss.SSS');
@@ -258,11 +262,17 @@ $(document).ready( function(){
                     obs_counter += 1;
                 }
             });
+            if(obs_counted < obs_counter){
+                station_counter += 1;
+            }
         });
         $('#windows-data').append('<input type="hidden" name="total" value="' + obs_counter + '">');
-        //If there isn't any selected observation don't submit
-        if(obs_counter == 0){
-            return false;
+        if(obs_counter > warn_min_obs){
+            $('#confirm-modal .counted-obs').text(obs_counter);
+            $('#confirm-modal .counted-stations').text(station_counter);
+            $('#confirm-modal').modal('show');
+        } else if (obs_counter != 0){
+            $('#form-obs').submit();
         }
     });
 

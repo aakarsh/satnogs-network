@@ -384,7 +384,8 @@ def observation_new(request):
                   {'satellites': satellites, 'obs_filter': obs_filter,
                    'date_min_start': settings.OBSERVATION_DATE_MIN_START,
                    'date_min_end': settings.OBSERVATION_DATE_MIN_END,
-                   'date_max_range': settings.OBSERVATION_DATE_MAX_RANGE})
+                   'date_max_range': settings.OBSERVATION_DATE_MAX_RANGE,
+                   'warn_min_obs': settings.OBSERVATION_WARN_MIN_OBS})
 
 
 @ajax_required
