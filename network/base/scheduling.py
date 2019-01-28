@@ -232,6 +232,7 @@ def predict_available_observation_windows(station, min_horizon, overlapped, tle,
     :return: List of passes found and list of available observation windows
     '''
     passes_found = []
+    station_windows = []
     # Initialize pyehem Satellite for propagation
     satellite = ephem.readtle(*tle)
     # Initialize pyephem Observer for propagation
@@ -244,9 +245,12 @@ def predict_available_observation_windows(station, min_horizon, overlapped, tle,
         observer.horizon = str(min_horizon)
     else:
         observer.horizon = str(station.horizon)
-    satellite.compute(observer)
 
-    station_windows = []
+    try:
+        satellite.compute(observer)
+    except ValueError:
+        return passes_found, station_windows
+
     while True:
         try:
             pass_params = next_pass(observer, satellite)
