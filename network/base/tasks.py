@@ -72,6 +72,7 @@ def fetch_data():
     # Fetch Satellites
     for sat in json.loads(satellites):
         norad_cat_id = sat['norad_cat_id']
+        sat.pop('decayed', None)
         try:
             existing_satellite = Satellite.objects.get(norad_cat_id=norad_cat_id)
             existing_satellite.__dict__.update(sat)

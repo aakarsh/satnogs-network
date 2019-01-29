@@ -45,6 +45,7 @@ class Command(BaseCommand):
         for satellite in r_satellites.json():
             norad_cat_id = satellite['norad_cat_id']
             name = satellite['name']
+            satellite.pop('decayed', None)
             try:
                 existing_satellite = Satellite.objects.get(norad_cat_id=norad_cat_id)
                 existing_satellite.__dict__.update(satellite)
