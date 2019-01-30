@@ -119,6 +119,7 @@ class StationSerializer(serializers.ModelSerializer):
 
 class JobSerializer(serializers.ModelSerializer):
     frequency = serializers.SerializerMethodField()
+    frequency_drift = serializers.SerializerMethodField()
     tle0 = serializers.SerializerMethodField()
     tle1 = serializers.SerializerMethodField()
     tle2 = serializers.SerializerMethodField()
@@ -129,10 +130,13 @@ class JobSerializer(serializers.ModelSerializer):
     class Meta:
         model = Observation
         fields = ('id', 'start', 'end', 'ground_station', 'tle0', 'tle1', 'tle2',
-                  'frequency', 'mode', 'transmitter', 'baud')
+                  'frequency', 'frequency_drift', 'mode', 'transmitter', 'baud')
 
     def get_frequency(self, obj):
         return obj.transmitter.downlink_low
+
+    def get_frequency_drift(self, obj):
+        return obj.transmitter.downlink_drift
 
     def get_transmitter(self, obj):
         return obj.transmitter.uuid
@@ -162,8 +166,9 @@ class TransmitterSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Transmitter
-        fields = ('uuid', 'description', 'alive', 'downlink_low', 'downlink_high',
-                  'mode', 'uplink_low', 'uplink_high', 'satellite', 'norad_cat_id',
+        fields = ('uuid', 'description', 'alive', 'type', 'uplink_low', 'uplink_high',
+                  'uplink_drift', 'downlink_low', 'downlink_high', 'downlink_drift',
+                  'mode', 'invert', 'baud', 'satellite', 'norad_cat_id',
                   'success_rate', 'bad_rate', 'unvetted_rate', 'good_count',
                   'bad_count', 'unvetted_count', 'data_count')
 
