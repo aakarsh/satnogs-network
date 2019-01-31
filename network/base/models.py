@@ -315,7 +315,8 @@ class Satellite(models.Model):
     @property
     def unvetted_count(self):
         data = Observation.objects.filter(satellite=self)
-        return data.filter(vetted_status='unknown').count()
+        return data.filter(vetted_status='unknown',
+                           end__lte=datetime.now()).count()
 
     @property
     def future_count(self):
