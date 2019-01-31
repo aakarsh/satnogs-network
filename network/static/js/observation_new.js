@@ -11,11 +11,11 @@ $(document).ready( function(){
 
     $('#default-horizon').click(function() {
         $('#min-horizon').slider('destroy');
-        $('#min-horizon').prop('disabled', true);
+        $('#min-horizon').remove();
     });
 
     $('#custom-horizon').click(function() {
-        $('#min-horizon').prop('disabled', false);
+        $('#horizon-status').append('<input type="hidden" name="min-horizon" id="min-horizon"/>');
         $('#min-horizon').slider({
             id: 'min-horizon-slider',
             min: 0,
