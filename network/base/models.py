@@ -321,8 +321,7 @@ class Satellite(models.Model):
     @property
     def future_count(self):
         data = Observation.objects.filter(satellite=self)
-        return data.filter(id__in=(o.id for
-                                   o in data if o.is_future)).count()
+        return data.filter(end__gt=datetime.now()).count()
 
     @property
     def success_rate(self):
