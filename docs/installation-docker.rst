@@ -32,3 +32,13 @@ Docker Installation
      $ docker-compose exec web djangoctl.sh initialize
 
    Your satnogs-network development instance is available in localhost:8000. Go hack!
+
+#. **Clean database**
+
+   Clean up the database in case of problems
+
+     $ docker-compose exec web django-admin flush
+
+#. **Build the documentation locally
+
+     $ docker run -it -v ${PWD}:/documents/ plaindocs/docker-sphinx make html
