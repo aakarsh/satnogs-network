@@ -57,6 +57,13 @@ class JobView(viewsets.ReadOnlyModelViewSet):
         if gs_id and self.request.user.is_authenticated():
             gs = get_object_or_404(Station, id=gs_id)
             if gs.owner == self.request.user:
+                lat = self.request.query_params.get('lat', None)
+                lon = self.request.query_params.get('lon', None)
+                alt = self.request.query_params.get('alt', None)
+                if not (lat is None or lon is None or alt is None):
+                    gs.lat = float(lat)
+                    gs.lng = float(lon)
+                    gs.alt = int(alt)
                 gs.last_seen = now()
                 gs.save()
         return queryset
