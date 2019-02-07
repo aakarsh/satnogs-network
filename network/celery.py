@@ -13,6 +13,7 @@ RUN_DAILY = 60 * 60 * 24
 RUN_EVERY_TWO_HOURS = 2 * 60 * 60
 RUN_HOURLY = 60 * 60
 RUN_EVERY_MINUTE = 60
+RUN_TWICE_HOURLY = 60 * 30
 
 app = Celery('network')
 
@@ -41,5 +42,5 @@ def setup_periodic_tasks(sender, **kwargs):
     sender.add_periodic_task(RUN_HOURLY, stations_cache_rates.s(),
                              name='stations-cache-rates')
 
-    sender.add_periodic_task(RUN_EVERY_MINUTE, sync_to_db.s(),
+    sender.add_periodic_task(RUN_TWICE_HOURLY, sync_to_db.s(),
                              name='sync-to-db')
