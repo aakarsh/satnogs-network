@@ -15,6 +15,7 @@
     },
     "dependencies": {
         "bootstrap": "^3.3.7",
+        "bootstrap-fileinput": "^4.5.2",
         "bootstrap-select": "^1.13.2",
         "bootstrap-slider": "^10.0.0",
         "d3": "^3.5.17",
@@ -51,6 +52,8 @@
         "jquery.json-viewer/json-viewer/jquery.json-viewer.css",
         "satellite.js/dist/satellite.min.js",
         "bootstrap-select/dist/js/bootstrap-select.min.js",
-        "bootstrap-select/dist/css/bootstrap-select.min.css"
+        "bootstrap-select/dist/css/bootstrap-select.min.css",
+        "bootstrap-fileinput/js/fileinput.min.js",
+        "bootstrap-fileinput/css/fileinput.min.css"
     ]
 }

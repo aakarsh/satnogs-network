@@ -298,6 +298,14 @@ beeper@^1.0.0:
   resolved "https://registry.yarnpkg.com/beeper/-/beeper-1.1.1.tgz#e6d5ea8c5dad001304a70b22638447f69cb2f809"
   integrity sha1-5tXqjF2tABMEpwsiY4RH9pyy+Ak=
 
+bootstrap-fileinput@^4.5.2:
+  version "4.5.2"
+  resolved "https://registry.yarnpkg.com/bootstrap-fileinput/-/bootstrap-fileinput-4.5.2.tgz#7db0a01e4c8cfd692a7e8572680aed9572106aff"
+  integrity sha512-k0ESNdn2AJ+9bc7OQHQiduYtYWhiF/GocIfdwqGo6sYR+UwtllVdXp/O8khneSALuprRnmN3uNjN4QYzcfjcpA==
+  dependencies:
+    bootstrap ">= 3.0.0"
+    jquery ">= 1.9.0"
+
 bootstrap-select@^1.13.2:
   version "1.13.3"
   resolved "https://registry.yarnpkg.com/bootstrap-select/-/bootstrap-select-1.13.3.tgz#77f62b72c69339227753b3879cec036039dcb4d9"
@@ -307,6 +315,11 @@ bootstrap-slider@^10.0.0:
   version "10.2.3"
   resolved "https://registry.yarnpkg.com/bootstrap-slider/-/bootstrap-slider-10.2.3.tgz#9630c288b7b12c0a722a3fac4842b47e7c602ba7"
   integrity sha512-YomplzkMZPzRQHrKJ/3/McmwHKAb29wuHrCE/k9iURAuMefYBRu7kz9/vcRGgztJ2o0olL9ltUTCnxcPOY+AMA==
+
+"bootstrap@>= 3.0.0":
+  version "4.2.1"
+  resolved "https://registry.yarnpkg.com/bootstrap/-/bootstrap-4.2.1.tgz#8f8bdca024dbf0e8644da32e918c8a03a90a5757"
+  integrity sha512-tt/7vIv3Gm2mnd/WeDx36nfGGHleil0Wg8IeB7eMrVkY0fZ5iTaBisSh8oNANc2IBsCc6vCgCNTIM/IEN0+50Q==
 
 bootstrap@^3.3, bootstrap@^3.3.7:
   version "3.3.7"
@@ -2221,7 +2234,7 @@ jquery.json-viewer@^1.1.0:
   resolved "https://registry.yarnpkg.com/jquery.json-viewer/-/jquery.json-viewer-1.1.0.tgz#e97878cfa64c938a1eaf8d25cdf61f04d53df78d"
   integrity sha1-6Xh4z6ZMk4oer40lzfYfBNU9940=
 
-"jquery@^1.8.3 || ^2.0 || ^3.0", jquery@^3.2.1:
+"jquery@>= 1.9.0", "jquery@^1.8.3 || ^2.0 || ^3.0", jquery@^3.2.1:
   version "3.3.1"
   resolved "https://registry.yarnpkg.com/jquery/-/jquery-3.3.1.tgz#958ce29e81c9790f31be7792df5d4d95fc57fbca"
   integrity sha512-Ubldcmxp5np52/ENotGxlLe6aGMvmF4R8S6tZjsP6Knsaxd/xp3Zrh50cG93lR6nPXyUFwzN3ZSOQI0wRJNdGg==
