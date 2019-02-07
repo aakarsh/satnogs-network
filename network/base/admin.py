@@ -26,7 +26,7 @@ class AntennaAdmin(admin.ModelAdmin):
 @admin.register(Station)
 class StationAdmin(admin.ModelAdmin):
     list_display = ('id', 'name', 'owner', 'get_email', 'lng', 'lat', 'qthlocator',
-                    'client_version', 'created_date', 'state')
+                    'client_version', 'created_date', 'state', 'target_utilization')
     list_filter = ('status', 'created', 'client_version')
 
     actions = [export_as_csv]
@@ -62,7 +62,7 @@ class TransmitterAdmin(admin.ModelAdmin):
     list_display = ('uuid', 'description', 'satellite', 'type', 'alive', 'mode', 'uplink_low',
                     'uplink_high', 'uplink_drift', 'downlink_low', 'downlink_high',
                     'downlink_drift', 'baud', 'sync_to_db')
-    search_fields = ('satellite', 'uuid', 'satellite__name', 'satellite__norad_cat_id')
+    search_fields = ('uuid', 'satellite__name', 'satellite__norad_cat_id')
     list_filter = ('type', 'mode', 'alive', 'sync_to_db')
     readonly_fields = ('uuid', 'description', 'satellite', 'type', 'uplink_low', 'uplink_high',
                        'uplink_drift', 'downlink_low', 'downlink_high', 'downlink_drift',

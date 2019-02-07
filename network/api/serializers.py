@@ -88,7 +88,8 @@ class StationSerializer(serializers.ModelSerializer):
         model = Station
         fields = ('id', 'name', 'altitude', 'min_horizon', 'lat', 'lng',
                   'qthlocator', 'location', 'antenna', 'created', 'last_seen',
-                  'status', 'observations', 'description', 'client_version')
+                  'status', 'observations', 'description', 'client_version',
+                  'target_utilization')
 
     def get_altitude(self, obj):
         return obj.alt

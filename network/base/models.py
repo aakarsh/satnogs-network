@@ -167,6 +167,11 @@ class Station(models.Model):
     horizon = models.PositiveIntegerField(help_text='In degrees above 0', default=10)
     description = models.TextField(max_length=500, blank=True, help_text='Max 500 characters')
     client_version = models.CharField(max_length=45, blank=True)
+    target_utilization = models.IntegerField(validators=[MaxValueValidator(100),
+                                                         MinValueValidator(0)],
+                                             help_text='Target utilization factor for '
+                                                       ' your station',
+                                             null=True, blank=True)
 
     class Meta:
         ordering = ['-status']

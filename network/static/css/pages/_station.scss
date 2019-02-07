@@ -115,3 +115,11 @@
         font-size: 2em;
     }
 }
+
+#horizon_value, #utilization_value {
+    margin: 0 0 0 20px;
+
+    .slider-selection {
+        background: #5bc0de;
+    }
+}

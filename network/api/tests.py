@@ -74,6 +74,7 @@ class StationViewApiTest(TestCase):
             u'name': self.station.name,
             u'observations': 0,
             u'qthlocator': self.station.qthlocator,
+            u'target_utilization': self.station.target_utilization,
             u'status': self.station.get_status_display()}
 
         response = self.client.get('/api/stations/')
