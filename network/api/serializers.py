@@ -120,7 +120,6 @@ class StationSerializer(serializers.ModelSerializer):
 
 class JobSerializer(serializers.ModelSerializer):
     frequency = serializers.SerializerMethodField()
-    frequency_drift = serializers.SerializerMethodField()
     tle0 = serializers.SerializerMethodField()
     tle1 = serializers.SerializerMethodField()
     tle2 = serializers.SerializerMethodField()
@@ -131,13 +130,15 @@ class JobSerializer(serializers.ModelSerializer):
     class Meta:
         model = Observation
         fields = ('id', 'start', 'end', 'ground_station', 'tle0', 'tle1', 'tle2',
-                  'frequency', 'frequency_drift', 'mode', 'transmitter', 'baud')
+                  'frequency', 'mode', 'transmitter', 'baud')
 
     def get_frequency(self, obj):
-        return obj.transmitter.downlink_low
-
-    def get_frequency_drift(self, obj):
-        return obj.transmitter.downlink_drift
+        frequency = obj.transmitter.downlink_low
+        frequency_drift = obj.transmitter.downlink_drift
+        if frequency_drift is None:
+            return frequency
+        else:
+            return int(round(frequency + ((frequency * frequency_drift) / float(pow(10, 9)))))
 
     def get_transmitter(self, obj):
         return obj.transmitter.uuid
