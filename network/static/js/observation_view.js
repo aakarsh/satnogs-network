@@ -174,6 +174,9 @@ $(document).ready(function() {
         } else if (event.which == 68) {
             var link_discuss = $('#obs-discuss');
             link_discuss[0].click();
+        } else if (event.which == 85) {
+            var link_unknown = $('#unknown-data');
+            link_unknown[0].click();
         } else if (event.which == 71) {
             var link_good = $('#good-data');
             link_good[0].click();

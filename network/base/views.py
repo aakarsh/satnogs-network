@@ -527,18 +527,21 @@ def observation_delete(request, id):
 
 
 @login_required
-def observation_vet(request, id, status):
+def observation_vet(request, id, status, undo=None):
     observation = get_object_or_404(Observation, id=id)
     can_vet = vet_perms(request.user, observation)
     if status in ['good', 'bad', 'failed', 'unknown'] and can_vet:
+        previous_status = observation.vetted_status
         observation.vetted_status = status
         observation.vetted_user = request.user
         observation.vetted_datetime = now()
         observation.save(update_fields=['vetted_status', 'vetted_user', 'vetted_datetime'])
-        if not status == 'unknown':
+        if undo is None:
             messages.success(request, 'Observation vetted successfully. [<a href="{0}">Undo</a>]'
                              .format(reverse('base:observation_vet',
-                                             kwargs={'id': observation.id, 'status': 'unknown'})))
+                                             kwargs={'id': observation.id,
+                                                     'status': previous_status,
+                                                     'undo': 'undo'})))
     else:
         messages.error(request, 'Permission denied.')
     return redirect(reverse('base:observation_view', kwargs={'id': observation.id}))

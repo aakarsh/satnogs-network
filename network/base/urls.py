@@ -21,6 +21,8 @@ base_urlpatterns = ([
         views.pass_predictions, name='pass_predictions'),
     url(r'^observation_vet/(?P<id>[0-9]+)/(?P<status>[a-z]+)/$', views.observation_vet,
         name='observation_vet'),
+    url(r'^observation_vet/(?P<id>[0-9]+)/(?P<status>[a-z]+)/(?P<undo>[a-z]+)/$',
+        views.observation_vet, name='observation_vet'),
 
     # Stations
     url(r'^stations/$', views.stations_list, name='stations_list'),

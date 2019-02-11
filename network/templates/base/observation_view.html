@@ -79,41 +79,55 @@
       <div class="front-line">
         <span class="label label-default">Status</span>
         <span class="front-data">
-          {% if observation.is_vetted %}
-            <span class="label label-xs label-{{ observation.vetted_status }}" aria-hidden="true"
-                  data-toggle="tooltip" data-placement="right"
-                  title="Vetted {{ observation.vetted_status }} on {{ observation.vetted_datetime|date:"Y-m-d H:i:s" }}
-                         {% if observation.vetted_user %} by {{ observation.vetted_user.displayname }}
-                         {% else %} automatically
-                         {% endif %}">{{ observation.get_vetted_status_display }}</span>
-          {% elif observation.is_future %}
+          {% if observation.is_future %}
             <span class="label label-xs label-info" aria-hidden="true"
                   data-toggle="tooltip" data-placement="right"
                   title="This observation is in the future">Pending</span>
           {% else %}
             <span class="label label-xs label-{{ observation.vetted_status }}" aria-hidden="true"
                   data-toggle="tooltip" data-placement="right"
-                  title="This observation needs vetting">Unvetted</span>
+                  {% if observation.is_vetted %}
+                    title="Vetted {{ observation.vetted_status }} on {{ observation.vetted_datetime|date:"Y-m-d H:i:s" }}
+                           {% if observation.vetted_user %} by {{ observation.vetted_user.displayname }}
+                           {% else %} automatically
+                           {% endif %}"
+                  {% else %}
+                    title="This observation needs vetting"
+                  {% endif %}"
+            >{{ observation.get_vetted_status_display }}</span>
             {% if can_vet %}
               <div class="pull-right">
                 <a href="https://wiki.satnogs.org/Operation#Rating_observations" target="_blank">
                   <span class="glyphicon glyphicon-info-sign" aria-hidden="true"></span>
                 </a>
-                <a href="{% url 'base:observation_vet' id=observation.id status='good' %}">
-                  <button id="good-data" type="button" class="btn btn-xs btn-success" title="good" data-toggle="tooltip">
-                    <span class="glyphicon glyphicon-ok" aria-hidden="true"></span>
-                  </button>
-                </a>
-                <a href="{% url 'base:observation_vet' id=observation.id status='bad' %}">
-                  <button id="bad-data" type="button" class="btn btn-xs btn-danger" title="bad" data-toggle="tooltip">
-                    <span class="glyphicon glyphicon-remove" aria-hidden="true"></span>
-                  </button>
-                </a>
-                <a href="{% url 'base:observation_vet' id=observation.id status='failed' %}">
-                  <button id="failed-data" type="button" class="btn btn-xs btn-failed" title="failed" data-toggle="tooltip">
-                    <span class="glyphicon glyphicon-alert" aria-hidden="true"></span>
-                  </button>
-                </a>
+                {% if observation.vetted_status != "unknown" %}
+                  <a href="{% url 'base:observation_vet' id=observation.id status='unknown' %}">
+                    <button id="unknown-data" type="button" class="btn btn-xs btn-warning" title="unknown" data-toggle="tooltip">
+                      <span class="glyphicon glyphicon-question-sign" aria-hidden="true"></span>
+                    </button>
+                  </a>
+                {% endif %}
+                {% if observation.vetted_status != "good" %}
+                  <a href="{% url 'base:observation_vet' id=observation.id status='good' %}">
+                    <button id="good-data" type="button" class="btn btn-xs btn-success" title="good" data-toggle="tooltip">
+                      <span class="glyphicon glyphicon-ok" aria-hidden="true"></span>
+                    </button>
+                  </a>
+                {% endif %}
+                {% if observation.vetted_status != "bad" %}
+                  <a href="{% url 'base:observation_vet' id=observation.id status='bad' %}">
+                    <button id="bad-data" type="button" class="btn btn-xs btn-danger" title="bad" data-toggle="tooltip">
+                      <span class="glyphicon glyphicon-remove" aria-hidden="true"></span>
+                    </button>
+                  </a>
+                {% endif %}
+                {% if observation.vetted_status != "failed" %}
+                  <a href="{% url 'base:observation_vet' id=observation.id status='failed' %}">
+                    <button id="failed-data" type="button" class="btn btn-xs btn-failed" title="failed" data-toggle="tooltip">
+                      <span class="glyphicon glyphicon-alert" aria-hidden="true"></span>
+                    </button>
+                  </a>
+                {% endif %}
               </div>
             {% endif %}
           {% endif %}
