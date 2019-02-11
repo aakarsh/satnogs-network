@@ -1,0 +1,12 @@
+version: '3.2'
+services:
+  cache_image:
+    image: '$CACHE_IMAGE'
+  web:
+    build:
+      cache_from:
+        - '$CACHE_IMAGE'
+  celery:
+    build:
+      cache_from:
+        - '$CACHE_IMAGE'

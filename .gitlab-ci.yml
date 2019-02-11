@@ -59,7 +59,9 @@ docker:
     - apk --update add py-pip
     - pip install docker-compose
   script:
-    - docker-compose build --no-cache --pull
+    - CACHE_IMAGE="${CI_REGISTRY_IMAGE:+$CI_REGISTRY_IMAGE/satnogs-network:$CI_COMMIT_REF_NAME}"; export CACHE_IMAGE
+    - docker-compose -f docker-compose.yml -f docker-compose.cache.yml pull cache_image || true
+    - docker-compose -f docker-compose.yml -f docker-compose.cache.yml build --pull
     - |
       [ -z "$CI_REGISTRY_IMAGE" ] || {
           docker login -u $CI_REGISTRY_USER -p $CI_JOB_TOKEN $CI_REGISTRY
