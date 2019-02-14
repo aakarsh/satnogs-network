@@ -76,3 +76,46 @@
 .btn-inactive {
     filter: opacity(45%) saturate(75%);
 }
+
+#loading {
+    display: none;
+    text-align: center;
+    color: #666;
+
+    > .spinner {
+       margin: 50px auto 0;
+    }
+}
+
+.spinner {
+    text-align: center;
+
+    > div {
+        width: 10px;
+        height: 10px;
+        background-color: #666;
+        border-radius: 100%;
+        display: inline-block;
+        animation: sk-bouncedelay 1.4s infinite ease-in-out both;
+    }
+
+    .bounce1 {
+        animation-delay: -0.32s;
+    }
+
+    .bounce2 {
+        animation-delay: -0.16s;
+    }
+
+    @keyframes sk-bouncedelay {
+
+        0%, 80%, 100% {
+            transform: scale(0);
+        }
+
+        40% {
+            transform: scale(1);
+        }
+    }
+}
+

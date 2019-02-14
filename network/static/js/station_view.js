@@ -151,7 +151,7 @@ $(document).ready(function() {
     });
 
     // Pass predictions loading
-    $('#loading-image').show();
+    $('#loading').show();
     $.ajax({
         url: '/pass_predictions/' + $('#station-info').attr('data-id') + '/',
         cache: false,
@@ -324,7 +324,7 @@ $(document).ready(function() {
             $('#prediction_results_count').html(data.nextpasses.length);
         },
         complete: function(){
-            $('#loading-image').hide();
+            $('#loading').hide();
         }
     });
 
