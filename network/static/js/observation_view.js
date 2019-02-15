@@ -104,6 +104,77 @@ $(document).ready(function() {
             }
         });
     }
+    //Vetting help functions
+    function show_alert(type, msg){
+        $('#alert-messages').html(
+            `<div class="col-md-12">
+               <div class="alert alert-` + type + `" role="alert">
+                 <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                   <span class="glyphicon glyphicon-remove"></span>
+                 </button>` + msg +`
+               </div>
+             </div>`);
+    }
+
+    function change_vetting_labels(status, status_display, user, datetime){
+        $('#vetting-status').find('button').each(function(){
+            if(this.dataset.status == status){
+                $(this).addClass('hidden');
+            } else {
+                $(this).removeClass('hidden');
+            }
+        });
+        var label_classes = 'label-unknown label-good label-bad label-failed';
+        $('#vetting-status-label').removeClass(label_classes).addClass('label-' + status);
+        $('#vetting-status-label').text(status_display);
+        var title = 'Vetted ' + status + ' on ' + datetime + ' by ' + user;
+        if(status == 'unknown'){
+            title = 'This observation needs vetting';
+        }
+        $('#vetting-status-label').prop('title', title).tooltip('fixTitle');
+    }
+
+    //Vetting request
+    function vet_observation(id, vet_status){
+        var data = {};
+        data.status = vet_status;
+        var url = '/observation_vet/' + id + '/';
+        $.ajax({
+            type: 'POST',
+            url: url,
+            data: data,
+            dataType: 'json',
+            beforeSend: function(xhr) {
+                xhr.setRequestHeader('X-CSRFToken', $('[name="csrfmiddlewaretoken"]').val());
+                $('#vetting-status').hide();
+                $('#vetting-spinner').show();
+            }
+        }).done(function(results) {
+            if (results.hasOwnProperty('error')) {
+                var error_msg = results.error;
+                show_alert('danger',error_msg);
+            } else {
+                show_alert('success', 'Observation is vetted succesfully as ' + results.vetted_status);
+                change_vetting_labels(results.vetted_status, results.vetted_status_display, results.vetted_user, results.vetted_datetime);
+            }
+            $('#vetting-spinner').hide();
+            $('#vetting-status').show();
+            return;
+        }).fail(function() {
+            var error_msg = 'Something went wrong, please try again';
+            show_alert('danger', error_msg);
+            $('#vetting-spinner').hide();
+            $('#vetting-status').show();
+            return;
+        });
+    }
+
+    $('#vetting-status button').click( function(){
+        var vet_status = $(this).data('status');
+        var id = $(this).data('id');
+        $(this).blur();
+        vet_observation(id, vet_status);
+    });
 
     //JSON pretty renderer
     var metadata = $('#json-renderer').data('json');

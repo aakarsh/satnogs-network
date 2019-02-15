@@ -527,24 +527,41 @@ def observation_delete(request, id):
 
 
 @login_required
-def observation_vet(request, id, status, undo=None):
-    observation = get_object_or_404(Observation, id=id)
+@ajax_required
+def observation_vet(request, id):
+    try:
+        observation = Observation.objects.get(id=id)
+    except Observation.DoesNotExist:
+        data = {
+            'error': 'Observation does not exist.'
+        }
+        return JsonResponse(data, safe=False)
+
+    status = request.POST.get('status', None)
     can_vet = vet_perms(request.user, observation)
-    if status in ['good', 'bad', 'failed', 'unknown'] and can_vet:
-        previous_status = observation.vetted_status
-        observation.vetted_status = status
-        observation.vetted_user = request.user
-        observation.vetted_datetime = now()
-        observation.save(update_fields=['vetted_status', 'vetted_user', 'vetted_datetime'])
-        if undo is None:
-            messages.success(request, 'Observation vetted successfully. [<a href="{0}">Undo</a>]'
-                             .format(reverse('base:observation_vet',
-                                             kwargs={'id': observation.id,
-                                                     'status': previous_status,
-                                                     'undo': 'undo'})))
-    else:
-        messages.error(request, 'Permission denied.')
-    return redirect(reverse('base:observation_view', kwargs={'id': observation.id}))
+
+    if status not in ['good', 'bad', 'failed', 'unknown']:
+        data = {
+            'error': 'Invalid status, select one of \'good\', \'bad\', \'failed\' and \'unknown\'.'
+        }
+        return JsonResponse(data, safe=False)
+    if not can_vet:
+        data = {
+            'error': 'Permission denied.'
+        }
+        return JsonResponse(data, safe=False)
+
+    observation.vetted_status = status
+    observation.vetted_user = request.user
+    observation.vetted_datetime = now()
+    observation.save(update_fields=['vetted_status', 'vetted_user', 'vetted_datetime'])
+    data = {
+        'vetted_status': observation.vetted_status,
+        'vetted_status_display': observation.get_vetted_status_display(),
+        'vetted_user': observation.vetted_user.displayname,
+        'vetted_datetime': observation.vetted_datetime.strftime('%Y-%m-%d %H:%M:%S')
+    }
+    return JsonResponse(data, safe=False)
 
 
 def stations_list(request):

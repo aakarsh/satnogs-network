@@ -19,10 +19,7 @@ base_urlpatterns = ([
     url(r'^prediction_windows/$', views.prediction_windows, name='prediction_windows'),
     url(r'^pass_predictions/(?P<id>[\w.@+-]+)/$',
         views.pass_predictions, name='pass_predictions'),
-    url(r'^observation_vet/(?P<id>[0-9]+)/(?P<status>[a-z]+)/$', views.observation_vet,
-        name='observation_vet'),
-    url(r'^observation_vet/(?P<id>[0-9]+)/(?P<status>[a-z]+)/(?P<undo>[a-z]+)/$',
-        views.observation_vet, name='observation_vet'),
+    url(r'^observation_vet/(?P<id>[0-9]+)/$', views.observation_vet, name='observation_vet'),
 
     # Stations
     url(r'^stations/$', views.stations_list, name='stations_list'),

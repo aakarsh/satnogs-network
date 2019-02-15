@@ -94,20 +94,20 @@
 
     <div class="container">
 
-      {% if messages %}
-        <div class="row messages">
+      <div id="alert-messages" class="row messages">
+        {% if messages %}
           <div class="col-md-12">
             {% for notification in messages %}
               <div class="alert alert-{{ notification.tags }}" role="alert">
                 <button type="button" class="close" data-dismiss="alert" aria-label="Close">
-                  <span aria-hidden="true">&times;</span>
+                  <span class="glyphicon glyphicon-remove"></span>
                 </button>
                 {{ notification.message|safe }}
               </div>
             {% endfor %}
           </div>
-        </div>
-      {% endif %}
+        {% endif %}
+      </div>
 
       {% block content %}{% endblock content %}
 
