@@ -116,17 +116,17 @@
                 <button id="good-data" type="button" title="good"
                         class="btn btn-xs btn-success {% if observation.vetted_status == "good" %}hidden{% endif %}"
                         data-id="{{ observation.id }}" data-status="good" data-toggle="tooltip">
-                  <span class="glyphicon glyphicon-question-sign" aria-hidden="true"></span>
+                  <span class="glyphicon glyphicon-ok" aria-hidden="true"></span>
                 </button>
                 <button id="bad-data" type="button" title="bad"
                         class="btn btn-xs btn-danger {% if observation.vetted_status == "bad" %}hidden{% endif %}"
                         data-id="{{ observation.id }}" data-status="bad" data-toggle="tooltip">
-                  <span class="glyphicon glyphicon-question-sign" aria-hidden="true"></span>
+                  <span class="glyphicon glyphicon-remove" aria-hidden="true"></span>
                 </button>
                 <button id="failed-data" type="button" title="failed"
                         class="btn btn-xs btn-failed {% if observation.vetted_status == "failed" %}hidden{% endif %}"
                         data-id="{{ observation.id }}" data-status="failed" data-toggle="tooltip">
-                  <span class="glyphicon glyphicon-question-sign" aria-hidden="true"></span>
+                  <span class="glyphicon glyphicon-alert" aria-hidden="true"></span>
                 </button>
               </div>
             {% endif %}
