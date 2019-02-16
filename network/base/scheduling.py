@@ -181,9 +181,8 @@ def create_station_windows(scheduled_obs, overlapped, pass_params, observer, sat
     return station_windows
 
 
-def next_pass(observer, satellite):
+def next_pass(observer, satellite, issue105=False):
     tr, azr, tt, altt, ts, azs = observer.next_pass(satellite)
-
     # Convert output of pyephems.next_pass into processible values
     pass_start = make_aware(ephem.Date(tr).datetime(), utc)
     pass_end = make_aware(ephem.Date(ts).datetime(), utc)
@@ -198,7 +197,11 @@ def next_pass(observer, satellite):
         # move observer time after the current pass end
         time_start_new = pass_end + timedelta(minutes=1)
         observer.date = time_start_new.strftime("%Y-%m-%d %H:%M:%S.%f")
-        return next_pass(observer, satellite)
+        if issue105:
+            raise ValueError('Recursion of next_pass() due to\
+                              https://github.com/brandon-rhodes/pyephem/issues/105')
+        else:
+            return next_pass(observer, satellite, True)
 
     return {'rise_time': pass_start,
             'set_time': pass_end,
