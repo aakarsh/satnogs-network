@@ -196,9 +196,9 @@ class ObservationListView(ListView):
         if not failed:
             observations = observations.exclude(vetted_status='failed')
         if not unvetted:
-            observations = observations.exclude(vetted_status='unknown', end__lte=datetime.now())
+            observations = observations.exclude(vetted_status='unknown', end__lte=now())
         if not future:
-            observations = observations.exclude(vetted_status='unknown', end__gt=datetime.now())
+            observations = observations.exclude(vetted_status='unknown', end__gt=now())
         if not waterfall:
             observations = observations.exclude(waterfall='')
         if not audio:

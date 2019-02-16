@@ -321,12 +321,12 @@ class Satellite(models.Model):
     def unvetted_count(self):
         data = Observation.objects.filter(satellite=self)
         return data.filter(vetted_status='unknown',
-                           end__lte=datetime.now()).count()
+                           end__lte=now()).count()
 
     @property
     def future_count(self):
         data = Observation.objects.filter(satellite=self)
-        return data.filter(end__gt=datetime.now()).count()
+        return data.filter(end__gt=now()).count()
 
     @property
     def success_rate(self):
