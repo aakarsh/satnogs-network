@@ -170,7 +170,7 @@ class Station(models.Model):
     target_utilization = models.IntegerField(validators=[MaxValueValidator(100),
                                                          MinValueValidator(0)],
                                              help_text='Target utilization factor for '
-                                                       ' your station',
+                                                       'your station',
                                              null=True, blank=True)
 
     class Meta:
