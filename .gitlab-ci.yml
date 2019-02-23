@@ -1,5 +1,3 @@
-image: registry.gitlab.com/librespacefoundation/satnogs/satnogs-network:latest
-
 stages:
   - static
   - build
@@ -93,6 +91,7 @@ trigger_dev:
 
 production:
   stage: deploy
+  image: registry.gitlab.com/librespacefoundation/satnogs/satnogs-network:latest
   environment: production
   only:
    - master@librespacefoundation/satnogs/satnogs-network
