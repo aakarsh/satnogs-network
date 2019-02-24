@@ -4,7 +4,7 @@ from datetime import timedelta
 from django.conf import settings
 from django.utils.timezone import now, make_aware, utc
 from network.base.models import Satellite, Station, Tle, Transmitter, Observation
-from network.base.perms import schedule_perms
+from network.base.perms import schedule_station_perms
 
 import ephem
 
@@ -331,7 +331,7 @@ def create_new_observation(station_id,
 def get_available_stations(stations, downlink, user):
     available_stations = []
     for station in stations:
-        if not schedule_perms(user, station):
+        if not schedule_station_perms(user, station):
             continue
 
         # Skip if this station is not capable of receiving the frequency

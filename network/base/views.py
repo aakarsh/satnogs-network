@@ -23,7 +23,7 @@ from network.base.forms import StationForm, SatelliteFilterForm
 from network.base.decorators import admin_required, ajax_required
 from network.base.scheduling import (create_new_observation, ObservationOverlapError,
                                      predict_available_observation_windows, get_available_stations)
-from network.base.perms import schedule_perms, delete_perms, vet_perms
+from network.base.perms import schedule_perms, schedule_station_perms, delete_perms, vet_perms
 from network.base.tasks import update_all_tle, fetch_data
 
 
@@ -338,9 +338,7 @@ def observation_new_post(request):
 @login_required
 def observation_new(request):
     """View for new observation"""
-    me = request.user
-
-    can_schedule = schedule_perms(me)
+    can_schedule = schedule_perms(request.user)
     if not can_schedule:
         messages.error(request, 'You don\'t have permissions to schedule observations')
         return redirect(reverse('base:observations_list'))
@@ -585,7 +583,7 @@ def station_view(request, id):
     antennas = Antenna.objects.all()
     unsupported_frequencies = request.GET.get('unsupported_frequencies', '0')
 
-    can_schedule = schedule_perms(request.user, station)
+    can_schedule = schedule_station_perms(request.user, station)
 
     # Calculate uptime
     uptime = '-'
