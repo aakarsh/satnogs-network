@@ -1,8 +1,8 @@
 from decouple import config, Csv
 from dj_database_url import parse as db_url
 from unipath import Path
-import os
-import raven
+import sentry_sdk
+from sentry_sdk.integrations.django import DjangoIntegration
 
 
 ROOT = Path(__file__).parent
@@ -33,7 +33,6 @@ THIRD_PARTY_APPS = (
     'allauth.socialaccount',
     'compressor',
     'csp',
-    'raven.contrib.django.raven_compat',
 )
 LOCAL_APPS = (
     'network.users',
@@ -191,11 +190,7 @@ AUTOSLUG_SLUGIFY_FUNCTION = 'slugify.slugify'
 # Logging
 LOGGING = {
     'version': 1,
-    'disable_existing_loggers': True,
-    'root': {
-        'level': 'WARNING',
-        'handlers': ['sentry'],
-    },
+    'disable_existing_loggers': False,
     'formatters': {
         'verbose': {
             'format': '%(levelname)s %(asctime)s %(module)s - %(process)d %(thread)d - %(message)s'
@@ -207,11 +202,6 @@ LOGGING = {
         }
     },
     'handlers': {
-        'sentry': {
-            'level': 'ERROR',
-            'class': 'raven.contrib.django.raven_compat.handlers.SentryHandler',
-            'tags': {'custom-tag': 'x'},
-        },
         'console': {
             'level': 'DEBUG',
             'class': 'logging.StreamHandler',
@@ -220,9 +210,9 @@ LOGGING = {
     },
     'loggers': {
         'django.request': {
-            'handlers': ['console'],
             'level': 'ERROR',
-            'propagate': True,
+            'handlers': ['console'],
+            'propagate': False,
         },
         'django.network.backends': {
             'level': 'ERROR',
@@ -234,33 +224,16 @@ LOGGING = {
             'handlers': ['console'],
             'propagate': False,
         },
-        'django.db.backends': {
-            'level': 'ERROR',
-            'handlers': ['console'],
-            'propagate': False,
-        },
-        'raven': {
-            'level': 'DEBUG',
-            'handlers': ['console'],
-            'propagate': False,
-        },
-        'sentry.errors': {
-            'level': 'DEBUG',
-            'handlers': ['console'],
-            'propagate': False,
-        },
     }
 }
 
-# Raven - Sentry
-RAVEN_ENABLED = config('RAVEN_ENABLED', default=False)
-if RAVEN_ENABLED:
-    RAVEN_CONFIG = {
-        'dsn': config('RAVEN_DSN', default=''),
-        'release': raven.fetch_git_sha(os.path.abspath(os.curdir)),
-    }
-else:
-    RAVEN_CONFIG = {}
+# Sentry
+SENTRY_ENABLED = config('SENTRY_ENABLED', default=False, cast=bool)
+if SENTRY_ENABLED:
+    sentry_sdk.init(
+        dsn=config('SENTRY_DSN', default=''),
+        integrations=[DjangoIntegration()]
+    )
 
 # Celery
 CELERY_ENABLE_UTC = USE_TZ
