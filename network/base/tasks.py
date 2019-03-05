@@ -10,6 +10,7 @@ from orbit import satellite
 from django.conf import settings
 from django.contrib.sites.models import Site
 from django.core.cache import cache
+from django.core.mail import send_mail
 from django.utils.timezone import now
 
 from network.base.models import Satellite, Tle, Mode, Transmitter, Observation, Station, DemodData
@@ -183,6 +184,34 @@ def station_status_update():
         else:
             station.status = 2
         station.save()
+
+
+@app.task(ignore_result=True)
+def notify_for_stations_without_results():
+    """Task to send email for stations with observations without results."""
+    email_to = settings.EMAIL_FOR_STATIONS_ISSUES
+    if email_to is not None and len(email_to) > 0:
+        stations = ''
+        obs_limit = settings.OBS_NO_RESULTS_MIN_COUNT
+        time_limit = now() - timedelta(seconds=settings.OBS_NO_RESULTS_IGNORE_TIME)
+        last_check = time_limit - timedelta(seconds=settings.OBS_NO_RESULTS_CHECK_PERIOD)
+        for station in Station.objects.filter(status=2):
+            last_obs = Observation.objects.filter(ground_station=station,
+                                                  end__lt=time_limit).order_by("-end")[:obs_limit]
+            obs_without_results = 0
+            obs_after_last_check = False
+            for observation in last_obs:
+                if not (observation.has_audio and observation.has_waterfall):
+                    obs_without_results += 1
+                if observation.end >= last_check:
+                    obs_after_last_check = True
+            if obs_without_results == obs_limit and obs_after_last_check:
+                stations += ' ' + str(station.id)
+        if len(stations) > 0:
+            # Notify user
+            subject = '[satnogs] Station with observations without results'
+            send_mail(subject, stations, settings.DEFAULT_FROM_EMAIL,
+                      [settings.EMAIL_FOR_STATIONS_ISSUES], False)
 
 
 @app.task(ignore_result=True)

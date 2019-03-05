@@ -70,6 +70,7 @@ EMAIL_USE_TLS = config('EMAIL_USE_TLS', default=False, cast=bool)
 EMAIL_HOST_USER = config('EMAIL_HOST_USER', default='')
 EMAIL_HOST_PASSWORD = config('EMAIL_HOST_PASSWORD', default='')
 DEFAULT_FROM_EMAIL = config('DEFAULT_FROM_EMAIL', default='noreply@satnogs.org')
+EMAIL_FOR_STATIONS_ISSUES = config('EMAIL_FOR_STATIONS_ISSUES', default='')
 ADMINS = [
     ('SatNOGS Admins', DEFAULT_FROM_EMAIL)
 ]
@@ -338,6 +339,14 @@ STATION_HEARTBEAT_TIME = config('STATION_HEARTBEAT_TIME', default=60, cast=int)
 # Maximum window for upcoming passes in hours
 STATION_UPCOMING_END = config('STATION_UPCOMING_END', default=24, cast=int)
 WIKI_STATION_URL = config('WIKI_STATION_URL', default='https://wiki.satnogs.org/')
+
+# Station status check
+# How often, in seconds, will the check for observations with no results runs
+OBS_NO_RESULTS_CHECK_PERIOD = config('OBS_NO_RESULTS_CHECK_PERIOD', default=21600, cast=int)
+# Minimum of observations to check for not returning results for each station
+OBS_NO_RESULTS_MIN_COUNT = config('OBS_NO_RESULTS_MIN_COUNT', default=3, cast=int)
+# How long, in seconds, from the end of an observation without results, check ignores it.
+OBS_NO_RESULTS_IGNORE_TIME = config('OBS_NO_RESULTS_IGNORE_TIME', default=1800, cast=int)
 
 # DB API
 DB_API_ENDPOINT = config('DB_API_ENDPOINT', default='https://db.satnogs.org/api/')

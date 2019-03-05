@@ -25,7 +25,7 @@ app.autodiscover_tasks(lambda: settings.INSTALLED_APPS)
 def setup_periodic_tasks(sender, **kwargs):
     from network.base.tasks import (update_all_tle, fetch_data, clean_observations,
                                     station_status_update, stations_cache_rates,
-                                    sync_to_db)
+                                    notify_for_stations_without_results, sync_to_db)
 
     sender.add_periodic_task(RUN_EVERY_TWO_HOURS, update_all_tle.s(),
                              name='update-all-tle')
@@ -41,6 +41,10 @@ def setup_periodic_tasks(sender, **kwargs):
 
     sender.add_periodic_task(RUN_HOURLY, stations_cache_rates.s(),
                              name='stations-cache-rates')
+
+    sender.add_periodic_task(settings.OBS_NO_RESULTS_CHECK_PERIOD,
+                             notify_for_stations_without_results.s(),
+                             name='notify_for_stations_without_results')
 
     sender.add_periodic_task(RUN_TWICE_HOURLY, sync_to_db.s(),
                              name='sync-to-db')
