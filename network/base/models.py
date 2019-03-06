@@ -31,12 +31,13 @@ ANTENNA_TYPES = (
     ('cross-yagi', 'Cross Yagi'),
     ('helical', 'Helical'),
     ('parabolic', 'Parabolic'),
-    ('vertical', 'Verical'),
+    ('vertical', 'Vertical'),
     ('turnstile', 'Turnstile'),
     ('quadrafilar', 'Quadrafilar'),
     ('eggbeater', 'Eggbeater'),
     ('lindenblad', 'Lindenblad'),
-    ('paralindy', 'Parasitic Lindenblad')
+    ('paralindy', 'Parasitic Lindenblad'),
+    ('patch', 'Patch')
 )
 OBSERVATION_STATUSES = (
     ('unknown', 'Unknown'),
