@@ -147,24 +147,11 @@ class ObservationListView(ListView):
             failed = False
         else:
             failed = True
-        waterfall = self.request.GET.get('waterfall', '0')
-        if waterfall == '1':
-            waterfall = False
-        else:
-            waterfall = True
-        audio = self.request.GET.get('audio', '0')
-        if audio == '1':
-            audio = False
-        else:
-            audio = True
-        data = self.request.GET.get('data', '0')
-        if data == '1':
-            data = False
-        else:
-            data = True
+        results = self.request.GET.getlist('results')
 
-        if False in (bad, good, unvetted, future, failed,
-                     waterfall, audio, data):
+        if False in (bad, good, unvetted, future, failed):
+            self.filtered = True
+        if results:
             self.filtered = True
 
         observations = Observation.objects.all()
@@ -199,12 +186,19 @@ class ObservationListView(ListView):
             observations = observations.exclude(vetted_status='unknown', end__lte=now())
         if not future:
             observations = observations.exclude(vetted_status='unknown', end__gt=now())
-        if not waterfall:
-            observations = observations.exclude(waterfall='')
-        if not audio:
-            observations = observations.exclude(archived=False, payload='')
-        if not data:
-            observations = observations.exclude(demoddata__payload_demod__isnull=True)
+        if results:
+            if 'w0' in results:
+                observations = observations.filter(waterfall='')
+            elif 'w1' in results:
+                observations = observations.exclude(waterfall='')
+            if 'a0' in results:
+                observations = observations.exclude(archived=True).filter(payload='')
+            elif 'a1' in results:
+                observations = observations.exclude(archived=False, payload='')
+            if 'd0' in results:
+                observations = observations.filter(demoddata__payload_demod__isnull=True)
+            elif 'd1' in results:
+                observations = observations.exclude(demoddata__payload_demod__isnull=True)
         return observations
 
     def get_context_data(self, **kwargs):
@@ -227,9 +221,7 @@ class ObservationListView(ListView):
         context['good'] = self.request.GET.get('good', '1')
         context['unvetted'] = self.request.GET.get('unvetted', '1')
         context['failed'] = self.request.GET.get('failed', '1')
-        context['waterfall'] = self.request.GET.get('waterfall', '0')
-        context['audio'] = self.request.GET.get('audio', '0')
-        context['data'] = self.request.GET.get('data', '0')
+        context['results'] = self.request.GET.getlist('results')
         context['filtered'] = self.filtered
         if norad_cat_id is not None and norad_cat_id != '':
             context['norad'] = int(norad_cat_id)

@@ -29,17 +29,6 @@ $(document).ready(function() {
         }
     });
 
-    $('.filter-section #results-selector label').click(function() {
-        var checkbox = $(this);
-        var input = checkbox.find('input[type="checkbox"]');
-
-        if (input.prop('checked')) {
-            checkbox.addClass('btn-inactive');
-        } else {
-            checkbox.removeClass('btn-inactive');
-        }
-    });
-
     // Check if filters should be displayed
     if (window.location.hash == '#collapseFilters') {
         $('#collapseFilters').hide();
