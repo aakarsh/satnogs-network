@@ -1,3 +1,4 @@
+from django.core.exceptions import ObjectDoesNotExist
 from django.shortcuts import get_object_or_404
 from django.utils.timezone import now
 
@@ -19,13 +20,26 @@ class ObservationView(viewsets.ModelViewSet, mixins.UpdateModelMixin):
     pagination_class = pagination.LinkedHeaderPageNumberPagination
 
     def update(self, request, *args, **kwargs):
+        instance = self.get_object()
         if request.data.get('client_version'):
-            instance = self.get_object()
             instance.ground_station.client_version = request.data.get('client_version')
             instance.ground_station.save()
         if request.data.get('demoddata'):
-            instance = self.get_object()
-            instance.demoddata.create(payload_demod=request.data.get('demoddata'))
+            try:
+                file_path = 'data_obs/{0}/{1}'.format(instance.id, request.data.get('demoddata'))
+                instance.demoddata.get(payload_demod=file_path)
+                return Response(data='This data file has already been uploaded',
+                                status=status.HTTP_403_FORBIDDEN)
+            except ObjectDoesNotExist:
+                instance.demoddata.create(payload_demod=request.data.get('demoddata'))
+        if request.data.get('waterfall'):
+            if instance.has_waterfall:
+                return Response(data='Watefall has already been uploaded',
+                                status=status.HTTP_403_FORBIDDEN)
+        if request.data.get('payload'):
+            if instance.has_audio:
+                return Response(data='Audio has already been uploaded',
+                                status=status.HTTP_403_FORBIDDEN)
 
         super(ObservationView, self).update(request, *args, **kwargs)
         return Response(status=status.HTTP_200_OK)

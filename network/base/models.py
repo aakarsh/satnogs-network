@@ -59,6 +59,7 @@ def _name_obs_files(instance, filename):
 
 
 def _name_obs_demoddata(instance, filename):
+    # On change of the string bellow, change it also at api/views.py
     return 'data_obs/{0}/{1}'.format(instance.observation.id, filename)
 
 
@@ -610,8 +611,8 @@ post_save.connect(_observation_post_save, sender=Observation)
 
 class DemodData(models.Model):
     observation = models.ForeignKey(Observation, related_name='demoddata',
-                                    on_delete=models.CASCADE, blank=True, null=True)
-    payload_demod = models.FileField(upload_to=_name_obs_demoddata, blank=True, null=True)
+                                    on_delete=models.CASCADE)
+    payload_demod = models.FileField(upload_to=_name_obs_demoddata, unique=True)
     copied_to_db = models.BooleanField(default=False)
 
     def is_image(self):
