@@ -76,6 +76,18 @@ docker:
     refs:
       - master
       - dev
+trigger_master:
+  stage: trigger
+  image: alpine
+  before_script:
+    - apk add --no-cache curl
+  script:
+    - for trigger in $PIPELINE_TRIGGERS_MASTER; do curl -X POST "$trigger"; done
+  only:
+    refs:
+      - master
+    variables:
+      - $PIPELINE_TRIGGERS_MASTER
 trigger_dev:
   stage: trigger
   image: alpine
@@ -88,17 +100,3 @@ trigger_dev:
       - dev
     variables:
       - $PIPELINE_TRIGGERS_DEV
-
-production:
-  stage: deploy
-  image: registry.gitlab.com/librespacefoundation/satnogs/satnogs-network:latest
-  environment: production
-  only:
-   - master@librespacefoundation/satnogs/satnogs-network
-  script:
-    - mkdir -p ~/.ssh
-    - echo "$SSH_PRIVATE_KEY" >> ~/.ssh/id_rsa
-    - chmod -R u=rwX,o=,g= ~/.ssh/
-    - echo "$SSH_SERVER_HOSTKEY" > ~/.ssh/known_hosts
-    - git checkout master
-    - git push -u ssh://$SERVER_USER@$SERVER_HOST$SERVER_PATH master
