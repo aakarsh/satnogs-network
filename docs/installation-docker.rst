@@ -39,6 +39,6 @@ Docker Installation
 
      $ docker-compose exec web django-admin flush
 
-#. **Build the documentation locally
+#. **Build the documentation locally**
 
      $ docker run -it -v ${PWD}:/documents/ plaindocs/docker-sphinx make html
