@@ -6,5 +6,5 @@ satnogs-network
    :maxdepth: 1
 
    installation
-   contribute
+   developer-guide
    maintenance
