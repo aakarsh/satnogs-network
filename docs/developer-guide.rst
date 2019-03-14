@@ -9,7 +9,7 @@ The below instructions are for software developers who want to work on `satnogs-
 Workflow
 --------
 
-When you want to start developing for SatNOGS, you should :doc:`follow the installation instructions </network/installation>`, then...
+When you want to start developing for SatNOGS, you should :doc:`follow the installation instructions <installation>`, then...
 
 #. Read CONTRIBUTING.md file carefully.
 
