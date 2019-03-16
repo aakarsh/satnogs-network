@@ -58,7 +58,12 @@ docker:
     - apk --update add py-pip
     - pip install docker-compose
   script:
-    - CACHE_IMAGE="${CI_REGISTRY_IMAGE:+$CI_REGISTRY_IMAGE/satnogs-network:$CI_COMMIT_REF_NAME}"; export CACHE_IMAGE
+    - |
+      [ -z "$CI_REGISTRY_IMAGE" ] || {
+          CACHE_IMAGE="$CI_REGISTRY_IMAGE/satnogs-network:$CI_COMMIT_REF_NAME}"
+          [ -z "$CI_COMMIT_TAG" ] || CACHE_IMAGE="$CI_REGISTRY_IMAGE/satnogs-network:latest"
+          export CACHE_IMAGE
+      }
     - docker-compose -f docker-compose.yml -f docker-compose.cache.yml pull cache_image || true
     - docker-compose -f docker-compose.yml -f docker-compose.cache.yml build --pull
     - |
@@ -66,16 +71,24 @@ docker:
           docker login -u $CI_REGISTRY_USER -p $CI_JOB_TOKEN $CI_REGISTRY
           docker tag satnogs-network:latest $CI_REGISTRY_IMAGE/satnogs-network:$CI_COMMIT_REF_NAME
           docker push $CI_REGISTRY_IMAGE/satnogs-network:$CI_COMMIT_REF_NAME
+          [ -z "$CI_COMMIT_TAG" ] || {
+              docker tag satnogs-network:latest $CI_REGISTRY_IMAGE/satnogs-network:latest
+              docker push $CI_REGISTRY_IMAGE/satnogs-network:latest
+          }
       }
       [ -z "$DOCKERHUB_PASSWORD" ] || {
           docker login -u $DOCKERHUB_USER -p $DOCKERHUB_PASSWORD
           docker tag satnogs-network:latest librespace/satnogs-network:$CI_COMMIT_REF_NAME
           docker push librespace/satnogs-network:$CI_COMMIT_REF_NAME
+          [ -z "$CI_COMMIT_TAG" ] || {
+              docker tag satnogs-network:latest librespace/satnogs-network:latest
+              docker push librespace/satnogs-network:latest
+          }
       }
   only:
     refs:
       - master
-      - dev
+      - tags
 trigger_master:
   stage: trigger
   image: alpine
@@ -88,15 +101,15 @@ trigger_master:
       - master
     variables:
       - $PIPELINE_TRIGGERS_MASTER
-trigger_dev:
+trigger_latest:
   stage: trigger
   image: alpine
   before_script:
     - apk add --no-cache curl
   script:
-    - for trigger in $PIPELINE_TRIGGERS_DEV; do curl -X POST "$trigger"; done
+    - for trigger in $PIPELINE_TRIGGERS_LATEST; do curl -X POST "$trigger"; done
   only:
     refs:
-      - dev
+      - tags
     variables:
-      - $PIPELINE_TRIGGERS_DEV
+      - $PIPELINE_TRIGGERS_LATEST
