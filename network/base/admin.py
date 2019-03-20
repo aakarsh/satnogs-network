@@ -28,6 +28,7 @@ class StationAdmin(admin.ModelAdmin):
     list_display = ('id', 'name', 'owner', 'get_email', 'lng', 'lat', 'qthlocator',
                     'client_version', 'created_date', 'state', 'target_utilization')
     list_filter = ('status', 'created', 'client_version')
+    search_fields = ('name', 'owner__username')
 
     actions = [export_as_csv]
     export_as_csv.short_description = "Export selected as CSV"
