@@ -6,7 +6,7 @@ It features multiple observers to multiple intrumentation functionality and mana
 
 ## Contribute
 
-Check out the [documentation](https://docs.satnogs.org/en/stable/satnogs-network/docs/) on how to setup a local development instance.
+Check out the [documentation](https://docs.satnogs.org/en/latest/satnogs-network/docs/) on how to setup a local development instance.
 
 The main repository lives on [Gitlab](https://gitlab.com/librespacefoundation/satnogs/satnogs-network) and all Merge Request should happen there.
 
