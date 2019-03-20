@@ -35,7 +35,7 @@ Docker Installation
 
 #. **Clean database**
 
-   Clean up the database in case of problems
+   Clean up the database in case of problems::
 
      $ docker-compose exec web django-admin flush
 
