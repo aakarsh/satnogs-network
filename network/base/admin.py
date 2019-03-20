@@ -47,6 +47,7 @@ class SatelliteAdmin(admin.ModelAdmin):
     list_display = ('id', 'name', 'norad_cat_id', 'manual_tle', 'norad_follow_id', 'status')
     list_filter = ('status', 'manual_tle',)
     readonly_fields = ('name', 'names', 'image')
+    search_fields = ('name', 'norad_cat_id', 'norad_follow_id')
 
 
 @admin.register(Tle)
