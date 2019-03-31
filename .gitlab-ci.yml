@@ -15,7 +15,7 @@ static_python:
   stage: static
   image: python:2.7
   before_script:
-    - pip install tox
+    - pip install tox~=3.8.0
   script:
     - tox -e flake8
 build:
@@ -44,7 +44,7 @@ test:
   stage: test
   image: python:2.7
   before_script:
-    - pip install tox
+    - pip install tox~=3.8.0
     - apt-get update
     - apt-get install -y ruby-sass
   script:
@@ -56,7 +56,7 @@ docker:
     - docker:18.09-dind
   before_script:
     - apk --update add py-pip
-    - pip install docker-compose
+    - pip install docker-compose~=1.23.0
   script:
     - |
       [ -z "$CI_REGISTRY_IMAGE" ] || {
