@@ -6,7 +6,7 @@ stages:
   - trigger
 static_js_css:
   stage: static
-  image: node
+  image: node:11.13
   script:
     - npm install -g eslint stylelint
     - eslint 'network/static/js/*.js'
@@ -51,9 +51,9 @@ test:
     - tox -e deps,pytest
 docker:
   stage: deploy
-  image: docker:latest
+  image: docker:18.09
   services:
-    - docker:dind
+    - docker:18.09-dind
   before_script:
     - apk --update add py-pip
     - pip install docker-compose
@@ -91,7 +91,7 @@ docker:
       - tags
 trigger_master:
   stage: trigger
-  image: alpine
+  image: alpine:3.9
   before_script:
     - apk add --no-cache curl
   script:
@@ -103,7 +103,7 @@ trigger_master:
       - $PIPELINE_TRIGGERS_MASTER
 trigger_latest:
   stage: trigger
-  image: alpine
+  image: alpine:3.9
   before_script:
     - apk add --no-cache curl
   script:
