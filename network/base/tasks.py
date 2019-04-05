@@ -49,6 +49,8 @@ def update_all_tle():
 def fetch_data():
     """Task to fetch all data from DB"""
     apiurl = settings.DB_API_ENDPOINT
+    if len(apiurl) == 0:
+        return
     modes_url = "{0}modes".format(apiurl)
     satellites_url = "{0}satellites".format(apiurl)
     transmitters_url = "{0}transmitters".format(apiurl)
