@@ -18,6 +18,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 EXCLUDE_REGEXP="^\(pkg-resources\|satnogs-network\)"
+COMPATIBLE_REGEXP=""
 VIRTUALENV_DIR=$(mktemp -d)
 PIP_COMMAND="$VIRTUALENV_DIR/bin/pip"
 
@@ -54,6 +55,12 @@ _tmp_requirements_dev=$(mktemp)
 "$PIP_COMMAND" freeze | grep -v "$EXCLUDE_REGEXP" | sort > "$_tmp_requirements_dev"
 sort < requirements.txt | comm -13 - "$_tmp_requirements_dev" >> requirements-dev.txt
 rm -f "$_tmp_requirements_dev"
+
+# Set compatible release packages
+if [ -n "$COMPATIBLE_REGEXP" ]; then
+	sed -i 's/'"$COMPATIBLE_REGEXP"'==\([0-9]\+\)\(\.[0-9]\+\)\+$/\1~=\2.0/' requirements.txt
+	sed -i 's/'"$COMPATIBLE_REGEXP"'==\([0-9]\+\)\(\.[0-9]\+\)\+$/\1~=\2.0/' requirements-dev.txt
+fi
 
 # Verify dependency compatibility
 "$PIP_COMMAND" check
