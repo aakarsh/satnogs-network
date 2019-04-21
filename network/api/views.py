@@ -10,7 +10,8 @@ from network.api import serializers, filters, pagination
 from network.base.models import Observation, Station, Transmitter
 
 
-class ObservationView(viewsets.ModelViewSet, mixins.UpdateModelMixin):
+class ObservationView(mixins.ListModelMixin, mixins.RetrieveModelMixin,
+                      mixins.UpdateModelMixin, viewsets.GenericViewSet):
     queryset = Observation.objects.all()
     serializer_class = serializers.ObservationSerializer
     filter_class = filters.ObservationViewFilter
@@ -45,14 +46,14 @@ class ObservationView(viewsets.ModelViewSet, mixins.UpdateModelMixin):
         return Response(status=status.HTTP_200_OK)
 
 
-class StationView(viewsets.ModelViewSet, mixins.UpdateModelMixin):
+class StationView(mixins.ListModelMixin, mixins.RetrieveModelMixin, viewsets.GenericViewSet):
     queryset = Station.objects.all()
     serializer_class = serializers.StationSerializer
     filter_class = filters.StationViewFilter
     pagination_class = pagination.LinkedHeaderPageNumberPagination
 
 
-class TransmitterView(viewsets.ModelViewSet, mixins.UpdateModelMixin):
+class TransmitterView(mixins.ListModelMixin, mixins.RetrieveModelMixin, viewsets.GenericViewSet):
     queryset = Transmitter.objects.all().order_by('uuid')
     serializer_class = serializers.TransmitterSerializer
     filter_class = filters.TransmitterViewFilter
