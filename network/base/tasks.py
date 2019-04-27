@@ -24,6 +24,8 @@ def update_all_tle():
     satellites = Satellite.objects.exclude(manual_tle=True,
                                            norad_follow_id__isnull=True)
 
+    print "==Fetching TLEs=="
+
     for obj in satellites:
         norad_id = obj.norad_cat_id
         if (obj.manual_tle):
@@ -33,6 +35,7 @@ def update_all_tle():
             # Fetch latest satellite TLE
             sat = satellite(norad_id)
         except IndexError:
+            print '{} - {}: TLE not found [error]'.format(obj.name, norad_id)
             continue
 
         tle = sat.tle()
@@ -41,12 +44,14 @@ def update_all_tle():
             latest_tle = obj.latest_tle.tle1
             if latest_tle == tle[1]:
                 # Stored TLE is already the latest available for this satellite
+                print '{} - {}: TLE already exists [defer]'.format(obj.name, norad_id)
                 continue
         except AttributeError:
             # Satellite in DB has no associated TLE yet
             pass
 
         Tle.objects.create(tle0=tle[0], tle1=tle[1], tle2=tle[2], satellite=obj)
+        print '{} - {}: new TLE found [updated]'.format(obj.name, norad_id)
 
 
 @app.task(ignore_result=True)
