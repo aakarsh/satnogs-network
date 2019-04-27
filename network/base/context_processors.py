@@ -3,6 +3,7 @@ from django.conf import settings
 from django.template.loader import render_to_string
 from django.utils.timezone import now
 
+from network import __version__
 from network.base.models import Observation
 
 
@@ -42,3 +43,8 @@ def logout_block(request):
     if settings.AUTH0:
         return {'logout_block': render_to_string('includes/logout_auth0.html')}
     return {'logout_block': render_to_string('includes/logout_local.html')}
+
+
+def version(request):
+    """Displays the current satnogs-network version."""
+    return {'version': 'Version: {}'.format(__version__)}

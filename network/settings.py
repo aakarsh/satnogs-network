@@ -133,6 +133,7 @@ TEMPLATES = [
                 'network.base.context_processors.user_processor',
                 'network.base.context_processors.auth_block',
                 'network.base.context_processors.logout_block',
+                'network.base.context_processors.version'
             ],
             'loaders': [
                 (
