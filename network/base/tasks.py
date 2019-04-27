@@ -28,19 +28,23 @@ def update_all_tle():
         norad_id = obj.norad_cat_id
         if (obj.manual_tle):
             norad_id = obj.norad_follow_id
+
         try:
+            # Fetch latest satellite TLE
             sat = satellite(norad_id)
         except IndexError:
             continue
 
-        # Get latest satellite TLE and check if it changed
         tle = sat.tle()
+
         try:
             latest_tle = obj.latest_tle.tle1
+            if latest_tle == tle[1]:
+                # Stored TLE is already the latest available for this satellite
+                continue
         except AttributeError:
+            # Satellite in DB has no associated TLE yet
             pass
-        if latest_tle == tle[1]:
-            continue
 
         Tle.objects.create(tle0=tle[0], tle1=tle[1], tle2=tle[2], satellite=obj)
 
