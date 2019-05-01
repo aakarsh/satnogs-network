@@ -42,6 +42,12 @@ class StationAdmin(admin.ModelAdmin):
     get_email.admin_order_field = 'email'
     get_email.short_description = 'Owner Email'
 
+    def get_actions(self, request):
+        actions = super(StationAdmin, self).get_actions(request)
+        if 'delete_selected' in actions:
+            del actions['delete_selected']
+        return actions
+
 
 @admin.register(Satellite)
 class SatelliteAdmin(admin.ModelAdmin):
