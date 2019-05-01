@@ -2,7 +2,7 @@ from django.contrib import admin
 
 from network.base.models import (Antenna, Satellite, Station, Transmitter,
                                  Observation, Mode, Tle, DemodData)
-from network.base.utils import export_as_csv
+from network.base.utils import export_as_csv, export_station_status
 
 
 @admin.register(Mode)
@@ -30,8 +30,9 @@ class StationAdmin(admin.ModelAdmin):
     list_filter = ('status', 'created', 'client_version')
     search_fields = ('name', 'owner__username')
 
-    actions = [export_as_csv]
+    actions = [export_as_csv, export_station_status]
     export_as_csv.short_description = "Export selected as CSV"
+    export_station_status.short_description = "Export selected status"
 
     def created_date(self, obj):
         return obj.created.strftime('%d.%m.%Y, %H:%M')
