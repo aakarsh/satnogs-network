@@ -3,7 +3,7 @@ from datetime import timedelta
 
 from django.conf import settings
 from django.utils.timezone import now, make_aware, utc
-from network.base.models import Satellite, Station, Tle, Transmitter, Observation
+from network.base.models import Mode, Satellite, Station, Tle, Observation
 from network.base.perms import schedule_station_perms
 
 import ephem
@@ -289,12 +289,7 @@ def predict_available_observation_windows(station, min_horizon, overlapped, tle,
     return passes_found, station_windows
 
 
-def create_new_observation(station_id,
-                           sat_id,
-                           trans_id,
-                           start_time,
-                           end_time,
-                           author):
+def create_new_observation(station_id, sat_id, transmitter, start_time, end_time, author):
     ground_station = Station.objects.get(id=station_id)
     scheduled_obs = Observation.objects.filter(ground_station=ground_station).filter(end__gt=now())
     window = resolve_overlaps(scheduled_obs, start_time, end_time)
@@ -303,7 +298,6 @@ def create_new_observation(station_id,
         raise ObservationOverlapError
 
     sat = Satellite.objects.get(norad_cat_id=sat_id)
-    trans = Transmitter.objects.get(uuid=trans_id)
     tle = Tle.objects.get(id=sat.latest_tle.id)
 
     sat_ephem = ephem.readtle(str(sat.latest_tle.tle0),
@@ -319,13 +313,25 @@ def create_new_observation(station_id,
     rise_azimuth = get_azimuth(observer, sat_ephem, start_time)
     max_altitude = get_elevation(observer, sat_ephem, mid_pass_time)
     set_azimuth = get_azimuth(observer, sat_ephem, end_time)
+    try:
+        mode = Mode.objects.get(id=transmitter['mode_id'])
+    except Mode.DoesNotExist:
+        mode = Mode.objects.create(id=transmitter['mode_id'], name=transmitter['mode'])
 
-    return Observation(satellite=sat, transmitter=trans, tle=tle, author=author,
-                       start=start_time, end=end_time,
-                       ground_station=ground_station,
-                       rise_azimuth=rise_azimuth,
-                       max_altitude=max_altitude,
-                       set_azimuth=set_azimuth)
+    return Observation(
+        satellite=sat, tle=tle, author=author, start=start_time, end=end_time,
+        ground_station=ground_station, rise_azimuth=rise_azimuth, max_altitude=max_altitude,
+        set_azimuth=set_azimuth, transmitter_uuid=transmitter['uuid'],
+        transmitter_description=transmitter['description'], transmitter_type=transmitter['type'],
+        transmitter_uplink_low=transmitter['uplink_low'],
+        transmitter_uplink_high=transmitter['uplink_high'],
+        transmitter_uplink_drift=transmitter['uplink_drift'],
+        transmitter_downlink_low=transmitter['downlink_low'],
+        transmitter_downlink_high=transmitter['downlink_high'],
+        transmitter_downlink_drift=transmitter['downlink_drift'],
+        transmitter_mode=mode, transmitter_invert=transmitter['invert'],
+        transmitter_baud=transmitter['baud'], transmitter_created=transmitter['updated']
+    )
 
 
 def get_available_stations(stations, downlink, user):

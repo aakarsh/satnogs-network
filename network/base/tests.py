@@ -11,8 +11,7 @@ from django.test import TestCase, Client
 from django.utils.timezone import now
 
 from network.base.models import (ANTENNA_BANDS, ANTENNA_TYPES, OBSERVATION_STATUSES,
-                                 Mode, Antenna, Satellite, Tle, Station, Transmitter,
-                                 Observation, DemodData)
+                                 Mode, Antenna, Satellite, Tle, Station, Observation, DemodData)
 from network.users.tests import UserFactory
 
 
@@ -35,12 +34,6 @@ def generate_payload_name():
     filename = datetime.strftime(fuzzy.FuzzyDateTime(now() - timedelta(days=10), now()).fuzz(),
                                  '%Y%m%dT%H%M%SZ')
     return filename
-
-
-def get_valid_satellites():
-    qs = Transmitter.objects.all()
-    satellites = Satellite.objects.filter(transmitters__in=qs).distinct()
-    return satellites
 
 
 class ModeFactory(factory.django.DjangoModelFactory):
@@ -110,26 +103,9 @@ class TleFactory(factory.django.DjangoModelFactory):
         model = Tle
 
 
-class TransmitterFactory(factory.django.DjangoModelFactory):
-    """Transmitter model factory."""
-    description = fuzzy.FuzzyText()
-    alive = fuzzy.FuzzyChoice(choices=[True, False])
-    uplink_low = fuzzy.FuzzyInteger(200000000, 500000000, step=10000)
-    uplink_high = fuzzy.FuzzyInteger(200000000, 500000000, step=10000)
-    downlink_low = fuzzy.FuzzyInteger(200000000, 500000000, step=10000)
-    downlink_high = fuzzy.FuzzyInteger(200000000, 500000000, step=10000)
-    mode = factory.SubFactory(ModeFactory)
-    invert = fuzzy.FuzzyChoice(choices=[True, False])
-    baud = fuzzy.FuzzyInteger(4000, 22000, step=1000)
-    satellite = factory.SubFactory(SatelliteFactory)
-
-    class Meta:
-        model = Transmitter
-
-
 class ObservationFactory(factory.django.DjangoModelFactory):
     """Observation model factory."""
-    satellite = factory.Iterator(get_valid_satellites())
+    satellite = factory.SubFactory(SatelliteFactory)
     tle = factory.SubFactory(TleFactory)
     author = factory.SubFactory(UserFactory)
     start = fuzzy.FuzzyDateTime(now() - timedelta(days=3),
@@ -144,10 +120,17 @@ class ObservationFactory(factory.django.DjangoModelFactory):
     )
     vetted_user = factory.SubFactory(UserFactory)
     vetted_status = fuzzy.FuzzyChoice(choices=OBSERVATION_STATUS_IDS)
-
-    @factory.lazy_attribute
-    def transmitter(self):
-        return self.satellite.transmitters.all().order_by('?')[0]
+    transmitter_uuid = fuzzy.FuzzyText(length=20)
+    transmitter_description = fuzzy.FuzzyText()
+    transmitter_uplink_low = fuzzy.FuzzyInteger(200000000, 500000000, step=10000)
+    transmitter_uplink_high = fuzzy.FuzzyInteger(200000000, 500000000, step=10000)
+    transmitter_downlink_low = fuzzy.FuzzyInteger(200000000, 500000000, step=10000)
+    transmitter_downlink_high = fuzzy.FuzzyInteger(200000000, 500000000, step=10000)
+    transmitter_mode = factory.SubFactory(ModeFactory)
+    transmitter_invert = fuzzy.FuzzyChoice(choices=[True, False])
+    transmitter_baud = fuzzy.FuzzyInteger(4000, 22000, step=1000)
+    transmitter_created = fuzzy.FuzzyDateTime(now() - timedelta(days=100),
+                                              now() - timedelta(days=3))
 
     class Meta:
         model = Observation
@@ -208,17 +191,15 @@ class ObservationsListViewTest(TestCase):
     client = Client()
     observations = []
     satellites = []
-    transmitters = []
     stations = []
 
     def setUp(self):
         # Clear the data and create some new random data
         with transaction.atomic():
             Observation.objects.all().delete()
-            Transmitter.objects.all().delete()
             Satellite.objects.all().delete()
+            Mode.objects.all().delete()
         self.satellites = []
-        self.transmitters = []
         self.observations_bad = []
         self.observations_good = []
         self.observations_unvetted = []
@@ -227,45 +208,42 @@ class ObservationsListViewTest(TestCase):
             for x in xrange(1, 10):
                 self.satellites.append(SatelliteFactory())
             for x in xrange(1, 10):
-                self.transmitters.append(TransmitterFactory())
-            for x in xrange(1, 10):
                 self.stations.append(StationFactory())
-            for x in xrange(1, 10):
+            for x in xrange(1, 5):
                 obs = ObservationFactory(vetted_status='bad')
                 self.observations_bad.append(obs)
                 self.observations.append(obs)
-            for x in xrange(1, 10):
+            for x in xrange(1, 5):
                 obs = ObservationFactory(vetted_status='good')
                 self.observations_good.append(obs)
                 self.observations.append(obs)
-            for x in xrange(1, 10):
+            for x in xrange(1, 5):
                 obs = ObservationFactory(vetted_status='unknown')
                 self.observations_unvetted.append(obs)
                 self.observations.append(obs)
 
     def test_observations_list(self):
         response = self.client.get('/observations/')
-
         for x in self.observations:
-            self.assertContains(response, x.transmitter.mode.name)
+            self.assertContains(response, x.transmitter_mode.name)
 
     def test_observations_list_select_bad(self):
         response = self.client.get('/observations/?bad=1')
 
         for x in self.observations_bad:
-            self.assertContains(response, x.transmitter.mode.name)
+            self.assertContains(response, x.transmitter_mode.name)
 
     def test_observations_list_select_good(self):
         response = self.client.get('/observations/?good=1')
 
         for x in self.observations_good:
-            self.assertContains(response, x.transmitter.mode.name)
+            self.assertContains(response, x.transmitter_mode.name)
 
     def test_observations_list_select_unvetted(self):
         response = self.client.get('/observations/?unvetted=1')
 
         for x in self.observations_unvetted:
-            self.assertContains(response, x.transmitter.mode.name)
+            self.assertContains(response, x.transmitter_mode.name)
 
 
 class NotFoundErrorTest(TestCase):
@@ -298,7 +276,6 @@ class ObservationViewTest(TestCase):
     client = Client()
     observation = None
     satellites = []
-    transmitters = []
     stations = []
     user = None
 
@@ -309,15 +286,13 @@ class ObservationViewTest(TestCase):
         for x in xrange(1, 10):
             self.satellites.append(SatelliteFactory())
         for x in xrange(1, 10):
-            self.transmitters.append(TransmitterFactory())
-        for x in xrange(1, 10):
             self.stations.append(StationFactory())
         self.observation = ObservationFactory()
 
     def test_observation(self):
         response = self.client.get('/observations/%d/' % self.observation.id)
         self.assertContains(response, self.observation.author.username)
-        self.assertContains(response, self.observation.transmitter.mode.name)
+        self.assertContains(response, self.observation.transmitter_mode.name)
 
 
 @pytest.mark.django_db(transaction=True)
@@ -329,15 +304,12 @@ class ObservationDeleteTest(TestCase):
     user = None
     observation = None
     satellites = []
-    transmitters = []
 
     def setUp(self):
         self.user = UserFactory()
         self.client.force_login(self.user)
         for x in xrange(1, 10):
             self.satellites.append(SatelliteFactory())
-        for x in xrange(1, 10):
-            self.transmitters.append(TransmitterFactory())
         self.observation = ObservationFactory()
         self.observation.author = self.user
         self.observation.save()
@@ -450,15 +422,12 @@ class ObservationModelTest(TestCase):
     """
     observation = None
     satellites = []
-    transmitters = []
     user = None
     admin = None
 
     def setUp(self):
         for x in xrange(1, 10):
             self.satellites.append(SatelliteFactory())
-        for x in xrange(1, 10):
-            self.transmitters.append(TransmitterFactory())
         self.observation = ObservationFactory()
         self.observation.end = now()
         self.observation.save()

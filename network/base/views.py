@@ -16,15 +16,18 @@ from django.utils.text import slugify
 from django.views.generic import ListView
 
 from rest_framework import serializers, viewsets
-from network.base.models import (Station, Transmitter, Observation,
-                                 Satellite, Antenna, StationStatusLog)
-from network.users.models import User
-from network.base.forms import StationForm, SatelliteFilterForm
 from network.base.decorators import admin_required, ajax_required
+from network.base.db_api import (get_transmitter_by_uuid, get_transmitters_by_norad_id,
+                                 get_transmitters_by_status)
+from network.base.forms import StationForm, SatelliteFilterForm
+from network.base.helpers import downlink_low_is_in_range
+from network.base.models import Station, Observation, Satellite, Antenna, StationStatusLog
 from network.base.scheduling import (create_new_observation, ObservationOverlapError,
                                      predict_available_observation_windows, get_available_stations)
 from network.base.perms import schedule_perms, schedule_station_perms, delete_perms, vet_perms
 from network.base.tasks import update_all_tle, fetch_data
+from network.base.stats import transmitter_stats_by_uuid
+from network.users.models import User
 
 
 class StationSerializer(serializers.ModelSerializer):
@@ -249,6 +252,19 @@ def observation_new_post(request):
         messages.error(request, 'Please select at least one observation.')
         return redirect(reverse('base:observation_new'))
 
+    uuid = request.POST.get('transmitter', None)
+    if uuid is None:
+        messages.error(request, 'The selected Transmitter is not valid.')
+        return redirect(reverse('base:observation_new'))
+    else:
+        transmitter = get_transmitter_by_uuid(uuid)
+        if transmitter is None:
+            messages.error(request, 'Error in DB API connection please try again.')
+            return redirect(reverse('base:observation_new'))
+        elif len(transmitter) == 0:
+            messages.error(request, 'The selected Transmitter is not valid.')
+            return redirect(reverse('base:observation_new'))
+
     new_observations = []
     for item in range(total):
         try:
@@ -282,7 +298,7 @@ def observation_new_post(request):
             station_id = request.POST.get('{}-station'.format(item))
             observation = create_new_observation(station_id=station_id,
                                                  sat_id=request.POST.get('satellite'),
-                                                 trans_id=request.POST.get('transmitter'),
+                                                 transmitter=transmitter[0],
                                                  start_time=start_time,
                                                  end_time=end_time,
                                                  author=request.user)
@@ -338,8 +354,7 @@ def observation_new(request):
     if request.method == 'POST':
         return observation_new_post(request)
 
-    satellites = Satellite.objects.filter(transmitters__alive=True) \
-        .filter(status='alive').distinct()
+    satellites = Satellite.objects.filter(status='alive')
 
     obs_filter = {}
     if request.method == 'GET':
@@ -388,8 +403,7 @@ def prediction_windows(request):
     min_horizon = request.POST.get('min_horizon', None)
     overlapped = int(request.POST.get('overlapped', 0))
     try:
-        sat = Satellite.objects.filter(transmitters__alive=True) \
-            .filter(status='alive').distinct().get(norad_cat_id=sat_id)
+        sat = Satellite.objects.filter(status='alive').get(norad_cat_id=sat_id)
     except Satellite.DoesNotExist:
         data = [{
             'error': 'You should select a Satellite first.'
@@ -404,13 +418,19 @@ def prediction_windows(request):
         }]
         return JsonResponse(data, safe=False)
 
-    try:
-        downlink = Transmitter.objects.get(uuid=transmitter).downlink_low
-    except Transmitter.DoesNotExist:
+    transmitter = get_transmitter_by_uuid(transmitter)
+    if transmitter is None:
         data = [{
-            'error': 'You should select a Transmitter first.'
+            'error': 'Error in DB API connection.'
         }]
         return JsonResponse(data, safe=False)
+    elif len(transmitter) == 0:
+        data = [{
+            'error': 'You should select a valid Transmitter.'
+        }]
+        return JsonResponse(data, safe=False)
+    else:
+        downlink = transmitter[0]['downlink_low']
 
     start_date = make_aware(datetime.strptime(start_date, '%Y-%m-%d %H:%M'), utc)
     end_date = make_aware(datetime.strptime(end_date, '%Y-%m-%d %H:%M'), utc)
@@ -627,16 +647,36 @@ def station_log(request, id):
 @ajax_required
 def scheduling_stations(request):
     """Returns json with stations on which user has permissions to schedule"""
-    transmitter = request.POST.get('transmitter', None)
-    try:
-        downlink = Transmitter.objects.get(uuid=transmitter).downlink_low
-    except Transmitter.DoesNotExist:
+    uuid = request.POST.get('transmitter', None)
+    if uuid is None:
         data = [{
-            'error': 'You should select a Transmitter first.'
+            'error': 'You should select a Transmitter.'
         }]
         return JsonResponse(data, safe=False)
+    else:
+        transmitter = get_transmitter_by_uuid(uuid)
+        if transmitter is None:
+            data = [{
+                'error': 'Error in DB API connection.'
+            }]
+            return JsonResponse(data, safe=False)
+        elif len(transmitter) == 0:
+            data = [{
+                'error': 'You should select a Transmitter.'
+            }]
+            return JsonResponse(data, safe=False)
+        else:
+            downlink = transmitter[0]['downlink_low']
+            if downlink is None:
+                data = [{
+                    'error': 'You should select a valid Transmitter.'
+                }]
+                return JsonResponse(data, safe=False)
+
     stations = Station.objects.filter(status__gt=0)
     available_stations = get_available_stations(stations, downlink, request.user)
+    import sys
+    sys.stdout.flush()
     data = {
         'stations': StationSerializer(available_stations, many=True).data,
     }
@@ -651,8 +691,7 @@ def pass_predictions(request, id):
     unsupported_frequencies = request.GET.get('unsupported_frequencies', '0')
 
     try:
-        satellites = Satellite.objects.filter(transmitters__alive=True) \
-            .filter(status='alive').distinct()
+        satellites = Satellite.objects.filter(status='alive')
     except Satellite.DoesNotExist:
         pass  # we won't have any next passes to display
 
@@ -668,65 +707,68 @@ def pass_predictions(request, id):
     start_date = make_aware(datetime.utcnow(), utc)
     end_date = make_aware(datetime.utcnow() +
                           timedelta(hours=settings.STATION_UPCOMING_END), utc)
-    observation_date_min_start = (
+    observation_min_start = (
         datetime.utcnow() + timedelta(minutes=settings.OBSERVATION_DATE_MIN_START)
     ).strftime("%Y-%m-%d %H:%M:%S.%f")
 
-    for satellite in satellites:
-        # look for a match between transmitters from the satellite and
-        # ground station antenna frequency capabilities
-        if int(unsupported_frequencies) == 0:
-            frequency_supported = False
-            transmitters = Transmitter.objects.filter(satellite=satellite)
-            for gs_antenna in station.antenna.all():
+    all_transmitters = get_transmitters_by_status('active')
+    if all_transmitters is not None and len(all_transmitters) > 0:
+        for satellite in satellites:
+            # look for a match between transmitters from the satellite and
+            # ground station antenna frequency capabilities
+            if int(unsupported_frequencies) == 0:
+                transmitter_supported = False
+                norad_id = satellite.norad_cat_id
+                transmitters = [t for t in all_transmitters if t['norad_cat_id'] == norad_id]
                 for transmitter in transmitters:
-                    if transmitter.downlink_low:
-                        if (gs_antenna.frequency <=
-                                transmitter.downlink_low <=
-                                gs_antenna.frequency_max):
-                            frequency_supported = True
-            if not frequency_supported:
+                    for gs_antenna in station.antenna.all():
+                        if downlink_low_is_in_range(gs_antenna, transmitter):
+                            transmitter_supported = True
+                        break
+                    if transmitter_supported:
+                        break
+                if not transmitter_supported:
+                    continue
+
+            try:
+                tle = satellite.latest_tle.str_array
+            except (ValueError, AttributeError):
                 continue
 
-        try:
-            tle = satellite.latest_tle.str_array
-        except (ValueError, AttributeError):
-            continue
+            station_passes, station_windows = predict_available_observation_windows(station,
+                                                                                    None,
+                                                                                    2,
+                                                                                    tle,
+                                                                                    start_date,
+                                                                                    end_date,
+                                                                                    satellite)
 
-        station_passes, station_windows = predict_available_observation_windows(station,
-                                                                                None,
-                                                                                2,
-                                                                                tle,
-                                                                                start_date,
-                                                                                end_date,
-                                                                                satellite)
-
-        if station_windows:
-            for window in station_windows:
-                valid = window['start'] > observation_date_min_start and window['valid_duration']
-                window_start = datetime.strptime(window['start'], '%Y-%m-%d %H:%M:%S.%f')
-                window_end = datetime.strptime(window['end'], '%Y-%m-%d %H:%M:%S.%f')
-                sat_pass = {'name': str(satellite.name),
-                            'id': str(satellite.id),
-                            'success_rate': str(satellite.success_rate),
-                            'unvetted_rate': str(satellite.unvetted_rate),
-                            'bad_rate': str(satellite.bad_rate),
-                            'data_count': str(satellite.data_count),
-                            'good_count': str(satellite.good_count),
-                            'bad_count': str(satellite.bad_count),
-                            'unvetted_count': str(satellite.unvetted_count),
-                            'norad_cat_id': str(satellite.norad_cat_id),
-                            'tle1': window['tle1'],
-                            'tle2': window['tle2'],
-                            'tr': window_start,          # Rise time
-                            'azr': window['az_start'],   # Rise Azimuth
-                            'altt': window['elev_max'],  # Max altitude
-                            'ts': window_end,            # Set time
-                            'azs': window['az_end'],     # Set azimuth
-                            'valid': valid,
-                            'overlapped': window['overlapped'],
-                            'overlap_ratio': window['overlap_ratio']}
-                nextpasses.append(sat_pass)
+            if station_windows:
+                for window in station_windows:
+                    valid = window['start'] > observation_min_start and window['valid_duration']
+                    window_start = datetime.strptime(window['start'], '%Y-%m-%d %H:%M:%S.%f')
+                    window_end = datetime.strptime(window['end'], '%Y-%m-%d %H:%M:%S.%f')
+                    sat_pass = {'name': str(satellite.name),
+                                'id': str(satellite.id),
+                                'success_rate': str(satellite.success_rate),
+                                'unvetted_rate': str(satellite.unvetted_rate),
+                                'bad_rate': str(satellite.bad_rate),
+                                'data_count': str(satellite.data_count),
+                                'good_count': str(satellite.good_count),
+                                'bad_count': str(satellite.bad_count),
+                                'unvetted_count': str(satellite.unvetted_count),
+                                'norad_cat_id': str(satellite.norad_cat_id),
+                                'tle1': window['tle1'],
+                                'tle2': window['tle2'],
+                                'tr': window_start,          # Rise time
+                                'azr': window['az_start'],   # Rise Azimuth
+                                'altt': window['elev_max'],  # Max altitude
+                                'ts': window_end,            # Set time
+                                'azs': window['az_end'],     # Set azimuth
+                                'valid': valid,
+                                'overlapped': window['overlapped'],
+                                'overlap_ratio': window['overlap_ratio']}
+                    nextpasses.append(sat_pass)
 
     data = {
         'id': id,
@@ -784,20 +826,13 @@ def station_delete(request, id):
     return redirect(reverse('users:view_user', kwargs={'username': me}))
 
 
-class TransmittersSerializer(serializers.ModelSerializer):
-
-    mode = serializers.SerializerMethodField()
-
-    class Meta:
-        model = Transmitter
-        fields = ('uuid', 'description', 'alive', 'downlink_low', 'mode',
-                  'success_rate', 'bad_rate', 'unvetted_rate', 'good_count',
-                  'bad_count', 'unvetted_count', 'data_count')
-
-    def get_mode(self, obj):
-        if obj.mode is None:
-            return "No Mode"
-        return obj.mode.name
+def transmitters_with_stats(transmitters_list):
+    transmitters_with_stats_list = []
+    for transmitter in transmitters_list:
+        transmitter_stats = transmitter_stats_by_uuid(transmitter['uuid'])
+        transmitter_with_stats = dict(transmitter, **transmitter_stats)
+        transmitters_with_stats_list.append(transmitter_with_stats)
+    return transmitters_with_stats_list
 
 
 def satellite_view(request, id):
@@ -809,7 +844,12 @@ def satellite_view(request, id):
         }
         return JsonResponse(data, safe=False)
 
-    transmitters = Transmitter.objects.filter(satellite=sat)
+    transmitters = get_transmitters_by_norad_id(norad_id=id)
+    if transmitters is None:
+        data = {
+            'error': 'Error in DB API connection.'
+        }
+        return JsonResponse(data, safe=False)
 
     data = {
         'id': id,
@@ -822,37 +862,47 @@ def satellite_view(request, id):
         'unvetted_count': sat.unvetted_count,
         'data_count': sat.data_count,
         'future_count': sat.future_count,
-        'transmitters': TransmittersSerializer(transmitters, many=True).data,
+        'transmitters': transmitters_with_stats(transmitters)
     }
 
     return JsonResponse(data, safe=False)
 
 
 def transmitters_view(request):
-    sat_id = request.POST['satellite']
+    norad_id = request.POST['satellite']
     station_id = request.POST.get('station_id', None)
     try:
-        sat = Satellite.objects.get(norad_cat_id=sat_id)
+        Satellite.objects.get(norad_cat_id=norad_id)
     except Satellite.DoesNotExist:
         data = {
             'error': 'Unable to find that satellite.'
         }
         return JsonResponse(data, safe=False)
 
-    transmitters = Transmitter.objects.filter(satellite=sat, alive=True,
-                                              downlink_low__isnull=False)
-    transmitters_filtered = Transmitter.objects.none()
+    transmitters = get_transmitters_by_norad_id(norad_id)
+    if transmitters is None:
+        data = {
+            'error': 'Error in DB API connection.'
+        }
+        return JsonResponse(data, safe=False)
+
+    transmitters = [t for t in transmitters
+                    if t['status'] == 'active' and t['downlink_low'] is not None]
     if station_id:
+        supported_transmitters = []
         station = Station.objects.get(id=station_id)
-        for gs_antenna in station.antenna.all():
-            transmitters_filtered = transmitters_filtered | transmitters.filter(
-                downlink_low__range=(gs_antenna.frequency, gs_antenna.frequency_max))
-        data = {
-            'transmitters': TransmittersSerializer(transmitters_filtered, many=True).data,
-        }
-    else:
-        data = {
-            'transmitters': TransmittersSerializer(transmitters, many=True).data,
-        }
+        for transmitter in transmitters:
+            transmitter_supported = False
+            for gs_antenna in station.antenna.all():
+                if downlink_low_is_in_range(gs_antenna, transmitter):
+                    transmitter_supported = True
+                    break
+            if transmitter_supported:
+                supported_transmitters.append(transmitter)
+        transmitters = supported_transmitters
+
+    data = {
+        'transmitters': transmitters_with_stats(transmitters)
+    }
 
     return JsonResponse(data, safe=False)

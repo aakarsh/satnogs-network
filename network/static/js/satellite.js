@@ -34,10 +34,10 @@ $(document).ready(function() {
                 var good_percentage = 0;
                 var unvetted_percentage = 0;
                 var bad_percentage = 0;
-                if(transmitter.data_count > 0){
-                    good_percentage = Math.round((transmitter.good_count / transmitter.data_count) * 100);
-                    unvetted_percentage = Math.round((transmitter.unvetted_count / transmitter.data_count) * 100);
-                    bad_percentage = Math.round((transmitter.bad_count / transmitter.data_count) * 100);
+                if(transmitter.total_count > 0){
+                    good_percentage = Math.round((transmitter.good_count / transmitter.total_count) * 100);
+                    unvetted_percentage = Math.round((transmitter.unvetted_count / transmitter.total_count) * 100);
+                    bad_percentage = Math.round((transmitter.bad_count / transmitter.total_count) * 100);
                 }
                 modal.find('#transmitters').append(`
                     <div class="col-md-12 transmitter">
@@ -48,7 +48,7 @@ $(document).ready(function() {
                         <div class="panel-body">
                           <span class="label label-default">Observations</span>
                           <span class="front-data-big">
-                            <span class="transmitter-total-obs">` + transmitter.data_count + `</span>
+                            <span class="transmitter-total-obs">` + transmitter.total_count + `</span>
                             <div class="progress pull-right">
                               <div class="progress-bar progress-bar-success transmitter-good"
                                           data-toggle="tooltip" data-placement="bottom"

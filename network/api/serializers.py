@@ -11,6 +11,7 @@ class DemodDataSerializer(serializers.ModelSerializer):
 
 class ObservationSerializer(serializers.ModelSerializer):
     transmitter = serializers.SerializerMethodField()
+    transmitter_updated = serializers.DateTimeField(source='transmitter_created')
     norad_cat_id = serializers.SerializerMethodField()
     station_name = serializers.SerializerMethodField()
     station_lat = serializers.SerializerMethodField()
@@ -24,12 +25,23 @@ class ObservationSerializer(serializers.ModelSerializer):
                   'payload', 'waterfall', 'demoddata', 'station_name', 'station_lat',
                   'station_lng', 'station_alt', 'vetted_status', 'archived', 'archive_url',
                   'client_version', 'client_metadata', 'vetted_user', 'vetted_datetime',
-                  'rise_azimuth', 'set_azimuth', 'max_altitude', 'tle')
+                  'rise_azimuth', 'set_azimuth', 'max_altitude', 'transmitter_uuid',
+                  'transmitter_description', 'transmitter_type', 'transmitter_uplink_low',
+                  'transmitter_uplink_high', 'transmitter_uplink_drift',
+                  'transmitter_downlink_low', 'transmitter_downlink_high',
+                  'transmitter_downlink_drift', 'transmitter_mode', 'transmitter_invert',
+                  'transmitter_baud', 'transmitter_updated', 'tle')
         read_only_fields = ['id', 'start', 'end', 'observation', 'ground_station',
                             'transmitter', 'norad_cat_id', 'archived', 'archive_url',
                             'station_name', 'station_lat', 'station_lng', 'vetted_user',
                             'station_alt', 'vetted_status', 'vetted_datetime', 'rise_azimuth',
-                            'set_azimuth', 'max_altitude', 'tle']
+                            'set_azimuth', 'max_altitude', 'transmitter_uuid',
+                            'transmitter_description', 'transmitter_type',
+                            'transmitter_uplink_low', 'transmitter_uplink_high',
+                            'transmitter_uplink_drift', 'transmitter_downlink_low',
+                            'transmitter_downlink_high', 'transmitter_downlink_drift',
+                            'transmitter_mode', 'transmitter_invert', 'transmitter_baud',
+                            'transmitter_created', 'transmitter_updated', 'tle']
 
     def update(self, instance, validated_data):
         validated_data.pop('demoddata')
@@ -38,7 +50,7 @@ class ObservationSerializer(serializers.ModelSerializer):
 
     def get_transmitter(self, obj):
         try:
-            return obj.transmitter.uuid
+            return obj.transmitter_uuid
         except AttributeError:
             return ''
 
@@ -133,15 +145,15 @@ class JobSerializer(serializers.ModelSerializer):
                   'frequency', 'mode', 'transmitter', 'baud')
 
     def get_frequency(self, obj):
-        frequency = obj.transmitter.downlink_low
-        frequency_drift = obj.transmitter.downlink_drift
+        frequency = obj.transmitter_downlink_low
+        frequency_drift = obj.transmitter_downlink_drift
         if frequency_drift is None:
             return frequency
         else:
             return int(round(frequency + ((frequency * frequency_drift) / float(pow(10, 9)))))
 
     def get_transmitter(self, obj):
-        return obj.transmitter.uuid
+        return obj.transmitter_uuid
 
     def get_tle0(self, obj):
         return obj.tle.tle0
@@ -154,30 +166,16 @@ class JobSerializer(serializers.ModelSerializer):
 
     def get_mode(self, obj):
         try:
-            return obj.transmitter.mode.name
+            return obj.transmitter_mode.name
         except AttributeError:
             return ''
 
     def get_baud(self, obj):
-        return obj.transmitter.baud
+        return obj.transmitter_baud
 
 
 class TransmitterSerializer(serializers.ModelSerializer):
-    mode = serializers.SerializerMethodField()
-    norad_cat_id = serializers.SerializerMethodField()
 
     class Meta:
         model = Transmitter
-        fields = ('uuid', 'description', 'alive', 'type', 'uplink_low', 'uplink_high',
-                  'uplink_drift', 'downlink_low', 'downlink_high', 'downlink_drift',
-                  'mode', 'invert', 'baud', 'satellite', 'norad_cat_id',
-                  'success_rate', 'bad_rate', 'unvetted_rate', 'good_count',
-                  'bad_count', 'unvetted_count', 'data_count')
-
-    def get_mode(self, obj):
-        if obj.mode is None:
-            return "No Mode"
-        return obj.mode.name
-
-    def get_norad_cat_id(self, obj):
-        return obj.satellite.norad_cat_id
+        fields = ('uuid', 'sync_to_db')

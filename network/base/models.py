@@ -17,9 +17,8 @@ from django.utils.html import format_html
 from django.utils.timezone import now
 
 from network.users.models import User
-from network.base.helpers import get_apikey
 from network.base.managers import ObservationManager
-
+from rest_framework.authtoken.models import Token
 
 ANTENNA_BANDS = ['HF', 'VHF', 'UHF', 'L', 'S', 'C', 'X', 'KU']
 ANTENNA_TYPES = (
@@ -51,6 +50,7 @@ STATION_STATUSES = (
     (0, 'Offline'),
 )
 SATELLITE_STATUS = ['alive', 'dead', 're-entered']
+TRANSMITTER_STATUS = ['active', 'inactive', 'invalid']
 TRANSMITTER_TYPE = ['Transmitter', 'Transceiver', 'Transponder']
 
 
@@ -236,7 +236,11 @@ class Station(models.Model):
 
     @property
     def apikey(self):
-        return get_apikey(user=self.owner)
+        try:
+            token = Token.objects.get(user=self.owner)
+        except Token.DoesNotExist:
+            token = Token.objects.create(user=self.owner)
+        return token
 
     def __unicode__(self):
         return "%d - %s" % (self.pk, self.name)
@@ -382,107 +386,13 @@ post_save.connect(_tle_post_save, sender=Tle)
 class Transmitter(models.Model):
     """Model for antennas transponders."""
     uuid = ShortUUIDField(db_index=True)
-    description = models.TextField()
-    alive = models.BooleanField(default=True)
-    type = models.CharField(choices=zip(TRANSMITTER_TYPE, TRANSMITTER_TYPE),
-                            max_length=11, default='Transmitter')
-    uplink_low = models.BigIntegerField(blank=True, null=True)
-    uplink_high = models.BigIntegerField(blank=True, null=True)
-    uplink_drift = models.IntegerField(blank=True, null=True)
-    downlink_low = models.BigIntegerField(blank=True, null=True)
-    downlink_high = models.BigIntegerField(blank=True, null=True)
-    downlink_drift = models.IntegerField(blank=True, null=True)
-    mode = models.ForeignKey(Mode, related_name='transmitters', blank=True,
-                             null=True, on_delete=models.SET_NULL)
-    invert = models.BooleanField(default=False)
-    baud = models.FloatField(validators=[MinValueValidator(0)], null=True, blank=True)
-    satellite = models.ForeignKey(Satellite, related_name='transmitters',
-                                  on_delete=models.CASCADE, null=True, blank=True)
     sync_to_db = models.BooleanField(default=False)
-
-    @property
-    def data_count(self):
-        return Observation.objects.filter(transmitter=self).exclude(vetted_status='failed').count()
-
-    @property
-    def good_count(self):
-        data = cache.get('tr-{0}-suc-count'.format(self.uuid))
-        if data is None:
-            obs = Observation.objects.filter(transmitter=self)
-            data = obs.filter(vetted_status='good').count()
-            cache.set('tr-{0}-suc-count'.format(self.uuid), data, 3600)
-            return data
-        return data
-
-    @property
-    def bad_count(self):
-        data = cache.get('tr-{0}-bad-count'.format(self.uuid))
-        if data is None:
-            obs = Observation.objects.filter(transmitter=self)
-            data = obs.filter(vetted_status='bad').count()
-            cache.set('tr-{0}-bad-count'.format(self.uuid), data, 3600)
-            return data
-        return data
-
-    @property
-    def unvetted_count(self):
-        data = cache.get('tr-{0}-unk-count'.format(self.uuid))
-        if data is None:
-            obs = Observation.objects.filter(transmitter=self)
-            data = obs.filter(vetted_status='unknown').count()
-            cache.set('tr-{0}-unk-count'.format(self.uuid), data, 3600)
-            return data
-        return data
-
-    @property
-    def success_rate(self):
-        rate = cache.get('tr-{0}-suc-rate'.format(self.uuid))
-        if rate is None:
-            try:
-                rate = int(100 * (float(self.good_count) / float(self.data_count)))
-                cache.set('tr-{0}-suc-rate'.format(self.uuid), rate, 3600)
-                return rate
-            except (ZeroDivisionError, TypeError):
-                cache.set('tr-{0}-suc-rate'.format(self.uuid), 0, 3600)
-                return 0
-        return rate
-
-    @property
-    def bad_rate(self):
-        rate = cache.get('tr-{0}-bad-rate'.format(self.uuid))
-        if rate is None:
-            try:
-                rate = int(100 * (float(self.bad_count) / float(self.data_count)))
-                cache.set('tr-{0}-bad-rate'.format(self.uuid), rate, 3600)
-                return rate
-            except (ZeroDivisionError, TypeError):
-                cache.set('tr-{0}-bad-rate'.format(self.uuid), 0, 3600)
-                return 0
-        return rate
-
-    @property
-    def unvetted_rate(self):
-        rate = cache.get('tr-{0}-unk-rate'.format(self.uuid))
-        if rate is None:
-            try:
-                rate = int(100 * (float(self.unvetted_count) / float(self.data_count)))
-                cache.set('tr-{0}-unk-rate'.format(self.uuid), rate, 3600)
-                return rate
-            except (ZeroDivisionError, TypeError):
-                cache.set('tr-{0}-unk-rate'.format(self.uuid), 0, 3600)
-                return 0
-        return rate
-
-    def __unicode__(self):
-        return self.description
 
 
 class Observation(models.Model):
     """Model for SatNOGS observations."""
     satellite = models.ForeignKey(Satellite, related_name='observations',
                                   on_delete=models.SET_NULL, null=True, blank=True)
-    transmitter = models.ForeignKey(Transmitter, related_name='observations',
-                                    on_delete=models.SET_NULL, null=True, blank=True)
     tle = models.ForeignKey(Tle, related_name='observations',
                             on_delete=models.SET_NULL, null=True, blank=True)
     author = models.ForeignKey(User, related_name='observations',
@@ -507,6 +417,21 @@ class Observation(models.Model):
     archived = models.BooleanField(default=False)
     archive_identifier = models.CharField(max_length=255, blank=True)
     archive_url = models.URLField(blank=True, null=True)
+    transmitter_uuid = ShortUUIDField(db_index=True)
+    transmitter_description = models.TextField(default='')
+    transmitter_type = models.CharField(choices=zip(TRANSMITTER_TYPE, TRANSMITTER_TYPE),
+                                        max_length=11, default='Transmitter')
+    transmitter_uplink_low = models.BigIntegerField(blank=True, null=True)
+    transmitter_uplink_high = models.BigIntegerField(blank=True, null=True)
+    transmitter_uplink_drift = models.IntegerField(blank=True, null=True)
+    transmitter_downlink_low = models.BigIntegerField(blank=True, null=True)
+    transmitter_downlink_high = models.BigIntegerField(blank=True, null=True)
+    transmitter_downlink_drift = models.IntegerField(blank=True, null=True)
+    transmitter_mode = models.ForeignKey(Mode, blank=True, null=True, on_delete=models.SET_NULL,
+                                         related_name='observations')
+    transmitter_invert = models.BooleanField(default=False)
+    transmitter_baud = models.FloatField(validators=[MinValueValidator(0)], blank=True, null=True)
+    transmitter_created = models.DateTimeField(default=now)
 
     objects = ObservationManager.as_manager()
 

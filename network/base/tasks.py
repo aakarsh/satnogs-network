@@ -94,30 +94,12 @@ def fetch_data():
 
     # Fetch Transmitters
     for transmitter in json.loads(transmitters):
-        norad_cat_id = transmitter['norad_cat_id']
         uuid = transmitter['uuid']
-        mode_id = transmitter['mode_id']
 
         try:
-            sat = Satellite.objects.get(norad_cat_id=norad_cat_id)
-        except Satellite.DoesNotExist:
-            continue
-        transmitter.pop('norad_cat_id')
-
-        try:
-            mode = Mode.objects.get(id=mode_id)
-        except Mode.DoesNotExist:
-            mode = None
-        try:
-            existing_transmitter = Transmitter.objects.get(uuid=uuid)
-            existing_transmitter.__dict__.update(transmitter)
-            existing_transmitter.satellite = sat
-            existing_transmitter.save()
+            Transmitter.objects.get(uuid=uuid)
         except Transmitter.DoesNotExist:
-            new_transmitter = Transmitter.objects.create(**transmitter)
-            new_transmitter.satellite = sat
-            new_transmitter.mode = mode
-            new_transmitter.save()
+            Transmitter.objects.create(uuid=uuid)
 
 
 @app.task(ignore_result=True)
@@ -172,9 +154,10 @@ def clean_observations():
 def sync_to_db():
     """Task to send demod data to db / SiDS"""
     q = now() - timedelta(days=1)
+    transmitters = Transmitter.objects.filter(sync_to_db=True).values_list('uuid', flat=True)
     frames = DemodData.objects.filter(observation__end__gte=q,
                                       copied_to_db=False,
-                                      observation__transmitter__sync_to_db=True)
+                                      observation__transmitter_uuid__in=transmitters)
     for frame in frames:
         try:
             if not frame.is_image() and not frame.copied_to_db:

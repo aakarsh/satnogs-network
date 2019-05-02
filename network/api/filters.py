@@ -10,8 +10,8 @@ class ObservationViewFilter(FilterSet):
 
     class Meta:
         model = Observation
-        fields = ['id', 'ground_station', 'satellite__norad_cat_id', 'transmitter',
-                  'vetted_status', 'vetted_user']
+        fields = ['id', 'ground_station', 'satellite__norad_cat_id', 'transmitter_uuid',
+                  'transmitter_mode', 'transmitter_type', 'vetted_status', 'vetted_user']
 
 
 class StationViewFilter(FilterSet):
@@ -23,4 +23,4 @@ class StationViewFilter(FilterSet):
 class TransmitterViewFilter(FilterSet):
     class Meta:
         model = Transmitter
-        fields = ['uuid', 'satellite__norad_cat_id']
+        fields = ['uuid', 'sync_to_db']

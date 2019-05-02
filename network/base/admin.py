@@ -68,14 +68,10 @@ class TleAdmin(admin.ModelAdmin):
 
 @admin.register(Transmitter)
 class TransmitterAdmin(admin.ModelAdmin):
-    list_display = ('uuid', 'description', 'satellite', 'type', 'alive', 'mode', 'uplink_low',
-                    'uplink_high', 'uplink_drift', 'downlink_low', 'downlink_high',
-                    'downlink_drift', 'baud', 'sync_to_db')
-    search_fields = ('uuid', 'satellite__name', 'satellite__norad_cat_id')
-    list_filter = ('type', 'mode', 'alive', 'sync_to_db')
-    readonly_fields = ('uuid', 'description', 'satellite', 'type', 'uplink_low', 'uplink_high',
-                       'uplink_drift', 'downlink_low', 'downlink_high', 'downlink_drift',
-                       'baud', 'invert', 'alive', 'mode')
+    list_display = ('uuid', 'sync_to_db')
+    search_fields = ('uuid',)
+    list_filter = ('sync_to_db',)
+    readonly_fields = ('uuid', 'sync_to_db')
 
 
 class DataDemodInline(admin.TabularInline):
@@ -84,7 +80,7 @@ class DataDemodInline(admin.TabularInline):
 
 @admin.register(Observation)
 class ObservationAdmin(admin.ModelAdmin):
-    list_display = ('id', 'author', 'satellite', 'transmitter', 'start', 'end')
+    list_display = ('id', 'author', 'satellite', 'transmitter_uuid', 'start', 'end')
     list_filter = ('start', 'end')
     search_fields = ('satellite', 'author')
     inlines = [

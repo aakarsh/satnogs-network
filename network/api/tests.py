@@ -8,7 +8,6 @@ from rest_framework.utils.encoders import JSONEncoder
 from network.base.tests import (
     ObservationFactory,
     SatelliteFactory,
-    TransmitterFactory,
     StationFactory,
     AntennaFactory
 )
@@ -21,14 +20,11 @@ class JobViewApiTest(TestCase):
     """
     observation = None
     satellites = []
-    transmitters = []
     stations = []
 
     def setUp(self):
         for x in xrange(1, 10):
             self.satellites.append(SatelliteFactory())
-        for x in xrange(1, 10):
-            self.transmitters.append(TransmitterFactory())
         for x in xrange(1, 10):
             self.stations.append(StationFactory())
         self.observation = ObservationFactory()

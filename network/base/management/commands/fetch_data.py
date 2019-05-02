@@ -59,30 +59,11 @@ class Command(BaseCommand):
 
         # Fetch Transmitters
         for transmitter in r_transmitters.json():
-            norad_cat_id = transmitter['norad_cat_id']
             uuid = transmitter['uuid']
-            description = transmitter['description']
-            mode_id = transmitter['mode_id']
 
             try:
-                sat = Satellite.objects.get(norad_cat_id=norad_cat_id)
-            except Satellite.DoesNotExist:
-                self.stdout.write('Satellite {0} not present'.format(norad_cat_id))
-            transmitter.pop('norad_cat_id')
-
-            try:
-                mode = Mode.objects.get(id=mode_id)
-            except Mode.DoesNotExist:
-                mode = None
-            try:
-                existing_transmitter = Transmitter.objects.get(uuid=uuid)
-                existing_transmitter.__dict__.update(transmitter)
-                existing_transmitter.satellite = sat
-                existing_transmitter.save()
-                self.stdout.write('Transmitter {0}-{1} updated'.format(uuid, description))
+                Transmitter.objects.get(uuid=uuid)
+                self.stdout.write('Transmitter {0} already exists'.format(uuid))
             except Transmitter.DoesNotExist:
-                new_transmitter = Transmitter.objects.create(**transmitter)
-                new_transmitter.satellite = sat
-                new_transmitter.mode = mode
-                new_transmitter.save()
-                self.stdout.write('Transmitter {0}-{1} created'.format(uuid, description))
+                Transmitter.objects.create(uuid=uuid)
+                self.stdout.write('Transmitter {0} created'.format(uuid))

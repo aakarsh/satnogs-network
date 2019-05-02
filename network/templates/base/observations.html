@@ -232,10 +232,10 @@
                     {{ observation.satellite.name }}
                   </a>
                 </td>
-                <td>{{ observation.transmitter.downlink_low|frq }}</td>
+                <td>{{ observation.transmitter_downlink_low|frq }}</td>
                 <td>
-                  <span data-toggle="tooltip" data-placement="bottom" title="{{ observation.transmitter.description }}">
-                    {{ observation.transmitter.mode|default:"-" }}
+                  <span data-toggle="tooltip" data-placement="bottom" title="{{ observation.transmitter_description }}">
+                    {{ observation.transmitter_mode|default:"-" }}
                   </span>
                 </td>
                 <td>

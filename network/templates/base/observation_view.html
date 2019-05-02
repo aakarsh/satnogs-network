@@ -136,19 +136,19 @@
       <div class="front-line">
         <span class="label label-default">Transmitter</span>
         <span class="front-data">
-          {{ observation.transmitter.description }}
+          {{ observation.transmitter_description }}
         </span>
       </div>
       <div class="front-line">
         <span class="label label-default">Frequency</span>
         <span class="front-data">
-          {{ observation.transmitter.downlink_low|frq }}
+          {{ observation.transmitter_downlink_low|frq }}
         </span>
       </div>
       <div class="front-line">
         <span class="label label-default">Encoding</span>
         <span class="front-data">
-          {{ observation.transmitter.mode|default:"-" }}
+          {{ observation.transmitter_mode|default:"-" }}
         </span>
       </div>
       <div class="front-line">
@@ -360,7 +360,7 @@
                   <div class="well well-sm data-well">
                     <img src="{{ demoddata.payload_demod.url }}" alt="observation-{{ observation.pk }}" class="img-responsive">
                   </div>
-                {% elif observation.transmitter.mode == 'CW' %}
+                {% elif observation.transmitter_mode == 'CW' %}
                   <div class="well well-sm data-well">
                     {{ demoddata.display_payload }}
                   </div>

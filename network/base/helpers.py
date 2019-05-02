@@ -1,9 +1,5 @@
-from rest_framework.authtoken.models import Token
-
-
-def get_apikey(user):
-    try:
-        token = Token.objects.get(user=user)
-    except Token.DoesNotExist:
-        token = Token.objects.create(user=user)
-    return token
+def downlink_low_is_in_range(antenna, transmitter):
+    if transmitter['downlink_low'] is not None:
+        return antenna.frequency <= transmitter['downlink_low'] <= antenna.frequency_max
+    else:
+        return False

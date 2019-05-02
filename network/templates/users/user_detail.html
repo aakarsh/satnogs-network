@@ -163,8 +163,8 @@
                     {{ observation.satellite.name }}
                   </a>
                 </td>
-                <td>{{ observation.transmitter.downlink_low|frq }}</td>
-                <td>{{ observation.transmitter.mode }}</td>
+                <td>{{ observation.transmitter_downlink_low|frq }}</td>
+                <td>{{ observation.transmitter_mode }}</td>
                 <td>
                   <span class="datetime-date">{{ observation.start|date:"Y-m-d" }}</span>
                   <span class="datetime-time">{{ observation.start|date:"H:i:s" }}</span><br>
