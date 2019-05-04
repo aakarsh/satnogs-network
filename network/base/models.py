@@ -121,14 +121,6 @@ def validate_image(fieldfile_obj):
         raise ValidationError("Max file size is %sMB" % str(megabyte_limit))
 
 
-class Mode(models.Model):
-    """Model for Modes."""
-    name = models.CharField(max_length=10, unique=True)
-
-    def __unicode__(self):
-        return self.name
-
-
 class Antenna(models.Model):
     """Model for antennas tracked with SatNOGS."""
     frequency = models.PositiveIntegerField()
@@ -427,8 +419,7 @@ class Observation(models.Model):
     transmitter_downlink_low = models.BigIntegerField(blank=True, null=True)
     transmitter_downlink_high = models.BigIntegerField(blank=True, null=True)
     transmitter_downlink_drift = models.IntegerField(blank=True, null=True)
-    transmitter_mode = models.ForeignKey(Mode, blank=True, null=True, on_delete=models.SET_NULL,
-                                         related_name='observations')
+    transmitter_mode = models.CharField(max_length=10, blank=True, null=True)
     transmitter_invert = models.BooleanField(default=False)
     transmitter_baud = models.FloatField(validators=[MinValueValidator(0)], blank=True, null=True)
     transmitter_created = models.DateTimeField(default=now)

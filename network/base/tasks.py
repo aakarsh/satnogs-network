@@ -13,7 +13,7 @@ from django.core.cache import cache
 from django.core.mail import send_mail
 from django.utils.timezone import now
 
-from network.base.models import Satellite, Tle, Mode, Transmitter, Observation, Station, DemodData
+from network.base.models import Satellite, Tle, Transmitter, Observation, Station, DemodData
 from network.celery import app
 from network.base.utils import demod_to_db
 
@@ -60,26 +60,14 @@ def fetch_data():
     apiurl = settings.DB_API_ENDPOINT
     if len(apiurl) == 0:
         return
-    modes_url = "{0}modes".format(apiurl)
     satellites_url = "{0}satellites".format(apiurl)
     transmitters_url = "{0}transmitters".format(apiurl)
 
     try:
-        modes = urllib2.urlopen(modes_url).read()
         satellites = urllib2.urlopen(satellites_url).read()
         transmitters = urllib2.urlopen(transmitters_url).read()
     except urllib2.URLError:
         raise Exception('API is unreachable')
-
-    # Fetch Modes
-    for mode in json.loads(modes):
-        id = mode['id']
-        try:
-            existing_mode = Mode.objects.get(id=id)
-            existing_mode.__dict__.update(mode)
-            existing_mode.save()
-        except Mode.DoesNotExist:
-            Mode.objects.create(**mode)
 
     # Fetch Satellites
     for sat in json.loads(satellites):

@@ -1,14 +1,8 @@
 from django.contrib import admin
 
 from network.base.models import (Antenna, Satellite, Station, Transmitter,
-                                 Observation, Mode, Tle, DemodData)
+                                 Observation, Tle, DemodData)
 from network.base.utils import export_as_csv, export_station_status
-
-
-@admin.register(Mode)
-class ModeAdmin(admin.ModelAdmin):
-    list_display = ('name', )
-    readonly_fields = ('name', )
 
 
 @admin.register(Antenna)

@@ -3,7 +3,7 @@ from datetime import timedelta
 
 from django.conf import settings
 from django.utils.timezone import now, make_aware, utc
-from network.base.models import Mode, Satellite, Station, Tle, Observation
+from network.base.models import Satellite, Station, Tle, Observation
 from network.base.perms import schedule_station_perms
 
 import ephem
@@ -313,10 +313,6 @@ def create_new_observation(station_id, sat_id, transmitter, start_time, end_time
     rise_azimuth = get_azimuth(observer, sat_ephem, start_time)
     max_altitude = get_elevation(observer, sat_ephem, mid_pass_time)
     set_azimuth = get_azimuth(observer, sat_ephem, end_time)
-    try:
-        mode = Mode.objects.get(id=transmitter['mode_id'])
-    except Mode.DoesNotExist:
-        mode = Mode.objects.create(id=transmitter['mode_id'], name=transmitter['mode'])
 
     return Observation(
         satellite=sat, tle=tle, author=author, start=start_time, end=end_time,
@@ -329,7 +325,7 @@ def create_new_observation(station_id, sat_id, transmitter, start_time, end_time
         transmitter_downlink_low=transmitter['downlink_low'],
         transmitter_downlink_high=transmitter['downlink_high'],
         transmitter_downlink_drift=transmitter['downlink_drift'],
-        transmitter_mode=mode, transmitter_invert=transmitter['invert'],
+        transmitter_mode=transmitter['mode'], transmitter_invert=transmitter['invert'],
         transmitter_baud=transmitter['baud'], transmitter_created=transmitter['updated']
     )
 

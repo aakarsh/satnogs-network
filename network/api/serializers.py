@@ -166,7 +166,7 @@ class JobSerializer(serializers.ModelSerializer):
 
     def get_mode(self, obj):
         try:
-            return obj.transmitter_mode.name
+            return obj.transmitter_mode
         except AttributeError:
             return ''
 

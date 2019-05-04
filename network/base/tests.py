@@ -11,7 +11,7 @@ from django.test import TestCase, Client
 from django.utils.timezone import now
 
 from network.base.models import (ANTENNA_BANDS, ANTENNA_TYPES, OBSERVATION_STATUSES,
-                                 Mode, Antenna, Satellite, Tle, Station, Observation, DemodData)
+                                 Antenna, Satellite, Tle, Station, Observation, DemodData)
 from network.users.tests import UserFactory
 
 
@@ -34,14 +34,6 @@ def generate_payload_name():
     filename = datetime.strftime(fuzzy.FuzzyDateTime(now() - timedelta(days=10), now()).fuzz(),
                                  '%Y%m%dT%H%M%SZ')
     return filename
-
-
-class ModeFactory(factory.django.DjangoModelFactory):
-    """Mode model factory."""
-    name = fuzzy.FuzzyText()
-
-    class Meta:
-        model = Mode
 
 
 class AntennaFactory(factory.django.DjangoModelFactory):
@@ -126,7 +118,7 @@ class ObservationFactory(factory.django.DjangoModelFactory):
     transmitter_uplink_high = fuzzy.FuzzyInteger(200000000, 500000000, step=10000)
     transmitter_downlink_low = fuzzy.FuzzyInteger(200000000, 500000000, step=10000)
     transmitter_downlink_high = fuzzy.FuzzyInteger(200000000, 500000000, step=10000)
-    transmitter_mode = factory.SubFactory(ModeFactory)
+    transmitter_mode = fuzzy.FuzzyText()
     transmitter_invert = fuzzy.FuzzyChoice(choices=[True, False])
     transmitter_baud = fuzzy.FuzzyInteger(4000, 22000, step=1000)
     transmitter_created = fuzzy.FuzzyDateTime(now() - timedelta(days=100),
@@ -198,7 +190,6 @@ class ObservationsListViewTest(TestCase):
         with transaction.atomic():
             Observation.objects.all().delete()
             Satellite.objects.all().delete()
-            Mode.objects.all().delete()
         self.satellites = []
         self.observations_bad = []
         self.observations_good = []
@@ -225,25 +216,25 @@ class ObservationsListViewTest(TestCase):
     def test_observations_list(self):
         response = self.client.get('/observations/')
         for x in self.observations:
-            self.assertContains(response, x.transmitter_mode.name)
+            self.assertContains(response, x.transmitter_mode)
 
     def test_observations_list_select_bad(self):
         response = self.client.get('/observations/?bad=1')
 
         for x in self.observations_bad:
-            self.assertContains(response, x.transmitter_mode.name)
+            self.assertContains(response, x.transmitter_mode)
 
     def test_observations_list_select_good(self):
         response = self.client.get('/observations/?good=1')
 
         for x in self.observations_good:
-            self.assertContains(response, x.transmitter_mode.name)
+            self.assertContains(response, x.transmitter_mode)
 
     def test_observations_list_select_unvetted(self):
         response = self.client.get('/observations/?unvetted=1')
 
         for x in self.observations_unvetted:
-            self.assertContains(response, x.transmitter_mode.name)
+            self.assertContains(response, x.transmitter_mode)
 
 
 class NotFoundErrorTest(TestCase):
@@ -292,7 +283,7 @@ class ObservationViewTest(TestCase):
     def test_observation(self):
         response = self.client.get('/observations/%d/' % self.observation.id)
         self.assertContains(response, self.observation.author.username)
-        self.assertContains(response, self.observation.transmitter_mode.name)
+        self.assertContains(response, self.observation.transmitter_mode)
 
 
 @pytest.mark.django_db(transaction=True)
