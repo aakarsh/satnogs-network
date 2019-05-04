@@ -1,6 +1,7 @@
 from rest_framework import serializers
 
 from network.base.models import Observation, Station, DemodData, Antenna, Transmitter
+from network.base.stats import transmitter_stats_by_uuid
 
 
 class DemodDataSerializer(serializers.ModelSerializer):
@@ -175,7 +176,11 @@ class JobSerializer(serializers.ModelSerializer):
 
 
 class TransmitterSerializer(serializers.ModelSerializer):
+    stats = serializers.SerializerMethodField()
 
     class Meta:
         model = Transmitter
-        fields = ('uuid', 'sync_to_db')
+        fields = ('uuid', 'sync_to_db', 'stats')
+
+    def get_stats(self, obj):
+        return transmitter_stats_by_uuid(obj.uuid)
