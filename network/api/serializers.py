@@ -12,7 +12,7 @@ class DemodDataSerializer(serializers.ModelSerializer):
 
 class ObservationSerializer(serializers.ModelSerializer):
     transmitter = serializers.SerializerMethodField()
-    transmitter_updated = serializers.DateTimeField(source='transmitter_created')
+    transmitter_updated = serializers.SerializerMethodField()
     norad_cat_id = serializers.SerializerMethodField()
     station_name = serializers.SerializerMethodField()
     station_lat = serializers.SerializerMethodField()
@@ -52,6 +52,12 @@ class ObservationSerializer(serializers.ModelSerializer):
     def get_transmitter(self, obj):
         try:
             return obj.transmitter_uuid
+        except AttributeError:
+            return ''
+
+    def get_transmitter_updated(self, obj):
+        try:
+            return obj.transmitter_created
         except AttributeError:
             return ''
 
