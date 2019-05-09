@@ -118,7 +118,7 @@ class ObservationFactory(factory.django.DjangoModelFactory):
     transmitter_uplink_high = fuzzy.FuzzyInteger(200000000, 500000000, step=10000)
     transmitter_downlink_low = fuzzy.FuzzyInteger(200000000, 500000000, step=10000)
     transmitter_downlink_high = fuzzy.FuzzyInteger(200000000, 500000000, step=10000)
-    transmitter_mode = fuzzy.FuzzyText()
+    transmitter_mode = fuzzy.FuzzyText(length=10)
     transmitter_invert = fuzzy.FuzzyChoice(choices=[True, False])
     transmitter_baud = fuzzy.FuzzyInteger(4000, 22000, step=1000)
     transmitter_created = fuzzy.FuzzyDateTime(now() - timedelta(days=100),
