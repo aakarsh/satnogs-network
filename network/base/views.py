@@ -724,7 +724,7 @@ def pass_predictions(request, id):
                     for gs_antenna in station.antenna.all():
                         if downlink_low_is_in_range(gs_antenna, transmitter):
                             transmitter_supported = True
-                        break
+                            break
                     if transmitter_supported:
                         break
                 if not transmitter_supported:
