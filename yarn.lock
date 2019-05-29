@@ -316,10 +316,10 @@ bootstrap-fileinput@^4.5.2:
     bootstrap ">= 3.0.0"
     jquery ">= 1.9.0"
 
-bootstrap-select@^1.13.2:
-  version "1.13.10"
-  resolved "https://registry.yarnpkg.com/bootstrap-select/-/bootstrap-select-1.13.10.tgz#b0cf57f8d448bc0488faba04ecaa2f4c5216e144"
-  integrity sha512-mwfyd+VWHY8wDN4je4Y8PPEaOAzDPUz95z5F5zxzlIqebqxtbrujclFWLrhkVOyETpsgZCL1rsfyEnHpAugtGg==
+bootstrap-select@1.13.8:
+  version "1.13.8"
+  resolved "https://registry.yarnpkg.com/bootstrap-select/-/bootstrap-select-1.13.8.tgz#c47047410511f6d8a8917a7738d1b03c95717d5d"
+  integrity sha512-WF6GJPgb98cv75X6/zoCWUNwM/HPoYKP6JDBryTNDCHMPV9YyMqU7xXncC7Se2M5VAt7kZQ/i2GSYwaf5Q/Z3w==
 
 bootstrap-slider@^10.0.0:
   version "10.6.1"

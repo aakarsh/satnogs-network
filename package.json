@@ -16,7 +16,7 @@
     "dependencies": {
         "bootstrap": "^3.3.7",
         "bootstrap-fileinput": "^4.5.2",
-        "bootstrap-select": "^1.13.2",
+        "bootstrap-select": "1.13.8",
         "bootstrap-slider": "^10.0.0",
         "d3": "^3.5.17",
         "d3-timeline": "jiahuang/d3-timeline",
