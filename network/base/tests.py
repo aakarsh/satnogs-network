@@ -293,7 +293,8 @@ class ObservationDeleteTest(TestCase):
     """
     client = Client()
     user = None
-    observation = None
+    future_observation = None
+    past_observation = None
     satellites = []
 
     def setUp(self):
@@ -301,29 +302,54 @@ class ObservationDeleteTest(TestCase):
         self.client.force_login(self.user)
         for x in xrange(1, 10):
             self.satellites.append(SatelliteFactory())
-        self.observation = ObservationFactory()
-        self.observation.author = self.user
-        self.observation.save()
+        self.future_observation = ObservationFactory()
+        self.future_observation.author = self.user
+        self.future_observation.start = now() + timedelta(days=1)
+        self.future_observation.end = self.future_observation.start + timedelta(minutes=15)
+        self.future_observation.save()
+        self.past_observation = ObservationFactory()
+        self.past_observation.author = self.user
+        self.past_observation.start = now() - timedelta(days=1)
+        self.past_observation.end = self.past_observation.start + timedelta(minutes=15)
+        self.past_observation.save()
 
-    def test_observation_delete_author(self):
-        """Deletion OK when user is the author of the observation"""
-        response = self.client.get('/observations/%d/delete/' % self.observation.id)
+    def test_future_observation_delete_author(self):
+        """Deletion OK when user is the author of the observation and observation is in future"""
+        response = self.client.get('/observations/%d/delete/' % self.future_observation.id)
         self.assertRedirects(response, '/observations/')
         response = self.client.get('/observations/')
         with self.assertRaises(Observation.DoesNotExist):
-            _lookup = Observation.objects.get(pk=self.observation.id)  # noqa:F841
+            _lookup = Observation.objects.get(pk=self.future_observation.id)  # noqa:F841
 
-    def test_observation_delete_moderator(self):
-        """Deletion OK when user is moderator and there is no data"""
+    def test_future_observation_delete_moderator(self):
+        """Deletion OK when user is moderator and observation is in future"""
         self.user = UserFactory()
         g = Group.objects.get(name='Moderators')
         g.user_set.add(self.user)
         self.client.force_login(self.user)
-        response = self.client.get('/observations/%d/delete/' % self.observation.id)
+        response = self.client.get('/observations/%d/delete/' % self.future_observation.id)
         self.assertRedirects(response, '/observations/')
         response = self.client.get('/observations/')
         with self.assertRaises(Observation.DoesNotExist):
-            _lookup = Observation.objects.get(pk=self.observation.id)  # noqa:F841
+            _lookup = Observation.objects.get(pk=self.future_observation.id)  # noqa:F841
+
+    def test_past_observation_delete_author(self):
+        """Deletion NOT OK when user is the author of the observation and observation is in past"""
+        response = self.client.get('/observations/%d/delete/' % self.past_observation.id)
+        self.assertRedirects(response, '/observations/')
+        response = self.client.get('/observations/')
+        self.assertContains(response, self.past_observation.id)
+
+    def test_past_observation_delete_moderator(self):
+        """Deletion NOT OK when user is moderator and observation is in past"""
+        self.user = UserFactory()
+        g = Group.objects.get(name='Moderators')
+        g.user_set.add(self.user)
+        self.client.force_login(self.user)
+        response = self.client.get('/observations/%d/delete/' % self.past_observation.id)
+        self.assertRedirects(response, '/observations/')
+        response = self.client.get('/observations/')
+        self.assertContains(response, self.past_observation.id)
 
 
 @pytest.mark.django_db(transaction=True)

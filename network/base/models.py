@@ -434,6 +434,10 @@ class Observation(models.Model):
     def is_future(self):
         return self.end > now()
 
+    @property
+    def is_started(self):
+        return self.start < now()
+
     # this payload has been vetted good/bad/failed by someone
     @property
     def is_vetted(self):

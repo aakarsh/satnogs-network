@@ -57,7 +57,7 @@ def delete_perms(user, observation):
     That includes observer, station owner involved, moderators, admins.
     see: https://wiki.satnogs.org/Operation#Network_permissions_matrix
     """
-    if user.is_authenticated():
+    if not observation.is_started and user.is_authenticated():
         # User owns the observation
         try:
             if observation.author == user:
