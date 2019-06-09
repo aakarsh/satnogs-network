@@ -11,6 +11,11 @@ def active(request, urls):
     return None
 
 
+@register.simple_tag
+def drifted_frq(frq, drift):
+    return int(round(frq + ((frq * drift) / float(pow(10, 9)))))
+
+
 @register.filter
 def frq(value):
     try:

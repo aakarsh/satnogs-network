@@ -141,10 +141,25 @@
       </div>
       <div class="front-line">
         <span class="label label-default">Frequency</span>
-        <span class="front-data">
+        <span class="front-data" title="{{ observation.transmitter_downlink_low|intcomma }}Hz">
           {{ observation.transmitter_downlink_low|frq }}
         </span>
       </div>
+      {% if observation.transmitter_downlink_drift %}
+        <div class="front-line">
+          <span class="label label-default">Drift</span>
+          <span class="front-data">
+            {{ observation.transmitter_downlink_drift }} ppb
+          </span>
+        </div>
+        <div class="front-line">
+          <span class="label label-default">Drifted Frequency</span>
+          {% drifted_frq observation.transmitter_downlink_low observation.transmitter_downlink_drift as drifted_frequency %}
+          <span class="front-data" title="{{ drifted_frequency|intcomma }}Hz">
+            {{ drifted_frequency|frq }}
+          </span>
+        </div>
+      {% endif %}
       <div class="front-line">
         <span class="label label-default">Encoding</span>
         <span class="front-data">
