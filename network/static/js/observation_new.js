@@ -358,8 +358,8 @@ $(document).ready( function(){
         initiliaze_calculation(true);
         var url = '/prediction_windows/';
         var data = {};
-        data.start_time = $('#datetimepicker-start input').val();
-        data.end_time = $('#datetimepicker-end input').val();
+        data.start = $('#datetimepicker-start input').val();
+        data.end = $('#datetimepicker-end input').val();
         data.transmitter = $('#transmitter-selection').find(':selected').val();
         data.satellite = $('#satellite-selection').val();
         data.stations = $('#station-selection').val();
@@ -372,10 +372,10 @@ $(document).ready( function(){
         } else if (data.stations.length == 0 || (data.stations.length == 1 && data.stations[0] == '')) {
             $('#windows-data').html('<span class="text-danger">You should select a Station first.</span>');
             return;
-        } else if (data.start_time.length == 0) {
+        } else if (data.start.length == 0) {
             $('#windows-data').html('<span class="text-danger">You should select a Start Time first.</span>');
             return;
-        } else if (data.end_time.length == 0) {
+        } else if (data.end.length == 0) {
             $('#windows-data').html('<span class="text-danger">You should select an End Time first.</span>');
             return;
         }
@@ -449,7 +449,7 @@ $(document).ready( function(){
                 });
 
                 if (dc > 0) {
-                    timeline_init(data.start_time, data.end_time, suggested_data);
+                    timeline_init(data.start, data.end, suggested_data);
                 } else {
                     var empty_msg = 'No Ground Station available for this observation window';
                     $('#windows-data').html('<span class="text-danger">' + empty_msg + '</span>');
@@ -459,9 +459,9 @@ $(document).ready( function(){
     }
 
     function timeline_init(start, end, payload){
-        var start_time_timeline = moment.utc(start).valueOf();
-        var end_time_timeline = moment.utc(end).valueOf();
-        var period = end_time_timeline - start_time_timeline;
+        var start_timeline = moment.utc(start).valueOf();
+        var end_timeline = moment.utc(end).valueOf();
+        var period = end_timeline - start_timeline;
         var tick_interval = 15;
         var tick_time = d3.time.minutes;
 
@@ -479,8 +479,8 @@ $(document).ready( function(){
         $('#timeline').empty();
 
         var chart = d3.timeline()
-            .beginning(start_time_timeline)
-            .ending(end_time_timeline)
+            .beginning(start_timeline)
+            .ending(end_timeline)
             .mouseout(function () {
                 $('#hover-obs').fadeOut(100);
             })
@@ -491,8 +491,8 @@ $(document).ready( function(){
                     var colors = chart.colors();
                     div.find('.coloredDiv').css('background-color', colors(i));
                     div.find('#name').text(datum.label);
-                    div.find('#start-time').text(moment.utc(d.starting_time).format('YYYY-MM-DD HH:mm:ss'));
-                    div.find('#end-time').text(moment.utc(d.ending_time).format('YYYY-MM-DD HH:mm:ss'));
+                    div.find('#start').text(moment.utc(d.starting_time).format('YYYY-MM-DD HH:mm:ss'));
+                    div.find('#end').text(moment.utc(d.ending_time).format('YYYY-MM-DD HH:mm:ss'));
                     div.find('#details').text('⤉ ' + d.az_start + '° ⇴ ' + d.elev_max + '° ⤈ ' + d.az_end + '°');
                     const groundstation = {
                         lat: datum.lat,

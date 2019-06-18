@@ -212,7 +212,7 @@ def next_pass(observer, satellite, issue105=False):
 
 
 def predict_available_observation_windows(station, min_horizon, overlapped, tle,
-                                          start_date, end_date, sat):
+                                          start, end, sat):
     '''Calculate available observation windows for a certain station and satellite during
     the given time period.
 
@@ -225,10 +225,10 @@ def predict_available_observation_windows(station, min_horizon, overlapped, tle,
     :param tle: Satellite current TLE
     :param tle: Satellite current TLE
     :type tle: array of 3 strings
-    :param start_date: Start datetime of scheduling period
-    :type start_date: datetime string in '%Y-%m-%d %H:%M'
-    :param end_date: End datetime of scheduling period
-    :type end_date: datetime string in '%Y-%m-%d %H:%M'
+    :param start: Start datetime of scheduling period
+    :type start: datetime string in '%Y-%m-%d %H:%M'
+    :param end: End datetime of scheduling period
+    :type end: datetime string in '%Y-%m-%d %H:%M'
     :param sat: Satellite for scheduling
     :type sat: Satellite django.db.model.Model
 
@@ -243,7 +243,7 @@ def predict_available_observation_windows(station, min_horizon, overlapped, tle,
     observer.lon = str(station.lng)
     observer.lat = str(station.lat)
     observer.elevation = station.alt
-    observer.date = ephem.Date(start_date)
+    observer.date = ephem.Date(start)
     if min_horizon is not None:
         observer.horizon = str(min_horizon)
     else:
@@ -261,11 +261,11 @@ def predict_available_observation_windows(station, min_horizon, overlapped, tle,
             break
 
         # no match if the sat will not rise above the configured min horizon
-        if pass_params['rise_time'] >= end_date:
+        if pass_params['rise_time'] >= end:
             # start of next pass outside of window bounds
             break
 
-        if pass_params['set_time'] > end_date:
+        if pass_params['set_time'] > end:
             # end of next pass outside of window bounds
             break
 
@@ -289,10 +289,10 @@ def predict_available_observation_windows(station, min_horizon, overlapped, tle,
     return passes_found, station_windows
 
 
-def create_new_observation(station_id, sat_id, transmitter, start_time, end_time, author):
+def create_new_observation(station_id, sat_id, transmitter, start, end, author):
     ground_station = Station.objects.get(id=station_id)
     scheduled_obs = Observation.objects.filter(ground_station=ground_station).filter(end__gt=now())
-    window = resolve_overlaps(scheduled_obs, start_time, end_time)
+    window = resolve_overlaps(scheduled_obs, start, end)
 
     if window[1]:
         raise ObservationOverlapError
@@ -308,14 +308,14 @@ def create_new_observation(station_id, sat_id, transmitter, start_time, end_time
     observer.lat = str(ground_station.lat)
     observer.elevation = ground_station.alt
 
-    mid_pass_time = start_time + (end_time - start_time) / 2
+    mid_pass_time = start + (end - start) / 2
 
-    rise_azimuth = get_azimuth(observer, sat_ephem, start_time)
+    rise_azimuth = get_azimuth(observer, sat_ephem, start)
     max_altitude = get_elevation(observer, sat_ephem, mid_pass_time)
-    set_azimuth = get_azimuth(observer, sat_ephem, end_time)
+    set_azimuth = get_azimuth(observer, sat_ephem, end)
 
     return Observation(
-        satellite=sat, tle=tle, author=author, start=start_time, end=end_time,
+        satellite=sat, tle=tle, author=author, start=start, end=end,
         ground_station=ground_station, rise_azimuth=rise_azimuth, max_altitude=max_altitude,
         set_azimuth=set_azimuth, transmitter_uuid=transmitter['uuid'],
         transmitter_description=transmitter['description'], transmitter_type=transmitter['type'],

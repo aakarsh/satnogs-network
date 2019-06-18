@@ -92,12 +92,12 @@
             <div class='input-group date' id="datetimepicker-start"
                  data-date-minstart="{{ date_min_start }}">
               {% if obs_filter.dates %}
-                <input type="text" class="form-control" name="start-time"
-                       value="{{ obs_filter.start_date}}" readonly>
+                <input type="text" class="form-control" name="start"
+                       value="{{ obs_filter.start}}" readonly>
               {% else %}
                 <input type="text"
                        class="form-control"
-                       name="start-time"
+                       name="start"
                        data-date-format="YYYY-MM-DD HH:mm"
                        autocomplete="off">
               {% endif %}
@@ -114,12 +114,12 @@
                  data-date-maxrange="{{ date_max_range }}"
                  data-date-minend="{{ date_min_end }}">
               {% if obs_filter.dates %}
-                <input type="text" class="form-control" name="end-time"
-                       value="{{ obs_filter.end_date}}" readonly>
+                <input type="text" class="form-control" name="end"
+                       value="{{ obs_filter.end}}" readonly>
               {% else %}
                 <input type="text"
                        class="form-control"
-                       name="end-time"
+                       name="end"
                        data-date-format="YYYY-MM-DD HH:mm"
                        autocomplete="off">
               {% endif %}
@@ -218,9 +218,9 @@
           <div class="obs-details">
             <div id="name" class="bold-text"></div>
             <div class="bold-text">Start Time:</div>
-            <div id="start-time"></div>
+            <div id="start"></div>
             <div class="bold-text">End Time:</div>
-            <div id="end-time"></div>
+            <div id="end"></div>
             <div class="bold-text" id="details"></div>
           </div>
           <svg

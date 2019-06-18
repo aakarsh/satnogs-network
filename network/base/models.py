@@ -109,8 +109,8 @@ def _tle_post_save(sender, instance, created, **kwargs):
     * Update TLE for future observations
     """
     if created:
-        start_time = now() + timedelta(minutes=10)
-        Observation.objects.filter(satellite=instance.satellite, start__gt=start_time) \
+        start = now() + timedelta(minutes=10)
+        Observation.objects.filter(satellite=instance.satellite, start__gt=start) \
                            .update(tle=instance.id)
 
 

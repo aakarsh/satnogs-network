@@ -278,7 +278,7 @@ $(document).ready(function() {
                                           ${overlap}% overlap</div><br>
                         ` : `
                         `}
-                        ${schedulable ? `<a href="${new_obs}?norad=${data.nextpasses[i].norad_cat_id}&ground_station=${station}&start_date=${tr}&end_date=${ts}"
+                        ${schedulable ? `<a href="${new_obs}?norad=${data.nextpasses[i].norad_cat_id}&ground_station=${station}&start=${tr}&end=${ts}"
                              class="btn btn-default schedulable"
                              target="_blank">
                              schedule

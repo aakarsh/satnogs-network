@@ -121,8 +121,8 @@ class ObservationListView(ListView):
         norad_cat_id = self.request.GET.get('norad', '')
         observer = self.request.GET.get('observer', '')
         station = self.request.GET.get('station', '')
-        start_time = self.request.GET.get('start-time', '')
-        end_time = self.request.GET.get('end-time', '')
+        start = self.request.GET.get('start', '')
+        end = self.request.GET.get('end', '')
         self.filtered = False
 
         bad = self.request.GET.get('bad', '1')
@@ -170,13 +170,13 @@ class ObservationListView(ListView):
             observations = observations.filter(
                 ground_station_id=station)
             self.filtered = True
-        if not start_time == '':
+        if not start == '':
             observations = observations.filter(
-                start__gt=start_time)
+                start__gt=start)
             self.filtered = True
-        if not end_time == '':
+        if not end == '':
             observations = observations.filter(
-                end__lt=end_time)
+                end__lt=end)
             self.filtered = True
 
         if not bad:
@@ -217,8 +217,8 @@ class ObservationListView(ListView):
         norad_cat_id = self.request.GET.get('norad', None)
         observer = self.request.GET.get('observer', None)
         station = self.request.GET.get('station', None)
-        start_time = self.request.GET.get('start-time', None)
-        end_time = self.request.GET.get('end-time', None)
+        start = self.request.GET.get('start', None)
+        end = self.request.GET.get('end', None)
         context['future'] = self.request.GET.get('future', '1')
         context['bad'] = self.request.GET.get('bad', '1')
         context['good'] = self.request.GET.get('good', '1')
@@ -232,10 +232,10 @@ class ObservationListView(ListView):
             context['observer_id'] = int(observer)
         if station is not None and station != '':
             context['station_id'] = int(station)
-        if start_time is not None and start_time != '':
-            context['start_time'] = start_time
-        if end_time is not None and end_time != '':
-            context['end_time'] = end_time
+        if start is not None and start != '':
+            context['start'] = start
+        if end is not None and end != '':
+            context['end'] = end
         if 'scheduled' in self.request.session:
             context['scheduled'] = self.request.session['scheduled']
             try:
@@ -268,27 +268,27 @@ def observation_new_post(request):
     new_observations = []
     for item in range(total):
         try:
-            start_time = make_aware(datetime.strptime(
+            start = make_aware(datetime.strptime(
                 request.POST.get('{}-starting_time'.format(item)), '%Y-%m-%d %H:%M:%S.%f'
             ), utc)
-            end_time = make_aware(datetime.strptime(
+            end = make_aware(datetime.strptime(
                 request.POST.get('{}-ending_time'.format(item)), '%Y-%m-%d %H:%M:%S.%f'
             ), utc)
         except ValueError:
             messages.error(request, 'Please use the datetime dialogs to submit valid values.')
             return redirect(reverse('base:observation_new'))
 
-        if (end_time - start_time) > timedelta(minutes=settings.OBSERVATION_DATE_MAX_RANGE):
+        if (end - start) > timedelta(minutes=settings.OBSERVATION_DATE_MAX_RANGE):
             messages.error(request,
                            'Please use the datetime dialogs to submit valid timeframe '
                            '(error: maximum observation duration exceeded).')
             return redirect(reverse('base:observation_new'))
 
-        if (start_time < make_aware(datetime.now(), utc)):
+        if (start < make_aware(datetime.now(), utc)):
             messages.error(request, 'Please schedule an observation that begins in the future')
             return redirect(reverse('base:observation_new'))
 
-        if (start_time > end_time):
+        if (start > end):
             messages.error(request,
                            'Please use the datetime dialogs to submit valid timeframe '
                            '(error: observation start time after observation end time).')
@@ -299,8 +299,8 @@ def observation_new_post(request):
             observation = create_new_observation(station_id=station_id,
                                                  sat_id=request.POST.get('satellite'),
                                                  transmitter=transmitter[0],
-                                                 start_time=start_time,
-                                                 end_time=end_time,
+                                                 start=start,
+                                                 end=end,
                                                  author=request.user)
             new_observations.append(observation)
         except ObservationOverlapError:
@@ -360,20 +360,19 @@ def observation_new(request):
     if request.method == 'GET':
         filter_form = SatelliteFilterForm(request.GET)
         if filter_form.is_valid():
-            start_date = filter_form.cleaned_data['start_date']
-            end_date = filter_form.cleaned_data['end_date']
+            start = filter_form.cleaned_data['start']
+            end = filter_form.cleaned_data['end']
             ground_station = filter_form.cleaned_data['ground_station']
             transmitter = filter_form.cleaned_data['transmitter']
             norad = filter_form.cleaned_data['norad']
 
             obs_filter['dates'] = False
-            if start_date and end_date:  # Either give both dates or ignore if only one is given
-                start_date = datetime.strptime(start_date,
-                                               '%Y/%m/%d %H:%M').strftime('%Y-%m-%d %H:%M')
-                end_date = (datetime.strptime(end_date, '%Y/%m/%d %H:%M') +
-                            timedelta(minutes=1)).strftime('%Y-%m-%d %H:%M')
-                obs_filter['start_date'] = start_date
-                obs_filter['end_date'] = end_date
+            if start and end:  # Either give both dates or ignore if only one is given
+                start = datetime.strptime(start, '%Y/%m/%d %H:%M').strftime('%Y-%m-%d %H:%M')
+                end = (datetime.strptime(end, '%Y/%m/%d %H:%M') +
+                       timedelta(minutes=1)).strftime('%Y-%m-%d %H:%M')
+                obs_filter['start'] = start
+                obs_filter['end'] = end
                 obs_filter['dates'] = True
 
             obs_filter['exists'] = True
@@ -397,8 +396,8 @@ def observation_new(request):
 def prediction_windows(request):
     sat_id = request.POST['satellite']
     transmitter = request.POST['transmitter']
-    start_date = request.POST['start_time']
-    end_date = request.POST['end_time']
+    start = request.POST['start']
+    end = request.POST['end']
     station_ids = request.POST.getlist('stations[]', [])
     min_horizon = request.POST.get('min_horizon', None)
     overlapped = int(request.POST.get('overlapped', 0))
@@ -432,8 +431,8 @@ def prediction_windows(request):
     else:
         downlink = transmitter[0]['downlink_low']
 
-    start_date = make_aware(datetime.strptime(start_date, '%Y-%m-%d %H:%M'), utc)
-    end_date = make_aware(datetime.strptime(end_date, '%Y-%m-%d %H:%M'), utc)
+    start = make_aware(datetime.strptime(start, '%Y-%m-%d %H:%M'), utc)
+    end = make_aware(datetime.strptime(end, '%Y-%m-%d %H:%M'), utc)
 
     data = []
 
@@ -458,8 +457,8 @@ def prediction_windows(request):
                                                                                 min_horizon,
                                                                                 overlapped,
                                                                                 tle,
-                                                                                start_date,
-                                                                                end_date,
+                                                                                start,
+                                                                                end,
                                                                                 sat)
         passes_found[station.id] = station_passes
         if station_windows:
@@ -708,9 +707,8 @@ def pass_predictions(request, id):
     observer.horizon = str(station.horizon)
 
     nextpasses = []
-    start_date = make_aware(datetime.utcnow(), utc)
-    end_date = make_aware(datetime.utcnow() +
-                          timedelta(hours=settings.STATION_UPCOMING_END), utc)
+    start = make_aware(datetime.utcnow(), utc)
+    end = make_aware(datetime.utcnow() + timedelta(hours=settings.STATION_UPCOMING_END), utc)
     observation_min_start = (
         datetime.utcnow() + timedelta(minutes=settings.OBSERVATION_DATE_MIN_START)
     ).strftime("%Y-%m-%d %H:%M:%S.%f")
@@ -743,8 +741,8 @@ def pass_predictions(request, id):
                                                                                     None,
                                                                                     2,
                                                                                     tle,
-                                                                                    start_date,
-                                                                                    end_date,
+                                                                                    start,
+                                                                                    end,
                                                                                     satellite)
 
             if station_windows:

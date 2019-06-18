@@ -164,10 +164,10 @@
           <div class='input-group date' id="datetimepicker-start">
             <input type="text"
                    class="form-control"
-                   name="start-time"
+                   name="start"
                    data-date-format="YYYY-MM-DD HH:mm"
-                   {% if start_time is not None %}
-                     value = "{{ start_time }}"
+                   {% if start is not None %}
+                     value = "{{ start }}"
                    {% endif %}
                    autocomplete="off"/>
             <span class="input-group-addon">
@@ -180,10 +180,10 @@
           <div class='input-group date' id="datetimepicker-end">
             <input type="text"
                    class="form-control"
-                   name="end-time"
+                   name="end"
                    data-date-format="YYYY-MM-DD HH:mm"
-                   {% if end_time is not None %}
-                     value = "{{ end_time }}"
+                   {% if end is not None %}
+                     value = "{{ end }}"
                    {% endif %}
                    autocomplete="off"/>
             <span class="input-group-addon">
