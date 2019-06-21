@@ -255,6 +255,12 @@ $(document).ready( function(){
         update_schedule_button_status();
     });
 
+    $('#modal-schedule-observation').on('click', function() {
+        $(this).prop('disabled', true);
+        $('#schedule-observation').prop('disabled', true);
+        $('#calculate-observation').prop('disabled', true);
+    });
+
     $('#schedule-observation').on('click', function() {
         $('#windows-data').empty();
         var obs_counter = 0;
@@ -285,6 +291,8 @@ $(document).ready( function(){
             $('#confirm-modal .counted-stations').text(station_counter);
             $('#confirm-modal').modal('show');
         } else if (obs_counter != 0){
+            $(this).prop('disabled', true);
+            $('#calculate-observation').prop('disabled', true);
             $('#form-obs').submit();
         }
     });
@@ -336,6 +344,7 @@ $(document).ready( function(){
         $('#hover-obs').hide();
         $('#windows-data').empty();
         $('#schedule-observation').prop('disabled', true);
+        $('#calculate-observation').prop('disabled', false);
     }
 
     $('#satellite-selection').on('changed.bs.select', function() {
@@ -367,7 +376,6 @@ $(document).ready( function(){
     }
 
     function calculate_observation(){
-        $('.calculation-result').show();
         initiliaze_calculation(true);
         var url = '/prediction_windows/';
         var data = {};
