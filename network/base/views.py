@@ -22,7 +22,7 @@ from network.base.db_api import (get_transmitter_by_uuid, get_transmitters_by_no
                                  get_transmitters_by_status, DBConnectionError)
 from network.base.forms import (ObservationForm, BaseObservationFormSet, StationForm,
                                 SatelliteFilterForm)
-from network.base.validators import downlink_low_is_in_range, ObservationOverlapError
+from network.base.validators import is_transmitter_in_station_range, ObservationOverlapError
 from network.base.models import Station, Observation, Satellite, Antenna, StationStatusLog
 from network.base.scheduling import (create_new_observation, predict_available_observation_windows,
                                      get_available_stations)
@@ -688,10 +688,7 @@ def pass_predictions(request, id):
                 norad_id = satellite.norad_cat_id
                 transmitters = [t for t in all_transmitters if t['norad_cat_id'] == norad_id]
                 for transmitter in transmitters:
-                    for gs_antenna in station.antenna.all():
-                        if downlink_low_is_in_range(gs_antenna, transmitter):
-                            transmitter_supported = True
-                            break
+                    transmitter_supported = is_transmitter_in_station_range(transmitter, station)
                     if transmitter_supported:
                         break
                 if not transmitter_supported:
@@ -861,11 +858,7 @@ def transmitters_view(request):
         supported_transmitters = []
         station = Station.objects.get(id=station_id)
         for transmitter in transmitters:
-            transmitter_supported = False
-            for gs_antenna in station.antenna.all():
-                if downlink_low_is_in_range(gs_antenna, transmitter):
-                    transmitter_supported = True
-                    break
+            transmitter_supported = is_transmitter_in_station_range(transmitter, station)
             if transmitter_supported:
                 supported_transmitters.append(transmitter)
         transmitters = supported_transmitters
