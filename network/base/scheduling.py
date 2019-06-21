@@ -3,7 +3,7 @@ from datetime import timedelta
 
 from django.conf import settings
 from django.utils.timezone import now, make_aware, utc
-from network.base.models import Satellite, Station, Tle, Observation
+from network.base.models import Satellite, Tle, Observation
 from network.base.perms import schedule_station_perms
 
 import ephem
@@ -289,13 +289,14 @@ def predict_available_observation_windows(station, min_horizon, overlapped, tle,
     return passes_found, station_windows
 
 
-def create_new_observation(station_id, sat_id, transmitter, start, end, author):
-    ground_station = Station.objects.get(id=station_id)
-    scheduled_obs = Observation.objects.filter(ground_station=ground_station).filter(end__gt=now())
+def create_new_observation(station, sat_id, transmitter, start, end, author):
+    scheduled_obs = Observation.objects.filter(ground_station=station).filter(end__gt=now())
     window = resolve_overlaps(scheduled_obs, start, end)
 
     if window[1]:
-        raise ObservationOverlapError
+        raise ObservationOverlapError(
+            'One or more observations for station {0} overlap with the already scheduled ones'
+            .format(int(station.id)))
 
     sat = Satellite.objects.get(norad_cat_id=sat_id)
     tle = Tle.objects.get(id=sat.latest_tle.id)
@@ -304,9 +305,9 @@ def create_new_observation(station_id, sat_id, transmitter, start, end, author):
                               str(sat.latest_tle.tle1),
                               str(sat.latest_tle.tle2))
     observer = ephem.Observer()
-    observer.lon = str(ground_station.lng)
-    observer.lat = str(ground_station.lat)
-    observer.elevation = ground_station.alt
+    observer.lon = str(station.lng)
+    observer.lat = str(station.lat)
+    observer.elevation = station.alt
 
     mid_pass_time = start + (end - start) / 2
 
@@ -316,7 +317,7 @@ def create_new_observation(station_id, sat_id, transmitter, start, end, author):
 
     return Observation(
         satellite=sat, tle=tle, author=author, start=start, end=end,
-        ground_station=ground_station, rise_azimuth=rise_azimuth, max_altitude=max_altitude,
+        ground_station=station, rise_azimuth=rise_azimuth, max_altitude=max_altitude,
         set_azimuth=set_azimuth, transmitter_uuid=transmitter['uuid'],
         transmitter_description=transmitter['description'], transmitter_type=transmitter['type'],
         transmitter_uplink_low=transmitter['uplink_low'],

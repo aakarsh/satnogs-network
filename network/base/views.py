@@ -296,7 +296,8 @@ def observation_new_post(request):
 
         try:
             station_id = request.POST.get('{}-station'.format(item))
-            observation = create_new_observation(station_id=station_id,
+            station = Station.objects.get(id=station_id)
+            observation = create_new_observation(station=station,
                                                  sat_id=request.POST.get('satellite'),
                                                  transmitter=transmitter[0],
                                                  start=start,
