@@ -11,11 +11,11 @@ class DBConnectionError(Exception):
 
 def transmitters_api_request(url):
     if len(db_api_url) == 0:
-        return None
+        raise DBConnectionError('Error in DB API connection. Blank DB API URL!')
     try:
         request = requests.get(url)
     except requests.exceptions.RequestException:
-        return None
+        raise DBConnectionError('Error in DB API connection. Please try again!')
     return request.json()
 
 
@@ -44,15 +44,11 @@ def get_transmitters_by_uuid_list(uuid_list):
         raise ValueError('Expected a non empty list of UUIDs.')
     if len(uuid_list) == 1:
         transmitter = get_transmitter_by_uuid(uuid_list[0])
-        if transmitter is None:
-            raise DBConnectionError('Error in DB API connection. Please try again!')
         if not transmitter:
             raise ValueError('Invalid Transmitter UUID: {0}'.format(str(uuid_list[0])))
         return {transmitter[0]['uuid']: transmitter[0]}
     else:
         transmitters_list = get_transmitters()
-        if transmitters_list is None:
-            raise DBConnectionError('Error in DB API connection. Please try again!')
 
         transmitters = {t['uuid']: t for t in transmitters_list if t['uuid'] in uuid_list}
         invalid_transmitters = [str(uuid) for uuid

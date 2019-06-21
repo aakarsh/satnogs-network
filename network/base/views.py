@@ -19,7 +19,7 @@ from django.forms import formset_factory, ValidationError
 from rest_framework import serializers, viewsets
 from network.base.decorators import admin_required, ajax_required
 from network.base.db_api import (get_transmitter_by_uuid, get_transmitters_by_norad_id,
-                                 get_transmitters_by_status)
+                                 get_transmitters_by_status, DBConnectionError)
 from network.base.forms import (ObservationForm, BaseObservationFormSet, StationForm,
                                 SatelliteFilterForm)
 from network.base.validators import downlink_low_is_in_range, ObservationOverlapError
@@ -376,19 +376,20 @@ def prediction_windows(request):
         }]
         return JsonResponse(data, safe=False)
 
-    transmitter = get_transmitter_by_uuid(transmitter)
-    if transmitter is None:
+    try:
+        transmitter = get_transmitter_by_uuid(transmitter)
+        if len(transmitter) == 0:
+            data = [{
+                'error': 'You should select a valid Transmitter.'
+            }]
+            return JsonResponse(data, safe=False)
+        else:
+            downlink = transmitter[0]['downlink_low']
+    except DBConnectionError as e:
         data = [{
-            'error': 'Error in DB API connection.'
+            'error': e.message
         }]
         return JsonResponse(data, safe=False)
-    elif len(transmitter) == 0:
-        data = [{
-            'error': 'You should select a valid Transmitter.'
-        }]
-        return JsonResponse(data, safe=False)
-    else:
-        downlink = transmitter[0]['downlink_low']
 
     start = make_aware(datetime.strptime(start, '%Y-%m-%d %H:%M'), utc)
     end = make_aware(datetime.strptime(end, '%Y-%m-%d %H:%M'), utc)
@@ -616,24 +617,25 @@ def scheduling_stations(request):
         }]
         return JsonResponse(data, safe=False)
     else:
-        transmitter = get_transmitter_by_uuid(uuid)
-        if transmitter is None:
-            data = [{
-                'error': 'Error in DB API connection.'
-            }]
-            return JsonResponse(data, safe=False)
-        elif len(transmitter) == 0:
-            data = [{
-                'error': 'You should select a Transmitter.'
-            }]
-            return JsonResponse(data, safe=False)
-        else:
-            downlink = transmitter[0]['downlink_low']
-            if downlink is None:
+        try:
+            transmitter = get_transmitter_by_uuid(uuid)
+            if len(transmitter) == 0:
                 data = [{
-                    'error': 'You should select a valid Transmitter.'
+                    'error': 'You should select a Transmitter.'
                 }]
                 return JsonResponse(data, safe=False)
+            else:
+                downlink = transmitter[0]['downlink_low']
+                if downlink is None:
+                    data = [{
+                        'error': 'You should select a valid Transmitter.'
+                    }]
+                    return JsonResponse(data, safe=False)
+        except DBConnectionError as e:
+            data = [{
+                'error': e.message
+            }]
+            return JsonResponse(data, safe=False)
 
     stations = Station.objects.filter(status__gt=0)
     available_stations = get_available_stations(stations, downlink, request.user)
@@ -672,8 +674,12 @@ def pass_predictions(request, id):
         datetime.utcnow() + timedelta(minutes=settings.OBSERVATION_DATE_MIN_START)
     ).strftime("%Y-%m-%d %H:%M:%S.%f")
 
-    all_transmitters = get_transmitters_by_status('active')
-    if all_transmitters is not None and len(all_transmitters) > 0:
+    try:
+        all_transmitters = get_transmitters_by_status('active')
+    except DBConnectionError:
+        all_transmitters = []
+
+    if all_transmitters:
         for satellite in satellites:
             # look for a match between transmitters from the satellite and
             # ground station antenna frequency capabilities
@@ -805,11 +811,12 @@ def satellite_view(request, id):
         }
         return JsonResponse(data, safe=False)
 
-    transmitters = get_transmitters_by_norad_id(norad_id=id)
-    if transmitters is None:
-        data = {
-            'error': 'Error in DB API connection.'
-        }
+    try:
+        transmitters = get_transmitters_by_norad_id(norad_id=id)
+    except DBConnectionError as e:
+        data = [{
+            'error': e.message
+        }]
         return JsonResponse(data, safe=False)
 
     data = {
@@ -840,11 +847,12 @@ def transmitters_view(request):
         }
         return JsonResponse(data, safe=False)
 
-    transmitters = get_transmitters_by_norad_id(norad_id)
-    if transmitters is None:
-        data = {
-            'error': 'Error in DB API connection.'
-        }
+    try:
+        transmitters = get_transmitters_by_norad_id(norad_id)
+    except DBConnectionError as e:
+        data = [{
+            'error': e.message
+        }]
         return JsonResponse(data, safe=False)
 
     transmitters = [t for t in transmitters

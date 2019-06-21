@@ -59,7 +59,13 @@ $(document).ready( function(){
                 $('#station-field-loading').show();
             }
         }).done(function(data) {
-            if (data.stations.length > 0) {
+            if (data.length == 1 && data[0].error) {
+                $('#station-selection').html(`<option id="no-station"
+                                                          value="" selected>
+                                                    No station available
+                                                  </option>`).prop('disabled', true);
+                $('#station-selection').selectpicker('refresh');
+            } else if (data.stations.length > 0) {
                 var stations_options = '';
                 if (filters.station && data.stations.findIndex(st => st.id == filters.station) > -1) {
                     var station = data.stations.find(st => st.id == filters.station);
@@ -138,7 +144,13 @@ $(document).ready( function(){
                 $('#station-field-loading').show();
             }
         }).done(function(data) {
-            if (data.transmitters.length > 0) {
+            if (data.length == 1 && data[0].error) {
+                $('#transmitter-selection').html(`<option id="no-transmitter"
+                                                          value="" selected>
+                                                    No transmitter available
+                                                  </option>`).prop('disabled', true);
+                $('#transmitter-selection').selectpicker('refresh');
+            } else if (data.transmitters.length > 0) {
                 var transmitters_options = '';
                 if (filters.transmitter){
                     var is_transmitter_available = (data.transmitters.findIndex(tr => tr.uuid == filters.transmitter) > -1);
