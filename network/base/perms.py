@@ -1,6 +1,10 @@
 from django.core.exceptions import ObjectDoesNotExist
 
 
+class UserNoPermissionError(Exception):
+    pass
+
+
 def schedule_perms(user):
     """
     This context flag will determine if user can schedule an observation.
@@ -49,6 +53,18 @@ def schedule_station_perms(user, station):
             return True
 
     return False
+
+
+def check_schedule_perms_per_station(user, station_list):
+    stations_without_permissions = [int(s.id) for s in station_list
+                                    if not schedule_station_perms(user, s)]
+    if stations_without_permissions:
+        if len(stations_without_permissions) == 1:
+            raise UserNoPermissionError('No permission to schedule observations on station: {0}'
+                                        .format(stations_without_permissions[0]))
+        else:
+            raise UserNoPermissionError('No permission to schedule observations on stations: {0}'
+                                        .format(stations_without_permissions))
 
 
 def delete_perms(user, observation):

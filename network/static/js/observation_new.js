@@ -250,15 +250,17 @@ $(document).ready( function(){
         var obs_counter = 0;
         var station_counter = 0;
         var warn_min_obs = parseInt(this.dataset.warnMinObs);
+        var transmitter_uuid = $('#transmitter-selection').find(':selected').val();
         $.each(suggested_data, function(i, station){
             let obs_counted = obs_counter;
             $.each(station.times, function(j, observation){
                 if(observation.selected){
                     var start = moment.utc(observation.starting_time).format('YYYY-MM-DD HH:mm:ss.SSS');
                     var end = moment.utc(observation.ending_time).format('YYYY-MM-DD HH:mm:ss.SSS');
-                    $('#windows-data').append('<input type="hidden" name="' + obs_counter + '-starting_time" value="' + start + '">');
-                    $('#windows-data').append('<input type="hidden" name="' + obs_counter + '-ending_time" value="' + end + '">');
-                    $('#windows-data').append('<input type="hidden" name="' + obs_counter + '-station" value="' + station.id + '">');
+                    $('#windows-data').append('<input type="hidden" name="obs-' + obs_counter + '-start" value="' + start + '">');
+                    $('#windows-data').append('<input type="hidden" name="obs-' + obs_counter + '-end" value="' + end + '">');
+                    $('#windows-data').append('<input type="hidden" name="obs-' + obs_counter + '-ground_station" value="' + station.id + '">');
+                    $('#windows-data').append('<input type="hidden" name="obs-' + obs_counter + '-transmitter_uuid" value="' + transmitter_uuid + '">');
                     obs_counter += 1;
                 }
             });
@@ -266,7 +268,8 @@ $(document).ready( function(){
                 station_counter += 1;
             }
         });
-        $('#windows-data').append('<input type="hidden" name="total" value="' + obs_counter + '">');
+        $('#windows-data').append('<input type="hidden" name="obs-TOTAL_FORMS" value="' + obs_counter + '">');
+        $('#windows-data').append('<input type="hidden" name="obs-INITIAL_FORMS" value="0">');
         if(obs_counter > warn_min_obs){
             $('#confirm-modal .counted-obs').text(obs_counter);
             $('#confirm-modal .counted-stations').text(station_counter);

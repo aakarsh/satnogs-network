@@ -14,16 +14,18 @@ from django.shortcuts import get_object_or_404, render, redirect
 from django.utils.timezone import now, make_aware, utc
 from django.utils.text import slugify
 from django.views.generic import ListView
+from django.forms import formset_factory, ValidationError
 
 from rest_framework import serializers, viewsets
 from network.base.decorators import admin_required, ajax_required
 from network.base.db_api import (get_transmitter_by_uuid, get_transmitters_by_norad_id,
                                  get_transmitters_by_status)
-from network.base.forms import StationForm, SatelliteFilterForm
-from network.base.helpers import downlink_low_is_in_range
+from network.base.forms import (ObservationForm, BaseObservationFormSet, StationForm,
+                                SatelliteFilterForm)
+from network.base.validators import downlink_low_is_in_range, ObservationOverlapError
 from network.base.models import Station, Observation, Satellite, Antenna, StationStatusLog
-from network.base.scheduling import (create_new_observation, ObservationOverlapError,
-                                     predict_available_observation_windows, get_available_stations)
+from network.base.scheduling import (create_new_observation, predict_available_observation_windows,
+                                     get_available_stations)
 from network.base.perms import schedule_perms, schedule_station_perms, delete_perms, vet_perms
 from network.base.tasks import update_all_tle, fetch_data
 from network.base.stats import transmitter_stats_by_uuid
@@ -247,101 +249,57 @@ class ObservationListView(ListView):
 
 
 def observation_new_post(request):
-    total = int(request.POST.get('total'))
-    if total == 0:
-        messages.error(request, 'Please select at least one observation.')
-        return redirect(reverse('base:observation_new'))
-
-    uuid = request.POST.get('transmitter', None)
-    if uuid is None:
-        messages.error(request, 'The selected Transmitter is not valid.')
-        return redirect(reverse('base:observation_new'))
-    else:
-        transmitter = get_transmitter_by_uuid(uuid)
-        if transmitter is None:
-            messages.error(request, 'Error in DB API connection please try again.')
-            return redirect(reverse('base:observation_new'))
-        elif len(transmitter) == 0:
-            messages.error(request, 'The selected Transmitter is not valid.')
-            return redirect(reverse('base:observation_new'))
-
-    new_observations = []
-    for item in range(total):
-        try:
-            start = make_aware(datetime.strptime(
-                request.POST.get('{}-starting_time'.format(item)), '%Y-%m-%d %H:%M:%S.%f'
-            ), utc)
-            end = make_aware(datetime.strptime(
-                request.POST.get('{}-ending_time'.format(item)), '%Y-%m-%d %H:%M:%S.%f'
-            ), utc)
-        except ValueError:
-            messages.error(request, 'Please use the datetime dialogs to submit valid values.')
-            return redirect(reverse('base:observation_new'))
-
-        if (end - start) > timedelta(minutes=settings.OBSERVATION_DATE_MAX_RANGE):
-            messages.error(request,
-                           'Please use the datetime dialogs to submit valid timeframe '
-                           '(error: maximum observation duration exceeded).')
-            return redirect(reverse('base:observation_new'))
-
-        if (start < make_aware(datetime.now(), utc)):
-            messages.error(request, 'Please schedule an observation that begins in the future')
-            return redirect(reverse('base:observation_new'))
-
-        if (start > end):
-            messages.error(request,
-                           'Please use the datetime dialogs to submit valid timeframe '
-                           '(error: observation start time after observation end time).')
-            return redirect(reverse('base:observation_new'))
-
-        try:
-            station_id = request.POST.get('{}-station'.format(item))
-            station = Station.objects.get(id=station_id)
-            observation = create_new_observation(station=station,
-                                                 sat_id=request.POST.get('satellite'),
-                                                 transmitter=transmitter[0],
-                                                 start=start,
-                                                 end=end,
-                                                 author=request.user)
-            new_observations.append(observation)
-        except ObservationOverlapError:
-            pass
-
-    changed = total - len(new_observations)
-    if changed > 0:
-        if (changed == 1):
-            if total == 1:
-                error_message = (
-                    "The observation is already scheduled or overlaps with others."
-                    " Please recalculate and try schedule it again.")
-            else:
-                error_message = (
-                    "One observation is already scheduled or overlaps with others."
-                    " Please recalculate and try schedule it again.")
-        else:
-            error_message = (
-                str(changed) + " observations are already scheduled or overlap with others."
-                " Please recalculate and try schedule them again."
-            )
-        messages.error(request, error_message)
-        return redirect(reverse('base:observation_new'))
-
-    for observation in new_observations:
-        observation.save()
-
+    ObservationFormSet = formset_factory(ObservationForm, formset=BaseObservationFormSet,
+                                         min_num=1, validate_min=True)
+    formset = ObservationFormSet(request.user, request.POST, prefix='obs')
     try:
-        del request.session['scheduled']
-    except KeyError:
-        pass
-    request.session['scheduled'] = list(obs.id for obs in new_observations)
+        if formset.is_valid():
+            new_observations = []
+            for observation_data in formset.cleaned_data:
+                station = observation_data['ground_station']
+                start = observation_data['start']
+                end = observation_data['end']
+                transmitter_uuid = observation_data['transmitter_uuid']
+                transmitter = formset.transmitters[transmitter_uuid]
+                author = request.user
+                observation = create_new_observation(station=station, transmitter=transmitter,
+                                                     start=start, end=end, author=author)
+                new_observations.append(observation)
 
-    # If it's a single observation redirect to that one
-    if total == 1:
-        messages.success(request, 'Observation was scheduled successfully.')
-        return redirect(reverse('base:observation_view', kwargs={'id': new_observations[0].id}))
+            total = formset.total_form_count()
 
-    messages.success(request, str(total) + ' Observations were scheduled successfully.')
-    return redirect(reverse('base:observations_list'))
+            for observation in new_observations:
+                observation.save()
+
+            try:
+                del request.session['scheduled']
+            except KeyError:
+                pass
+            request.session['scheduled'] = list(obs.id for obs in new_observations)
+
+            # If it's a single observation redirect to that one
+            if total == 1:
+                messages.success(request, 'Observation was scheduled successfully.')
+                return redirect(reverse('base:observation_view',
+                                        kwargs={'id': new_observations[0].id}))
+
+            messages.success(request, str(total) + ' Observations were scheduled successfully.')
+            return redirect(reverse('base:observations_list'))
+
+        else:
+            errors_list = [error for error in formset.errors if error]
+            if errors_list:
+                for field in errors_list[0]:
+                    messages.error(request, '{0}'.format(errors_list[0][field][0]))
+            else:
+                messages.error(request, '{0}'.format(formset.non_form_errors()[0]))
+            return redirect(reverse('base:observation_new'))
+    except ValidationError as e:
+        messages.error(request, '{0}'.format(e.message))
+        return redirect(reverse('base:observation_new'))
+    except ObservationOverlapError as e:
+        messages.error(request, '{0}'.format(e.message))
+        return redirect(reverse('base:observation_new'))
 
 
 @login_required

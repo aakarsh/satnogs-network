@@ -5,12 +5,9 @@ from django.conf import settings
 from django.utils.timezone import now, make_aware, utc
 from network.base.models import Satellite, Tle, Observation
 from network.base.perms import schedule_station_perms
+from network.base.validators import ObservationOverlapError
 
 import ephem
-
-
-class ObservationOverlapError(Exception):
-    pass
 
 
 def get_elevation(observer, satellite, date):
@@ -289,16 +286,16 @@ def predict_available_observation_windows(station, min_horizon, overlapped, tle,
     return passes_found, station_windows
 
 
-def create_new_observation(station, sat_id, transmitter, start, end, author):
+def create_new_observation(station, transmitter, start, end, author):
     scheduled_obs = Observation.objects.filter(ground_station=station).filter(end__gt=now())
     window = resolve_overlaps(scheduled_obs, start, end)
 
     if window[1]:
         raise ObservationOverlapError(
-            'One or more observations for station {0} overlap with the already scheduled ones'
+            'One or more observations of station {0} overlap with the already scheduled ones.'
             .format(int(station.id)))
 
-    sat = Satellite.objects.get(norad_cat_id=sat_id)
+    sat = Satellite.objects.get(norad_cat_id=transmitter['norad_cat_id'])
     tle = Tle.objects.get(id=sat.latest_tle.id)
 
     sat_ephem = ephem.readtle(str(sat.latest_tle.tle0),

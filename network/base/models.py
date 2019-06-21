@@ -409,7 +409,7 @@ class Observation(models.Model):
     archived = models.BooleanField(default=False)
     archive_identifier = models.CharField(max_length=255, blank=True)
     archive_url = models.URLField(blank=True, null=True)
-    transmitter_uuid = ShortUUIDField(db_index=True)
+    transmitter_uuid = ShortUUIDField(auto=False, db_index=True)
     transmitter_description = models.TextField(default='')
     transmitter_type = models.CharField(choices=zip(TRANSMITTER_TYPE, TRANSMITTER_TYPE),
                                         max_length=11, default='Transmitter')
