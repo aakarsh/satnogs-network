@@ -55,6 +55,8 @@ $(document).ready( function(){
             dataType: 'json',
             beforeSend: function(xhr) {
                 xhr.setRequestHeader('X-CSRFToken', $('[name="csrfmiddlewaretoken"]').val());
+                $('#station-field').hide();
+                $('#station-field-loading').show();
             }
         }).done(function(data) {
             if (data.stations.length > 0) {
@@ -83,6 +85,8 @@ $(document).ready( function(){
             if (callback) {
                 callback();
             }
+            $('#station-field-loading').hide();
+            $('#station-field').show();
         });
     }
 
@@ -128,6 +132,10 @@ $(document).ready( function(){
             dataType: 'json',
             beforeSend: function(xhr) {
                 xhr.setRequestHeader('X-CSRFToken', $('[name="csrfmiddlewaretoken"]').val());
+                $('#transmitter-field').hide();
+                $('#transmitter-field-loading').show();
+                $('#station-field').hide();
+                $('#station-field-loading').show();
             }
         }).done(function(data) {
             if (data.transmitters.length > 0) {
@@ -178,6 +186,8 @@ $(document).ready( function(){
             } else {
                 select_proper_stations(filters);
             }
+            $('#transmitter-field-loading').hide();
+            $('#transmitter-field').show();
         });
     }
 

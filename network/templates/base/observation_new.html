@@ -68,7 +68,14 @@
         </div>
         <div class="form-group">
           <label class="col-sm-3 control-label">Transmitter</label>
-          <div class="col-sm-9">
+          <div id="transmitter-field-loading" class="col-sm-9 loading-field">
+            <div class="spinner">
+              <div class="bounce1"></div>
+              <div class="bounce2"></div>
+              <div class="bounce3"></div>
+            </div>
+          </div>
+          <div class="col-sm-9" id="transmitter-field">
             <select id="transmitter-selection" class="form-control selectpicker"
                     disabled name="transmitter" autocomplete="off">
               <option id="no-transmitter" value="" selected>No transmitter available</option>
@@ -77,7 +84,14 @@
         </div>
         <div class="form-group">
           <label class="col-sm-3 control-label">Stations</label>
-          <div class="col-sm-9">
+          <div id="station-field-loading" class="col-sm-9 loading-field">
+            <div class="spinner">
+              <div class="bounce1"></div>
+              <div class="bounce2"></div>
+              <div class="bounce3"></div>
+            </div>
+          </div>
+          <div class="col-sm-9" id="station-field">
             <select id="station-selection" class="form-control selectpicker" data-live-search="true" data-count-selected-text="Selected {0} of {1} stations"
                     data-dropup-auto="false" multiple data-selected-text-format="count" data-actions-box="true" disabled name="station" autocomplete="off">
               <option id="no-station" value="" selected>No station available</option>
