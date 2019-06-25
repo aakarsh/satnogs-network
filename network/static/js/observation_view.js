@@ -150,7 +150,7 @@ $(document).ready(function() {
                 $('#vetting-spinner').show();
             }
         }).done(function(results) {
-            if (results.hasOwnProperty('error')) {
+            if (Object.prototype.hasOwnProperty.call(results, 'error')) {
                 var error_msg = results.error;
                 show_alert('danger',error_msg);
             } else {
