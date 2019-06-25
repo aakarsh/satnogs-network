@@ -496,6 +496,10 @@ def observation_view(request, id):
 
     can_delete = delete_perms(request.user, observation)
 
+    if observation.has_audio and not observation.audio_url:
+        messages.error(request, 'Audio file is not currently available,'
+                       ' if the problem persists please contact an administrator.')
+
     if settings.ENVIRONMENT == 'production':
         discuss_slug = 'https://community.libre.space/t/observation-{0}-{1}-{2}' \
             .format(observation.id, slugify(observation.satellite.name),

@@ -493,14 +493,14 @@ class Observation(models.Model):
     def audio_url(self):
         if self.has_audio:
             if self.archive_url:
-                r = requests.get(self.archive_url, allow_redirects=False)
                 try:
+                    r = requests.get(self.archive_url, allow_redirects=False)
                     url = r.headers['Location']
                     return url
-                except Exception:
+                except Exception as e:
                     logger = logging.getLogger(__name__)
-                    logger.warning("Request to '%s' returned status code: %s",
-                                   r.url, r.status_code)
+                    logger.warning("Error in request to '%s'. Error: %s",
+                                   self.archive_url, e)
                     return ''
             else:
                 return self.payload.url

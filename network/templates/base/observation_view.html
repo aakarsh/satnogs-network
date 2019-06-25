@@ -269,7 +269,7 @@
         {% if observation.has_audio or observation.waterfall %}
           <span class="label label-default">Downloads</span>
           <span class="front-data">
-          {% if observation.has_audio %}
+          {% if observation.has_audio and observation.audio_url %}
             <a href="{{ observation.audio_url }}"
                target="_blank"
                download="">
@@ -338,19 +338,25 @@
           </div>
           <div role="tabpanel" class="tab-pane" id="tab-audio">
             {% if observation.has_audio %}
-              <div id="loading-{{ observation.id }}" class="notice">Loading audio...</div>
-              <div class="progress progress-striped active" id="progress-bar-{{ observation.id }}">
-                <div class="progress-bar progress-bar-info"></div>
-              </div>
-              <div class="wave tab-data" id="data-{{ observation.id }}"
-                   data-id="{{ observation.id }}"
-                   data-audio="{{ observation.audio_url }}"></div>
-              <div id="wave-spectrogram"></div>
-              <button type="button" class="btn btn-primary btn-xs playpause">
-                <span class="glyphicon glyphicon-play"></span>
-                <span class="glyphicon glyphicon-pause"></span>
-              </button>
-              <span id="playback-time-{{ observation.id }}" class="label label-info playback-time"></span>
+              {% if observation.audio_url %}
+                <div id="loading-{{ observation.id }}" class="notice">Loading audio...</div>
+                <div class="progress progress-striped active" id="progress-bar-{{ observation.id }}">
+                  <div class="progress-bar progress-bar-info"></div>
+                </div>
+                <div class="wave tab-data" id="data-{{ observation.id }}"
+                     data-id="{{ observation.id }}"
+                     data-audio="{{ observation.audio_url }}"></div>
+                <div id="wave-spectrogram"></div>
+                <button type="button" class="btn btn-primary btn-xs playpause">
+                  <span class="glyphicon glyphicon-play"></span>
+                  <span class="glyphicon glyphicon-pause"></span>
+                </button>
+                <span id="playback-time-{{ observation.id }}" class="label label-info playback-time"></span>
+              {% else %}
+                <div class="notice">
+                  Audio is not currently available
+                </div>
+              {% endif %}
             {% else %}
               <div class="notice">
                 Waiting for audio
