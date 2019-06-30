@@ -65,7 +65,7 @@ class TransmitterAdmin(admin.ModelAdmin):
     list_display = ('uuid', 'sync_to_db')
     search_fields = ('uuid',)
     list_filter = ('sync_to_db',)
-    readonly_fields = ('uuid', 'sync_to_db')
+    readonly_fields = ('uuid',)
 
 
 class DataDemodInline(admin.TabularInline):
