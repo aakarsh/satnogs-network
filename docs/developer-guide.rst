@@ -64,7 +64,7 @@ Simulating station heartbeats
 Only stations which have been seen by the server in the last hour (by default, can be customized by `STATION_HEARTBEAT_TIME`) are taken into consideration when scheduling observations.
 In order to simulate an heartbeat of the stations 7, 23 and 42, the following command can be used::
 
-  $ sudo docker-compose run web python manage.py update_station_last_seen 7 23 42
+  $ docker-compose exec web django-admin update_station_last_seen 7 23 42
 
 Coding Style
 ------------
