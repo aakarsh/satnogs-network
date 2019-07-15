@@ -23,7 +23,7 @@ from network.base.db_api import (get_transmitter_by_uuid, get_transmitters_by_no
 from network.base.forms import (ObservationForm, BaseObservationFormSet, StationForm,
                                 SatelliteFilterForm)
 from network.base.validators import is_transmitter_in_station_range, ObservationOverlapError
-from network.base.models import Station, Observation, Satellite, Antenna, StationStatusLog
+from network.base.models import Station, Observation, Satellite, Antenna, StationStatusLog, Tle
 from network.base.scheduling import (create_new_observation, predict_available_observation_windows,
                                      get_available_stations)
 from network.base.perms import schedule_perms, schedule_station_perms, delete_perms, vet_perms
@@ -55,12 +55,9 @@ class StationAllView(viewsets.ReadOnlyModelViewSet):
 def satellite_position(request, sat_id):
     sat = get_object_or_404(Satellite, norad_cat_id=sat_id)
     try:
-        satellite = ephem.readtle(
-            str(sat.latest_tle.tle0),
-            str(sat.latest_tle.tle1),
-            str(sat.latest_tle.tle2)
-        )
-    except (ValueError, AttributeError):
+        tle = sat.latest_tle.str_array
+        satellite = ephem.readtle(*tle)
+    except (ValueError, AttributeError, Tle.DoesNotExist):
         data = {}
     else:
         now = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
@@ -370,7 +367,7 @@ def prediction_windows(request):
 
     try:
         tle = sat.latest_tle.str_array
-    except (ValueError, AttributeError):
+    except (ValueError, AttributeError, Tle.DoesNotExist):
         data = [{
             'error': 'No TLEs for this satellite yet.'
         }]
@@ -696,7 +693,7 @@ def pass_predictions(request, id):
 
             try:
                 tle = satellite.latest_tle.str_array
-            except (ValueError, AttributeError):
+            except (ValueError, AttributeError, Tle.DoesNotExist):
                 continue
 
             station_passes, station_windows = predict_available_observation_windows(station,

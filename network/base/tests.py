@@ -390,7 +390,7 @@ class StationDeleteTest(TestCase):
         response = self.client.get('/stations/%d/delete/' % self.station.id)
         self.assertRedirects(response, '/users/%s/' % self.user.username)
         with self.assertRaises(Station.DoesNotExist):
-            _lookup = Station.objects.get(pk=self.station.id)       # noqa:F841
+            _lookup = Station.objects.get(pk=self.station.id)  # noqa:F841
 
 
 @pytest.mark.django_db(transaction=True)
@@ -423,7 +423,8 @@ class SatelliteModelTest(TestCase):
         self.satellite = SatelliteFactory()
 
     def test_latest_tle(self):
-        self.assertFalse(self.satellite.latest_tle)
+        with self.assertRaises(Tle.DoesNotExist):
+            _lookup = self.satellite.latest_tle  # noqa:F841
 
 
 @pytest.mark.django_db(transaction=True)

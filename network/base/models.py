@@ -276,11 +276,8 @@ class Satellite(models.Model):
 
     @property
     def latest_tle(self):
-        try:
-            latest_tle = Tle.objects.filter(satellite=self).latest('updated')
-            return latest_tle
-        except Tle.DoesNotExist:
-            return False
+        latest_tle = Tle.objects.filter(satellite=self).latest('updated')
+        return latest_tle
 
     @property
     def data_count(self):
