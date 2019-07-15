@@ -425,12 +425,6 @@ class SatelliteModelTest(TestCase):
     def test_latest_tle(self):
         self.assertFalse(self.satellite.latest_tle)
 
-    def test_tle_epoch(self):
-        self.assertFalse(self.satellite.tle_epoch)
-
-    def test_tle_no(self):
-        self.assertFalse(self.satellite.tle_no)
-
 
 @pytest.mark.django_db(transaction=True)
 class ObservationModelTest(TestCase):

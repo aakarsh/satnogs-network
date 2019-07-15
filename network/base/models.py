@@ -1,5 +1,5 @@
 import os
-from datetime import datetime, timedelta
+from datetime import timedelta
 from PIL import Image
 import requests
 from shortuuidfield import ShortUUIDField
@@ -281,25 +281,6 @@ class Satellite(models.Model):
             return latest_tle
         except Tle.DoesNotExist:
             return False
-
-    @property
-    def tle_no(self):
-        try:
-            line = self.latest_tle.tle1
-            return line[64:68]
-        except AttributeError:
-            return False
-
-    @property
-    def tle_epoch(self):
-        try:
-            line = self.latest_tle.tle1
-        except AttributeError:
-            return False
-        yd, s = line[18:32].split('.')
-        epoch = (datetime.strptime(yd, "%y%j") +
-                 timedelta(seconds=float("." + s) * 24 * 60 * 60))
-        return epoch
 
     @property
     def data_count(self):
