@@ -278,9 +278,7 @@ def predict_available_observation_windows(station, min_horizon, overlapped, tle,
 
         # Check if overlaps with existing scheduled observations
         # Adjust or discard window if overlaps exist
-        scheduled_obs = Observation.objects \
-            .filter(ground_station=station) \
-            .filter(end__gt=now())
+        scheduled_obs = station.scheduled_obs
 
         station_windows.extend(create_station_windows(scheduled_obs, overlapped, pass_params,
                                                       observer, satellite, tle))

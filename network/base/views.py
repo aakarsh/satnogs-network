@@ -9,6 +9,7 @@ from django.conf import settings
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.core.urlresolvers import reverse
+from django.db.models import Prefetch
 from django.http import JsonResponse, HttpResponseNotFound, HttpResponseServerError, HttpResponse
 from django.shortcuts import get_object_or_404, render, redirect
 from django.utils.timezone import now, make_aware, utc
@@ -393,7 +394,12 @@ def prediction_windows(request):
 
     data = []
 
-    stations = Station.objects.filter(status__gt=0)
+    scheduled_obs_queryset = Observation.objects.filter(end__gt=now())
+    stations = Station.objects.filter(status__gt=0).prefetch_related(
+        Prefetch('observations',
+                 queryset=scheduled_obs_queryset,
+                 to_attr='scheduled_obs'),
+        'antenna')
     if len(station_ids) > 0 and station_ids != ['']:
         stations = stations.filter(id__in=station_ids)
         if len(stations) == 0:
@@ -648,7 +654,14 @@ def scheduling_stations(request):
 @ajax_required
 def pass_predictions(request, id):
     """Endpoint for pass predictions"""
-    station = get_object_or_404(Station, id=id)
+    scheduled_obs_queryset = Observation.objects.filter(end__gt=now())
+    station = get_object_or_404(
+        Station.objects.prefetch_related(
+            Prefetch('observations',
+                     queryset=scheduled_obs_queryset,
+                     to_attr='scheduled_obs'),
+            'antenna'),
+        id=id)
     unsupported_frequencies = request.GET.get('unsupported_frequencies', '0')
 
     try:
