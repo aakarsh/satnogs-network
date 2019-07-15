@@ -221,7 +221,7 @@ def predict_available_observation_windows(station, min_horizon, overlapped, tle,
     :type overlapped: integer values: 0 (no return), 1(truncated overlaps), 2(full overlaps)
     :param tle: Satellite current TLE
     :param tle: Satellite current TLE
-    :type tle: array of 3 strings
+    :type tle: Tle django.db.model.Model
     :param start: Start datetime of scheduling period
     :type start: datetime string in '%Y-%m-%d %H:%M'
     :param end: End datetime of scheduling period
@@ -233,8 +233,9 @@ def predict_available_observation_windows(station, min_horizon, overlapped, tle,
     '''
     passes_found = []
     station_windows = []
+    tle_as_str_array = tle.str_array
     # Initialize pyehem Satellite for propagation
-    satellite = ephem.readtle(*tle)
+    satellite = ephem.readtle(*tle_as_str_array)
     # Initialize pyephem Observer for propagation
     observer = ephem.Observer()
     observer.lon = str(station.lng)
@@ -282,7 +283,7 @@ def predict_available_observation_windows(station, min_horizon, overlapped, tle,
             .filter(end__gt=now())
 
         station_windows.extend(create_station_windows(scheduled_obs, overlapped, pass_params,
-                                                      observer, satellite, sat.latest_tle))
+                                                      observer, satellite, tle))
     return passes_found, station_windows
 
 

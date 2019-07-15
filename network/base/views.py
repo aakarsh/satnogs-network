@@ -366,7 +366,7 @@ def prediction_windows(request):
         return JsonResponse(data, safe=False)
 
     try:
-        tle = sat.latest_tle.str_array
+        tle = sat.latest_tle
     except (ValueError, AttributeError, Tle.DoesNotExist):
         data = [{
             'error': 'No TLEs for this satellite yet.'
@@ -692,7 +692,7 @@ def pass_predictions(request, id):
                     continue
 
             try:
-                tle = satellite.latest_tle.str_array
+                tle = satellite.latest_tle
             except (ValueError, AttributeError, Tle.DoesNotExist):
                 continue
 
