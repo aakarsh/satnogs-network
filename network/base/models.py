@@ -279,52 +279,6 @@ class Satellite(models.Model):
         latest_tle = Tle.objects.filter(satellite=self).latest('updated')
         return latest_tle
 
-    @property
-    def data_count(self):
-        return Observation.objects.filter(satellite=self).exclude(vetted_status='failed').count()
-
-    @property
-    def good_count(self):
-        data = Observation.objects.filter(satellite=self)
-        return data.filter(vetted_status='good').count()
-
-    @property
-    def bad_count(self):
-        data = Observation.objects.filter(satellite=self)
-        return data.filter(vetted_status='bad').count()
-
-    @property
-    def unvetted_count(self):
-        data = Observation.objects.filter(satellite=self)
-        return data.filter(vetted_status='unknown',
-                           end__lte=now()).count()
-
-    @property
-    def future_count(self):
-        data = Observation.objects.filter(satellite=self)
-        return data.filter(end__gt=now()).count()
-
-    @property
-    def success_rate(self):
-        try:
-            return int(100 * (float(self.good_count) / float(self.data_count)))
-        except (ZeroDivisionError, TypeError):
-            return 0
-
-    @property
-    def bad_rate(self):
-        try:
-            return int(100 * (float(self.bad_count) / float(self.data_count)))
-        except (ZeroDivisionError, TypeError):
-            return 0
-
-    @property
-    def unvetted_rate(self):
-        try:
-            return int(100 * (float(self.unvetted_count) / float(self.data_count)))
-        except (ZeroDivisionError, TypeError):
-            return 0
-
     def __unicode__(self):
         return self.name
 
