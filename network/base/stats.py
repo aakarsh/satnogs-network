@@ -4,9 +4,13 @@ from network.base.models import Observation
 
 
 def transmitter_total_count(uuid):
-    return Observation.objects.filter(transmitter_uuid=uuid) \
-                              .exclude(vetted_status='failed') \
-                              .count()
+    data = cache.get('tr-{0}-total-count'.format(uuid))
+    if data is None:
+        obs = Observation.objects.filter(transmitter_uuid=uuid)
+        data = obs.exclude(vetted_status='failed').count()
+        cache.set('tr-{0}-total-count'.format(uuid), data, 3600)
+        return data
+    return data
 
 
 def transmitter_good_count(uuid):
@@ -39,55 +43,57 @@ def transmitter_unvetted_count(uuid):
     return data
 
 
-def transmitter_success_rate(uuid):
-    rate = cache.get('tr-{0}-suc-rate'.format(uuid))
-    if rate is None:
-        try:
-            ratio = float(transmitter_good_count(uuid)) / float(transmitter_total_count(uuid))
-            rate = int(100 * ratio)
-            cache.set('tr-{0}-suc-rate'.format(uuid), rate, 3600)
-            return rate
-        except (ZeroDivisionError, TypeError):
-            cache.set('tr-{0}-suc-rate'.format(uuid), 0, 3600)
-            return 0
-    return rate
-
-
-def transmitter_bad_rate(uuid):
-    rate = cache.get('tr-{0}-bad-rate'.format(uuid))
-    if rate is None:
-        try:
-            ratio = float(transmitter_bad_count(uuid)) / float(transmitter_total_count(uuid))
-            rate = int(100 * ratio)
-            cache.set('tr-{0}-bad-rate'.format(uuid), rate, 3600)
-            return rate
-        except (ZeroDivisionError, TypeError):
-            cache.set('tr-{0}-bad-rate'.format(uuid), 0, 3600)
-            return 0
-    return rate
-
-
-def transmitter_unvetted_rate(uuid):
-    rate = cache.get('tr-{0}-unk-rate'.format(uuid))
-    if rate is None:
-        try:
-            ratio = float(transmitter_unvetted_count(uuid)) / float(transmitter_total_count(uuid))
-            rate = int(100 * ratio)
-            cache.set('tr-{0}-unk-rate'.format(uuid), rate, 3600)
-            return rate
-        except (ZeroDivisionError, TypeError):
-            cache.set('tr-{0}-unk-rate'.format(uuid), 0, 3600)
-            return 0
-    return rate
-
-
 def transmitter_stats_by_uuid(uuid):
+    total_count = transmitter_total_count(uuid)
+    unvetted_count = transmitter_unvetted_count(uuid)
+    good_count = transmitter_good_count(uuid)
+    bad_count = transmitter_bad_count(uuid)
+    unvetted_rate = 0
+    success_rate = 0
+    bad_rate = 0
+
+    if total_count:
+        unvetted_rate = int(100 * (float(unvetted_count) / float(total_count)))
+        success_rate = int(100 * (float(good_count) / float(total_count)))
+        bad_rate = int(100 * (float(bad_count) / float(total_count)))
+
     return {
-        'total_count': transmitter_total_count(uuid),
-        'unvetted_count': transmitter_unvetted_count(uuid),
-        'good_count': transmitter_good_count(uuid),
-        'bad_count': transmitter_bad_count(uuid),
-        'success_rate': transmitter_success_rate(uuid),
-        'bad_rate': transmitter_bad_rate(uuid),
-        'unvetted_rate': transmitter_unvetted_rate(uuid)
+        'total_count': total_count,
+        'unvetted_count': unvetted_count,
+        'good_count': good_count,
+        'bad_count': bad_count,
+        'unvetted_rate': unvetted_rate,
+        'success_rate': success_rate,
+        'bad_rate': bad_rate
+    }
+
+
+def satellite_stats_by_transmitter_list(transmitter_list):
+    total_count = 0
+    unvetted_count = 0
+    good_count = 0
+    bad_count = 0
+    unvetted_rate = 0
+    success_rate = 0
+    bad_rate = 0
+    for transmitter in transmitter_list:
+        transmitter_stats = transmitter_stats_by_uuid(transmitter['uuid'])
+        total_count += transmitter_stats['total_count']
+        unvetted_count += transmitter_stats['unvetted_count']
+        good_count += transmitter_stats['good_count']
+        bad_count += transmitter_stats['bad_count']
+
+    if total_count:
+        unvetted_rate = int(100 * (float(unvetted_count) / float(total_count)))
+        success_rate = int(100 * (float(good_count) / float(total_count)))
+        bad_rate = int(100 * (float(bad_count) / float(total_count)))
+
+    return {
+        'total_count': total_count,
+        'unvetted_count': unvetted_count,
+        'good_count': good_count,
+        'bad_count': bad_count,
+        'unvetted_rate': unvetted_rate,
+        'success_rate': success_rate,
+        'bad_rate': bad_rate
     }

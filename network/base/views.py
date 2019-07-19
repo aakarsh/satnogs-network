@@ -29,7 +29,7 @@ from network.base.scheduling import (create_new_observation, predict_available_o
                                      get_available_stations)
 from network.base.perms import schedule_perms, schedule_station_perms, delete_perms, vet_perms
 from network.base.tasks import update_all_tle, fetch_data
-from network.base.stats import transmitter_stats_by_uuid
+from network.base.stats import transmitter_stats_by_uuid, satellite_stats_by_transmitter_list
 from network.users.models import User
 
 
@@ -694,14 +694,10 @@ def pass_predictions(request, id):
             # look for a match between transmitters from the satellite and
             # ground station antenna frequency capabilities
             if int(unsupported_frequencies) == 0:
-                transmitter_supported = False
                 norad_id = satellite.norad_cat_id
-                transmitters = [t for t in all_transmitters if t['norad_cat_id'] == norad_id]
-                for transmitter in transmitters:
-                    transmitter_supported = is_transmitter_in_station_range(transmitter, station)
-                    if transmitter_supported:
-                        break
-                if not transmitter_supported:
+                transmitters = [t for t in all_transmitters if t['norad_cat_id'] == norad_id and
+                                is_transmitter_in_station_range(t, station)]
+                if not transmitters:
                     continue
 
             try:
@@ -718,19 +714,20 @@ def pass_predictions(request, id):
                                                                                     satellite)
 
             if station_windows:
+                satellite_stats = satellite_stats_by_transmitter_list(transmitters)
                 for window in station_windows:
                     valid = window['start'] > observation_min_start and window['valid_duration']
                     window_start = datetime.strptime(window['start'], '%Y-%m-%d %H:%M:%S.%f')
                     window_end = datetime.strptime(window['end'], '%Y-%m-%d %H:%M:%S.%f')
                     sat_pass = {'name': str(satellite.name),
                                 'id': str(satellite.id),
-                                'success_rate': str(satellite.success_rate),
-                                'unvetted_rate': str(satellite.unvetted_rate),
-                                'bad_rate': str(satellite.bad_rate),
-                                'data_count': str(satellite.data_count),
-                                'good_count': str(satellite.good_count),
-                                'bad_count': str(satellite.bad_count),
-                                'unvetted_count': str(satellite.unvetted_count),
+                                'success_rate': str(satellite_stats['success_rate']),
+                                'unvetted_rate': str(satellite_stats['unvetted_rate']),
+                                'bad_rate': str(satellite_stats['bad_rate']),
+                                'total_count': str(satellite_stats['total_count']),
+                                'good_count': str(satellite_stats['good_count']),
+                                'bad_count': str(satellite_stats['bad_count']),
+                                'unvetted_count': str(satellite_stats['unvetted_count']),
                                 'norad_cat_id': str(satellite.norad_cat_id),
                                 'tle1': window['tle1'],
                                 'tle2': window['tle2'],
@@ -825,17 +822,17 @@ def satellite_view(request, id):
             'error': e.message
         }]
         return JsonResponse(data, safe=False)
-
+    satellite_stats = satellite_stats_by_transmitter_list(transmitters)
     data = {
         'id': id,
         'name': sat.name,
         'names': sat.names,
         'image': sat.image,
-        'success_rate': sat.success_rate,
-        'good_count': sat.good_count,
-        'bad_count': sat.bad_count,
+        'success_rate': satellite_stats['success_rate'],
+        'good_count': satellite_stats['good_count'],
+        'bad_count': satellite_stats['bad_count'],
         'unvetted_count': sat.unvetted_count,
-        'data_count': sat.data_count,
+        'total_count': satellite_stats['total_count'],
         'future_count': sat.future_count,
         'transmitters': transmitters_with_stats(transmitters)
     }
