@@ -118,6 +118,10 @@ $(document).ready( function(){
                                         data-toggle="tooltip" data-placement="bottom"
                                         title="` + transmitter.bad_rate + '% (' + transmitter.bad_count + `) Bad"
                                         style="width:` + transmitter.bad_rate + `%"></div>
+                                      <div class="progress-bar progress-bar-info transmitter-future"
+                                        data-toggle="tooltip" data-placement="bottom"
+                                        title="` + transmitter.future_rate + '% (' + transmitter.future_count + `) Future"
+                                        style="width:` + transmitter.future_rate + `%"></div>
                                     </div>
                                   </div>'>
             </option>

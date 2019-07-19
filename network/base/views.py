@@ -722,12 +722,14 @@ def pass_predictions(request, id):
                     sat_pass = {'name': str(satellite.name),
                                 'id': str(satellite.id),
                                 'success_rate': str(satellite_stats['success_rate']),
-                                'unvetted_rate': str(satellite_stats['unvetted_rate']),
                                 'bad_rate': str(satellite_stats['bad_rate']),
+                                'unvetted_rate': str(satellite_stats['unvetted_rate']),
+                                'future_rate': str(satellite_stats['future_rate']),
                                 'total_count': str(satellite_stats['total_count']),
                                 'good_count': str(satellite_stats['good_count']),
                                 'bad_count': str(satellite_stats['bad_count']),
                                 'unvetted_count': str(satellite_stats['unvetted_count']),
+                                'future_count': str(satellite_stats['future_count']),
                                 'norad_cat_id': str(satellite.norad_cat_id),
                                 'tle1': window['tle1'],
                                 'tle2': window['tle2'],
@@ -831,9 +833,9 @@ def satellite_view(request, id):
         'success_rate': satellite_stats['success_rate'],
         'good_count': satellite_stats['good_count'],
         'bad_count': satellite_stats['bad_count'],
-        'unvetted_count': sat.unvetted_count,
+        'unvetted_count': satellite_stats['unvetted_count'],
+        'future_count': satellite_stats['future_count'],
         'total_count': satellite_stats['total_count'],
-        'future_count': sat.future_count,
         'transmitters': transmitters_with_stats(transmitters)
     }
 

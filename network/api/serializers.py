@@ -189,4 +189,7 @@ class TransmitterSerializer(serializers.ModelSerializer):
         fields = ('uuid', 'sync_to_db', 'stats')
 
     def get_stats(self, obj):
-        return transmitter_stats_by_uuid(obj.uuid)
+        stats = transmitter_stats_by_uuid(obj.uuid)
+        for statistic in stats:
+            stats[statistic] = int(stats[statistic])
+        return stats

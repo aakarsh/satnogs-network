@@ -197,6 +197,10 @@ $(document).ready(function() {
                              data-toggle="tooltip" data-placement="bottom" title="${data.nextpasses[i].bad_rate}% (${data.nextpasses[i].bad_count}) Bad">
                           <span class="sr-only">${data.nextpasses[i].bad_rate}% Bad</span>
                         </div>
+                        <div class="progress-bar progress-bar-info" style="width: ${data.nextpasses[i].future_rate}%"
+                             data-toggle="tooltip" data-placement="bottom" title="${data.nextpasses[i].future_rate}% (${data.nextpasses[i].future_count}) Future">
+                          <span class="sr-only">${data.nextpasses[i].future_rate}% Future</span>
+                        </div>
                       </div>
                     </td>
                     <td class="pass-datetime">

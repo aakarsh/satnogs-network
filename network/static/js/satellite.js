@@ -31,14 +31,6 @@ $(document).ready(function() {
                 if(transmitter.alive){
                     transmitter_status = '-success';
                 }
-                var good_percentage = 0;
-                var unvetted_percentage = 0;
-                var bad_percentage = 0;
-                if(transmitter.total_count > 0){
-                    good_percentage = Math.round((transmitter.good_count / transmitter.total_count) * 100);
-                    unvetted_percentage = Math.round((transmitter.unvetted_count / transmitter.total_count) * 100);
-                    bad_percentage = Math.round((transmitter.bad_count / transmitter.total_count) * 100);
-                }
                 modal.find('#transmitters').append(`
                     <div class="col-md-12 transmitter">
                       <div class="panel panel` + transmitter_status + `">
@@ -52,16 +44,20 @@ $(document).ready(function() {
                             <div class="progress pull-right">
                               <div class="progress-bar progress-bar-success transmitter-good"
                                           data-toggle="tooltip" data-placement="bottom"
-                                          title="` + good_percentage  + '% (' + transmitter.good_count + `) Good"
-                                          style="width:` + good_percentage + `%"></div>
+                                          title="` + transmitter.success_rate  + '% (' + transmitter.good_count + `) Good"
+                                          style="width:` + transmitter.success_rate + `%"></div>
                               <div class="progress-bar progress-bar-warning transmitter-unvetted"
                                           data-toggle="tooltip" data-placement="bottom"
-                                          title="` + unvetted_percentage  + '% (' + transmitter.unvetted_count + `) Unvetted"
-                                          style="width:` + unvetted_percentage + `%"></div>
+                                          title="` + transmitter.unvetted_rate  + '% (' + transmitter.unvetted_count + `) Unvetted"
+                                          style="width:` + transmitter.unvetted_rate + `%"></div>
                               <div class="progress-bar progress-bar-danger transmitter-bad"
                                           data-toggle="tooltip" data-placement="bottom"
-                                          title="` + bad_percentage  + '% (' + transmitter.bad_count + `) Bad"
-                                          style="width:` + bad_percentage + `%"></div>
+                                          title="` + transmitter.bad_rate  + '% (' + transmitter.bad_count + `) Bad"
+                                          style="width:` + transmitter.bad_rate + `%"></div>
+                              <div class="progress-bar progress-bar-info transmitter-info"
+                                          data-toggle="tooltip" data-placement="bottom"
+                                          title="` + transmitter.future_rate  + '% (' + transmitter.future_count + `) Future"
+                                          style="width:` + transmitter.future_rate + `%"></div>
                             </div>
                           </span>
                         </div>
