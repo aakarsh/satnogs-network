@@ -53,24 +53,6 @@ class StationAllView(viewsets.ReadOnlyModelViewSet):
     serializer_class = StationSerializer
 
 
-@ajax_required
-def satellite_position(request, sat_id):
-    sat = get_object_or_404(Satellite, norad_cat_id=sat_id)
-    try:
-        tle = sat.latest_tle.str_array
-        satellite = ephem.readtle(*tle)
-    except (ValueError, AttributeError, Tle.DoesNotExist):
-        data = {}
-    else:
-        now = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
-        satellite.compute(now)
-        data = {
-            'lon': '{0}'.format(satellite.sublong),
-            'lat': '{0}'.format(satellite.sublat)
-        }
-    return JsonResponse(data, safe=False)
-
-
 def index(request):
     """View to render index page."""
     return render(request, 'base/home.html', {'mapbox_id': settings.MAPBOX_MAP_ID,
