@@ -24,7 +24,8 @@ from network.base.db_api import (get_transmitter_by_uuid, get_transmitters_by_no
 from network.base.forms import (ObservationForm, BaseObservationFormSet, StationForm,
                                 SatelliteFilterForm)
 from network.base.validators import is_transmitter_in_station_range, ObservationOverlapError
-from network.base.models import Station, Observation, Satellite, Antenna, StationStatusLog, Tle
+from network.base.models import (Station, Observation, Satellite, Antenna, StationStatusLog, Tle,
+                                 LatestTle)
 from network.base.scheduling import (create_new_observation, predict_available_observation_windows,
                                      get_available_stations)
 from network.base.perms import schedule_perms, schedule_station_perms, delete_perms, vet_perms
@@ -665,7 +666,12 @@ def pass_predictions(request, id):
     unsupported_frequencies = request.GET.get('unsupported_frequencies', '0')
 
     try:
-        satellites = Satellite.objects.filter(status='alive')
+        latest_tle_queryset = LatestTle.objects.all()
+        satellites = Satellite.objects.filter(
+            status='alive'
+        ).prefetch_related(
+            Prefetch('tles', queryset=latest_tle_queryset, to_attr='tle')
+        )
     except Satellite.DoesNotExist:
         pass  # we won't have any next passes to display
 
@@ -700,9 +706,9 @@ def pass_predictions(request, id):
                 if not transmitters:
                     continue
 
-            try:
-                tle = satellite.latest_tle
-            except (ValueError, AttributeError, Tle.DoesNotExist):
+            if satellite.tle:
+                tle = satellite.tle[0]
+            else:
                 continue
 
             station_passes, station_windows = predict_available_observation_windows(station,
