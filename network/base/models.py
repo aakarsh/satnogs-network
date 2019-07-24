@@ -275,11 +275,6 @@ class Satellite(models.Model):
         else:
             return settings.SATELLITE_DEFAULT_IMAGE
 
-    @property
-    def latest_tle(self):
-        latest_tle = Tle.objects.filter(satellite=self).latest('updated')
-        return latest_tle
-
     def __unicode__(self):
         return self.name
 

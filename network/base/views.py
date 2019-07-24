@@ -24,7 +24,7 @@ from network.base.db_api import (get_transmitter_by_uuid, get_transmitters_by_no
 from network.base.forms import (ObservationForm, BaseObservationFormSet, StationForm,
                                 SatelliteFilterForm)
 from network.base.validators import is_transmitter_in_station_range, ObservationOverlapError
-from network.base.models import (Station, Observation, Satellite, Antenna, StationStatusLog, Tle,
+from network.base.models import (Station, Observation, Satellite, Antenna, StationStatusLog,
                                  LatestTle)
 from network.base.scheduling import (create_new_observation, predict_available_observation_windows,
                                      get_available_stations)
@@ -281,6 +281,10 @@ def observation_new_post(request):
     except ObservationOverlapError as e:
         messages.error(request, '{0}'.format(e.message))
         return redirect(reverse('base:observation_new'))
+    except LatestTle.DoesNotExist:
+        message = 'Scheduling failed: Satellite without TLE'
+        messages.error(request, '{0}'.format(message))
+        return redirect(reverse('base:observation_new'))
 
 
 @login_required
@@ -334,7 +338,7 @@ def observation_new(request):
 
 @ajax_required
 def prediction_windows(request):
-    sat_id = request.POST['satellite']
+    sat_norad_id = request.POST['satellite']
     transmitter = request.POST['transmitter']
     start = request.POST['start']
     end = request.POST['end']
@@ -342,7 +346,7 @@ def prediction_windows(request):
     min_horizon = request.POST.get('min_horizon', None)
     overlapped = int(request.POST.get('overlapped', 0))
     try:
-        sat = Satellite.objects.filter(status='alive').get(norad_cat_id=sat_id)
+        sat = Satellite.objects.filter(status='alive').get(norad_cat_id=sat_norad_id)
     except Satellite.DoesNotExist:
         data = [{
             'error': 'You should select a Satellite first.'
@@ -350,8 +354,8 @@ def prediction_windows(request):
         return JsonResponse(data, safe=False)
 
     try:
-        tle = sat.latest_tle
-    except (ValueError, AttributeError, Tle.DoesNotExist):
+        tle = LatestTle.objects.get(satellite_id=sat.id)
+    except LatestTle.DoesNotExist:
         data = [{
             'error': 'No TLEs for this satellite yet.'
         }]

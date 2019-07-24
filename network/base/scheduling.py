@@ -3,7 +3,7 @@ from datetime import timedelta
 
 from django.conf import settings
 from django.utils.timezone import now, make_aware, utc
-from network.base.models import Satellite, Tle, Observation
+from network.base.models import Satellite, LatestTle, Observation
 from network.base.perms import schedule_station_perms
 from network.base.validators import ObservationOverlapError
 
@@ -295,11 +295,11 @@ def create_new_observation(station, transmitter, start, end, author):
             .format(int(station.id)))
 
     sat = Satellite.objects.get(norad_cat_id=transmitter['norad_cat_id'])
-    tle = Tle.objects.get(id=sat.latest_tle.id)
+    tle = LatestTle.objects.get(satellite_id=sat.id)
 
-    sat_ephem = ephem.readtle(str(sat.latest_tle.tle0),
-                              str(sat.latest_tle.tle1),
-                              str(sat.latest_tle.tle2))
+    sat_ephem = ephem.readtle(str(tle.tle0),
+                              str(tle.tle1),
+                              str(tle.tle2))
     observer = ephem.Observer()
     observer.lon = str(station.lng)
     observer.lat = str(station.lat)

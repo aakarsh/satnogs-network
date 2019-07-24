@@ -11,9 +11,11 @@ from django.conf import settings
 from django.contrib.sites.models import Site
 from django.core.cache import cache
 from django.core.mail import send_mail
+from django.db.models import Prefetch
 from django.utils.timezone import now
 
-from network.base.models import Satellite, Tle, Transmitter, Observation, Station, DemodData
+from network.base.models import (Satellite, Tle, LatestTle, Transmitter, Observation, Station,
+                                 DemodData)
 from network.celery import app
 from network.base.utils import demod_to_db
 
@@ -21,8 +23,13 @@ from network.base.utils import demod_to_db
 @app.task(ignore_result=True)
 def update_all_tle():
     """Task to update all satellite TLEs"""
-    satellites = Satellite.objects.exclude(manual_tle=True,
-                                           norad_follow_id__isnull=True)
+    latest_tle_queryset = LatestTle.objects.all()
+    satellites = Satellite.objects.exclude(
+        manual_tle=True,
+        norad_follow_id__isnull=True
+    ).prefetch_related(
+        Prefetch('tles', queryset=latest_tle_queryset, to_attr='tle')
+    )
 
     print "==Fetching TLEs=="
 
@@ -40,15 +47,10 @@ def update_all_tle():
 
         tle = sat.tle()
 
-        try:
-            latest_tle = obj.latest_tle.tle1
-            if latest_tle == tle[1]:
-                # Stored TLE is already the latest available for this satellite
-                print '{} - {}: TLE already exists [defer]'.format(obj.name, norad_id)
-                continue
-        except AttributeError:
-            # Satellite in DB has no associated TLE yet
-            pass
+        if obj.tle and obj.tle[0].tle1 == tle[1]:
+            # Stored TLE is already the latest available for this satellite
+            print '{} - {}: TLE already exists [defer]'.format(obj.name, norad_id)
+            continue
 
         Tle.objects.create(tle0=tle[0], tle1=tle[1], tle2=tle[2], satellite=obj)
         print '{} - {}: new TLE found [updated]'.format(obj.name, norad_id)

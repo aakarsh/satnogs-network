@@ -413,21 +413,6 @@ class SettingsSiteViewTest(TestCase):
 
 
 @pytest.mark.django_db(transaction=True)
-class SatelliteModelTest(TestCase):
-    """
-    Tests various methods of the Satellite model
-    """
-    satellite = None
-
-    def setUp(self):
-        self.satellite = SatelliteFactory()
-
-    def test_latest_tle(self):
-        with self.assertRaises(Tle.DoesNotExist):
-            _lookup = self.satellite.latest_tle  # noqa:F841
-
-
-@pytest.mark.django_db(transaction=True)
 class ObservationModelTest(TestCase):
     """
     Test various properties of the Observation Model
