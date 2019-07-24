@@ -11,6 +11,7 @@ from django.core.validators import MaxValueValidator, MinValueValidator
 from django.core.exceptions import ValidationError
 from django.dispatch import receiver
 from django.db import models
+from django.db.models import OuterRef, Subquery
 from django.db.models.signals import post_save
 from django.urls import reverse
 from django.utils.html import format_html
@@ -305,6 +306,28 @@ class Tle(models.Model):
 
 
 post_save.connect(_tle_post_save, sender=Tle)
+
+
+class LatestTleManager(models.Manager):
+    """Django Manager for latest Tle objects"""
+
+    def get_queryset(self):
+        """Returns query of latest Tle
+
+        :returns: the latest Tle for each Satellite
+        """
+        subquery = Tle.objects.filter(satellite=OuterRef('satellite')).order_by('-updated')
+        return super(LatestTleManager, self).get_queryset().filter(
+            updated=Subquery(subquery.values('updated')[:1]))
+
+
+class LatestTle(Tle):
+    """LatestTle is the latest entry of a Satellite Tle objects
+    """
+    objects = LatestTleManager()
+
+    class Meta:
+        proxy = True
 
 
 class Transmitter(models.Model):
