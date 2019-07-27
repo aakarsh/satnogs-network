@@ -34,14 +34,15 @@
           <a id="obs-discuss"
              data-slug="{{ discuss_slug }}"
              href="{% if has_comments %}{{ discuss_slug }}{% else %}{{ discuss_url }}{% endif %}"
-             class="btn btn-primary" target="_blank">
+             class="btn btn-primary" target="_blank"
+             data-toggle="tooltip" title="Discuss (d)">
             <span class="glyphicon glyphicon-comment" aria-hidden="true"></span>
             Discuss
           </a>
         {% endif %}
         {% if can_delete %}
           <a href="{% url 'base:observation_delete' id=observation.id %}" id="obs-delete" class="btn btn-danger">
-            <span class="glyphicon glyphicon-trash" aria-hidden="true" title="Delete Observation"></span>
+            <span class="glyphicon glyphicon-trash" aria-hidden="true" title="Delete Observation (x)"></span>
           </a>
         {% endif %}
       </h2>
@@ -106,24 +107,25 @@
             {% if can_vet %}
               <div class="pull-right">
                 <a href="https://wiki.satnogs.org/Operation#Rating_observations" target="_blank">
-                  <span class="glyphicon glyphicon-info-sign" aria-hidden="true"></span>
+                  <span class="glyphicon glyphicon-info-sign" aria-hidden="true" 
+                        data-toggle="tooltip" title="Help"></span>
                 </a>
-                <button id="unknown-data" type="button" title="unknown"
+                <button id="unknown-data" type="button" title="Unknown (u)"
                         class="btn btn-xs btn-warning {% if observation.vetted_status == "unknown" %}hidden{% endif %}"
                         data-id="{{ observation.id }}" data-status="unknown" data-toggle="tooltip">
                   <span class="glyphicon glyphicon-question-sign" aria-hidden="true"></span>
                 </button>
-                <button id="good-data" type="button" title="good"
+                <button id="good-data" type="button" title="Good (g)"
                         class="btn btn-xs btn-success {% if observation.vetted_status == "good" %}hidden{% endif %}"
                         data-id="{{ observation.id }}" data-status="good" data-toggle="tooltip">
                   <span class="glyphicon glyphicon-ok" aria-hidden="true"></span>
                 </button>
-                <button id="bad-data" type="button" title="bad"
+                <button id="bad-data" type="button" title="Bad (b)"
                         class="btn btn-xs btn-danger {% if observation.vetted_status == "bad" %}hidden{% endif %}"
                         data-id="{{ observation.id }}" data-status="bad" data-toggle="tooltip">
                   <span class="glyphicon glyphicon-remove" aria-hidden="true"></span>
                 </button>
-                <button id="failed-data" type="button" title="failed"
+                <button id="failed-data" type="button" title="Failed (f)"
                         class="btn btn-xs btn-failed {% if observation.vetted_status == "failed" %}hidden{% endif %}"
                         data-id="{{ observation.id }}" data-status="failed" data-toggle="tooltip">
                   <span class="glyphicon glyphicon-alert" aria-hidden="true"></span>
