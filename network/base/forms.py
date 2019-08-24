@@ -14,12 +14,12 @@ class ObservationForm(forms.ModelForm):
     start = forms.DateTimeField(
         input_formats=['%Y-%m-%d %H:%M:%S.%f', '%Y-%m-%d %H:%M:%S'],
         error_messages={'invalid': 'Start datetime should have either "%Y-%m-%d %H:%M:%S.%f" or'
-                                   ' \'%Y-%m-%d %H:%M:%S\' format.',
+                                   ' "%Y-%m-%d %H:%M:%S" format.',
                         'required': 'Start datetime is required.'})
     end = forms.DateTimeField(
         input_formats=['%Y-%m-%d %H:%M:%S.%f', '%Y-%m-%d %H:%M:%S'],
         error_messages={'invalid': 'End datetime should have either "%Y-%m-%d %H:%M:%S.%f" or'
-                                   ' \'%Y-%m-%d %H:%M:%S\' format.',
+                                   ' "%Y-%m-%d %H:%M:%S" format.',
                         'required': 'End datetime is required.'})
     ground_station = forms.ModelChoiceField(
         queryset=Station.objects.filter(status__gt=0),
