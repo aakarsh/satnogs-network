@@ -76,6 +76,7 @@ def check_overlaps(stations_dict):
             for j in range(i + 1, total_periods):
                 start_j = periods[j][0]
                 end_j = periods[j][1]
-                if (start_j <= start_i <= end_j) or (start_j <= end_i <= end_j):
+                if ((start_j <= start_i <= end_j) or (start_j <= end_i <= end_j) or
+                        (start_i <= start_j and end_i >= end_j)):
                     raise ObservationOverlapError('Observations of station {0} overlap'
                                                   .format(station))
