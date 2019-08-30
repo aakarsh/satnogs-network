@@ -5,7 +5,8 @@ from django.conf import settings
 from django.utils.timezone import now, make_aware, utc
 from network.base.models import Satellite, LatestTle, Observation
 from network.base.perms import schedule_station_perms
-from network.base.validators import ObservationOverlapError
+from network.base.validators import (ObservationOverlapError, NegativeElevationError,
+                                     SinglePassError)
 
 import ephem
 
@@ -292,7 +293,7 @@ def create_new_observation(station, transmitter, start, end, author):
     if window[1]:
         raise ObservationOverlapError(
             'One or more observations of station {0} overlap with the already scheduled ones.'
-            .format(int(station.id)))
+            .format(station.id))
 
     sat = Satellite.objects.get(norad_cat_id=transmitter['norad_cat_id'])
     tle = LatestTle.objects.get(satellite_id=sat.id)
@@ -308,8 +309,31 @@ def create_new_observation(station, transmitter, start, end, author):
     mid_pass_time = start + (end - start) / 2
 
     rise_azimuth = get_azimuth(observer, sat_ephem, start)
+    rise_altitude = get_elevation(observer, sat_ephem, start)
     max_altitude = get_elevation(observer, sat_ephem, mid_pass_time)
     set_azimuth = get_azimuth(observer, sat_ephem, end)
+    set_altitude = get_elevation(observer, sat_ephem, end)
+
+    if rise_altitude < 0:
+        raise NegativeElevationError(
+            "Satellite with transmitter {} has negative elevation ({})"
+            " for station {} at start datetime: {}"
+            .format(transmitter['uuid'], rise_altitude, station.id, start))
+    if set_altitude < 0:
+        raise NegativeElevationError(
+            "Satellite with transmitter {} has negative elevation ({})"
+            " for station {} at end datetime: {}"
+            .format(transmitter['uuid'], set_altitude, station.id, end))
+    # Using a short time (1min later) after start for finding the next pass of the satellite to
+    # check that end datetime is before the start datetime of the next pass, in other words that
+    # end time belongs to the same single pass.
+    observer.date = start + timedelta(minutes=1)
+    next_satellite_pass = next_pass(observer, sat_ephem)
+    if next_satellite_pass['rise_time'] < end:
+        raise SinglePassError(
+            "Observation should include only one pass of the satellite with transmitter {}"
+            " on station {}, please check start({}) and end({}) datetimes and try again"
+            .format(transmitter['uuid'], station.id, start, end))
 
     return Observation(
         satellite=sat, tle=tle, author=author, start=start, end=end,

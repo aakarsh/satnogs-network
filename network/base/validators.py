@@ -12,6 +12,14 @@ class OutOfRangeError(Exception):
     pass
 
 
+class NegativeElevationError(Exception):
+    pass
+
+
+class SinglePassError(Exception):
+    pass
+
+
 def check_start_datetime(start):
     if start < make_aware(datetime.now(), utc):
         raise ValueError("Start datetime should be in the future!")

@@ -23,7 +23,8 @@ from network.base.db_api import (get_transmitter_by_uuid, get_transmitters_by_no
                                  get_transmitters_by_status, DBConnectionError)
 from network.base.forms import (ObservationForm, BaseObservationFormSet, StationForm,
                                 SatelliteFilterForm)
-from network.base.validators import is_transmitter_in_station_range, ObservationOverlapError
+from network.base.validators import (is_transmitter_in_station_range, ObservationOverlapError,
+                                     NegativeElevationError, SinglePassError)
 from network.base.models import (Station, Observation, Satellite, Antenna, StationStatusLog,
                                  LatestTle)
 from network.base.scheduling import (create_new_observation, predict_available_observation_windows,
@@ -278,12 +279,18 @@ def observation_new_post(request):
     except ValidationError as e:
         messages.error(request, '{0}'.format(e.message))
         return redirect(reverse('base:observation_new'))
-    except ObservationOverlapError as e:
-        messages.error(request, '{0}'.format(e.message))
-        return redirect(reverse('base:observation_new'))
     except LatestTle.DoesNotExist:
         message = 'Scheduling failed: Satellite without TLE'
         messages.error(request, '{0}'.format(message))
+        return redirect(reverse('base:observation_new'))
+    except ObservationOverlapError as e:
+        messages.error(request, '{0}'.format(e.message))
+        return redirect(reverse('base:observation_new'))
+    except NegativeElevationError as e:
+        messages.error(request, '{0}'.format(e.message))
+        return redirect(reverse('base:observation_new'))
+    except SinglePassError as e:
+        messages.error(request, '{0}'.format(e.message))
         return redirect(reverse('base:observation_new'))
 
 
