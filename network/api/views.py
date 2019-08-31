@@ -4,21 +4,56 @@ from django.utils.timezone import now
 
 from rest_framework import viewsets, mixins, status
 from rest_framework.response import Response
+from rest_framework.serializers import ValidationError
 
-from network.api.perms import StationOwnerCanEditPermission
+from network.api.perms import StationOwnerPermission
 from network.api import serializers, filters, pagination
-from network.base.models import Observation, Station, Transmitter
+from network.base.validators import (ObservationOverlapError, NegativeElevationError,
+                                     SinglePassError)
+from network.base.models import Observation, Station, Transmitter, LatestTle
 
 
 class ObservationView(mixins.ListModelMixin, mixins.RetrieveModelMixin,
-                      mixins.UpdateModelMixin, viewsets.GenericViewSet):
+                      mixins.UpdateModelMixin, mixins.CreateModelMixin,
+                      viewsets.GenericViewSet):
     queryset = Observation.objects.all()
-    serializer_class = serializers.ObservationSerializer
     filter_class = filters.ObservationViewFilter
     permission_classes = [
-        StationOwnerCanEditPermission
+        StationOwnerPermission
     ]
     pagination_class = pagination.LinkedHeaderPageNumberPagination
+
+    def get_serializer_class(self):
+        if self.request.method == 'POST':
+            return serializers.NewObservationSerializer
+        return serializers.ObservationSerializer
+
+    def create(self, request, *args, **kwargs):
+        serializer = self.get_serializer(data=request.data, many=True, allow_empty=False)
+        try:
+            if serializer.is_valid():
+                observations = serializer.save()
+                serialized_obs = serializers.ObservationSerializer(observations, many=True)
+                data = serialized_obs.data
+                return Response(data, status=status.HTTP_200_OK)
+            else:
+                data = serializer.errors
+                return Response(data, status=status.HTTP_400_BAD_REQUEST)
+        except ValidationError as e:
+            data = e.message
+            return Response(data, status=status.HTTP_400_BAD_REQUEST)
+        except LatestTle.DoesNotExist:
+            data = 'Scheduling failed: Satellite without TLE'
+            return Response(data, status=status.HTTP_501_NOT_IMPLEMENTED)
+        except ObservationOverlapError as e:
+            data = e.message
+            return Response(data, status=status.HTTP_409_CONFLICT)
+        except NegativeElevationError as e:
+            data = e.message
+            return Response(data, status=status.HTTP_400_BAD_REQUEST)
+        except SinglePassError as e:
+            data = e.message
+            return Response(data, status=status.HTTP_400_BAD_REQUEST)
 
     def update(self, request, *args, **kwargs):
         instance = self.get_object()

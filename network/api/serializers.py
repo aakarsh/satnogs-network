@@ -2,6 +2,13 @@ from rest_framework import serializers
 
 from network.base.models import Observation, Station, DemodData, Antenna, Transmitter
 from network.base.stats import transmitter_stats_by_uuid
+from network.base.db_api import get_transmitters_by_uuid_list, DBConnectionError
+from network.base.perms import check_schedule_perms_per_station, UserNoPermissionError
+from network.base.scheduling import create_new_observation
+from network.base.validators import (ObservationOverlapError, OutOfRangeError,
+                                     check_transmitter_station_pairs, check_start_datetime,
+                                     check_end_datetime, check_start_end_datetimes,
+                                     check_overlaps)
 
 
 class DemodDataSerializer(serializers.ModelSerializer):
@@ -87,6 +94,132 @@ class ObservationSerializer(serializers.ModelSerializer):
             return obj.ground_station.alt
         except AttributeError:
             return None
+
+
+class NewObservationListSerializer(serializers.ListSerializer):
+    def validate(self, data):
+        user = self.context['request'].user
+        station_list = []
+        transmitter_uuid_list = []
+        transmitter_uuid_station_list = []
+        start_end_per_station = {}
+
+        for observation in data:
+            station = observation.get('ground_station')
+            transmitter_uuid = observation.get('transmitter_uuid')
+            start = observation.get('start')
+            end = observation.get('end')
+            station_id = int(station.id)
+            station_list.append(station)
+            transmitter_uuid_list.append(transmitter_uuid)
+            transmitter_uuid_station_list.append((transmitter_uuid, station))
+            if station_id in start_end_per_station:
+                start_end_per_station[station_id].append((start, end))
+            else:
+                start_end_per_station[station_id] = []
+                start_end_per_station[station_id].append((start, end))
+        try:
+            check_overlaps(start_end_per_station)
+        except ObservationOverlapError as e:
+            raise serializers.ValidationError(e, code='invalid')
+
+        station_list = list(set(station_list))
+        try:
+            check_schedule_perms_per_station(user, station_list)
+        except UserNoPermissionError as e:
+            raise serializers.ValidationError(e, code='forbidden')
+
+        transmitter_uuid_list = list(set(transmitter_uuid_list))
+        try:
+            transmitters = get_transmitters_by_uuid_list(transmitter_uuid_list)
+            self.transmitters = transmitters
+        except ValueError as e:
+            raise serializers.ValidationError(e, code='invalid')
+        except DBConnectionError as e:
+            raise serializers.ValidationError(e)
+
+        transmitter_uuid_station_set = set(transmitter_uuid_station_list)
+        transmitter_station_list = [(transmitters[pair[0]], pair[1])
+                                    for pair in transmitter_uuid_station_set]
+        try:
+            check_transmitter_station_pairs(transmitter_station_list)
+        except OutOfRangeError as e:
+            raise serializers.ValidationError(e, code='invalid')
+        return data
+
+    def create(self, validated_data):
+        new_observations = []
+        for observation_data in validated_data:
+            station = observation_data['ground_station']
+            start = observation_data['start']
+            end = observation_data['end']
+            transmitter_uuid = observation_data['transmitter_uuid']
+            transmitter = self.transmitters[transmitter_uuid]
+            author = self.context['request'].user
+            observation = create_new_observation(station=station, transmitter=transmitter,
+                                                 start=start, end=end, author=author)
+            new_observations.append(observation)
+
+        for observation in new_observations:
+            observation.save()
+
+        return new_observations
+
+
+class NewObservationSerializer(serializers.Serializer):
+    start = serializers.DateTimeField(
+        input_formats=['%Y-%m-%d %H:%M:%S.%f', '%Y-%m-%d %H:%M:%S'],
+        error_messages={'invalid': 'Start datetime should have either \'%Y-%m-%d %H:%M:%S.%f\' or'
+                                   ' \'%Y-%m-%d %H:%M:%S\' format.',
+                        'required': 'Start(\'start\' key) datetime is required.'})
+    end = serializers.DateTimeField(
+        input_formats=['%Y-%m-%d %H:%M:%S.%f', '%Y-%m-%d %H:%M:%S'],
+        error_messages={'invalid': 'End datetime should have either \'%Y-%m-%d %H:%M:%S.%f\' or'
+                                   ' \'%Y-%m-%d %H:%M:%S\' format.',
+                        'required': 'End datetime(\'end\' key) is required.'})
+    ground_station = serializers.PrimaryKeyRelatedField(
+        queryset=Station.objects.filter(status__gt=0),
+        allow_null=False,
+        error_messages={'does_not_exist': 'Station should exist and be online.',
+                        'required': 'Station(\'ground_station\' key) is required.'})
+    transmitter_uuid = serializers.CharField(
+        max_length=22,
+        min_length=22,
+        error_messages={'invalid': 'Transmitter UUID should be valid.',
+                        'required': 'Transmitter UUID(\'transmitter_uuid\' key) is required.'})
+
+    def validate_start(self, value):
+        try:
+            check_start_datetime(value)
+        except ValueError as e:
+            raise serializers.ValidationError(e, code='invalid')
+        return value
+
+    def validate_end(self, value):
+        try:
+            check_end_datetime(value)
+        except ValueError as e:
+            raise serializers.ValidationError(e, code='invalid')
+        return value
+
+    def validate(self, data):
+        start = data['start']
+        end = data['end']
+        try:
+            check_start_end_datetimes(start, end)
+        except ValueError as e:
+            raise serializers.ValidationError(e, code='invalid')
+        return data
+
+    def create(self, validated_data):
+        # If in the future we want to implement this serializer accepting and creating observation
+        # from single object instead from a list of objects, we should remove raising the exception
+        # below and implement the validations that exist now only on NewObservationListSerializer
+        raise serializers.ValidationError("Serializer is implemented for accepting and schedule\
+                                           only lists of observations")
+
+    class Meta:
+        list_serializer_class = NewObservationListSerializer
 
 
 class AntennaSerializer(serializers.ModelSerializer):
