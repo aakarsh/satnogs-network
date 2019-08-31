@@ -11,7 +11,7 @@ from network.base.validators import (ObservationOverlapError, NegativeElevationE
 import ephem
 
 
-def get_elevation(observer, satellite, date):
+def get_altitude(observer, satellite, date):
     observer = observer.copy()
     satellite = satellite.copy()
     observer.date = date
@@ -31,19 +31,19 @@ def over_min_duration(duration):
     return duration > settings.OBSERVATION_DURATION_MIN
 
 
-def max_elevation_in_window(observer, satellite, pass_tca, window_start, window_end):
+def max_altitude_in_window(observer, satellite, pass_tca, window_start, window_end):
     # In this case this is an overlapped observation
-    # re-calculate elevation and start/end azimuth
+    # re-calculate altitude and start/end azimuth
     if window_start > pass_tca:
         # Observation window in the second half of the pass
-        # Thus highest elevation right at the beginning of the window
-        return get_elevation(observer, satellite, window_start)
+        # Thus highest altitude right at the beginning of the window
+        return get_altitude(observer, satellite, window_start)
     elif window_end < pass_tca:
         # Observation window in the first half of the pass
-        # Thus highest elevation right at the end of the window
-        return get_elevation(observer, satellite, window_end)
+        # Thus highest altitude right at the end of the window
+        return get_altitude(observer, satellite, window_end)
     else:
-        return get_elevation(observer, satellite, pass_tca)
+        return get_altitude(observer, satellite, pass_tca)
 
 
 def resolve_overlaps(scheduled_obs, start, end):
@@ -81,13 +81,13 @@ def resolve_overlaps(scheduled_obs, start, end):
     return ([(start, end)], overlapped)
 
 
-def create_station_window(window_start, window_end, azr, azs, elevation, tle,
+def create_station_window(window_start, window_end, azr, azs, altitude, tle,
                           valid_duration, overlapped, overlap_ratio=0):
     return {'start': window_start.strftime("%Y-%m-%d %H:%M:%S.%f"),
             'end': window_end.strftime("%Y-%m-%d %H:%M:%S.%f"),
             'az_start': azr,
             'az_end': azs,
-            'elev_max': elevation,
+            'elev_max': altitude,
             'tle0': tle.tle0,
             'tle1': tle.tle1,
             'tle2': tle.tle2,
@@ -120,9 +120,9 @@ def create_station_windows(scheduled_obs, overlapped, pass_params, observer, sat
         elif overlapped == 1:
             initial_duration = (pass_params['set_time'] - pass_params['rise_time']).total_seconds()
             for window_start, window_end in windows:
-                elevation = max_elevation_in_window(observer, satellite,
-                                                    pass_params['tca_time'],
-                                                    window_start, window_end)
+                altitude = max_altitude_in_window(observer, satellite,
+                                                  pass_params['tca_time'],
+                                                  window_start, window_end)
                 window_duration = (window_end - window_start).total_seconds()
                 if not over_min_duration(window_duration):
                     continue
@@ -133,7 +133,7 @@ def create_station_windows(scheduled_obs, overlapped, pass_params, observer, sat
                     window_end,
                     get_azimuth(observer, satellite, window_start),
                     get_azimuth(observer, satellite, window_end),
-                    elevation,
+                    altitude,
                     tle,
                     True,
                     True,
@@ -187,7 +187,7 @@ def next_pass(observer, satellite, issue105=False):
     pass_tca = make_aware(ephem.Date(tt).datetime(), utc)
     pass_azr = float(format(math.degrees(azr), '.0f'))
     pass_azs = float(format(math.degrees(azs), '.0f'))
-    pass_elevation = float(format(math.degrees(altt), '.0f'))
+    pass_altitude = float(format(math.degrees(altt), '.0f'))
 
     if ephem.Date(tr).datetime() > ephem.Date(ts).datetime():
         # set time before rise time (bug in pyephem)
@@ -206,7 +206,7 @@ def next_pass(observer, satellite, issue105=False):
             'tca_time': pass_tca,
             'rise_az': pass_azr,
             'set_az': pass_azs,
-            'tca_alt': pass_elevation}
+            'tca_alt': pass_altitude}
 
 
 def predict_available_observation_windows(station, min_horizon, overlapped, tle,
@@ -309,19 +309,19 @@ def create_new_observation(station, transmitter, start, end, author):
     mid_pass_time = start + (end - start) / 2
 
     rise_azimuth = get_azimuth(observer, sat_ephem, start)
-    rise_altitude = get_elevation(observer, sat_ephem, start)
-    max_altitude = get_elevation(observer, sat_ephem, mid_pass_time)
+    rise_altitude = get_altitude(observer, sat_ephem, start)
+    max_altitude = get_altitude(observer, sat_ephem, mid_pass_time)
     set_azimuth = get_azimuth(observer, sat_ephem, end)
-    set_altitude = get_elevation(observer, sat_ephem, end)
+    set_altitude = get_altitude(observer, sat_ephem, end)
 
     if rise_altitude < 0:
         raise NegativeElevationError(
-            "Satellite with transmitter {} has negative elevation ({})"
+            "Satellite with transmitter {} has negative altitude ({})"
             " for station {} at start datetime: {}"
             .format(transmitter['uuid'], rise_altitude, station.id, start))
     if set_altitude < 0:
         raise NegativeElevationError(
-            "Satellite with transmitter {} has negative elevation ({})"
+            "Satellite with transmitter {} has negative altitude ({})"
             " for station {} at end datetime: {}"
             .format(transmitter['uuid'], set_altitude, station.id, end))
     # Using a short time (1min later) after start for finding the next pass of the satellite to
