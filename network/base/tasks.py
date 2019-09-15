@@ -5,7 +5,7 @@ from requests.exceptions import ReadTimeout, HTTPError
 import urllib2
 
 from internetarchive import upload
-from orbit import satellite
+from satellite_tle import fetch_tle_from_celestrak
 
 from django.conf import settings
 from django.contrib.sites.models import Site
@@ -40,12 +40,10 @@ def update_all_tle():
 
         try:
             # Fetch latest satellite TLE
-            sat = satellite(norad_id)
-        except IndexError:
+            tle = fetch_tle_from_celestrak(norad_id)
+        except LookupError:
             print '{} - {}: TLE not found [error]'.format(obj.name, norad_id)
             continue
-
-        tle = sat.tle()
 
         if obj.tle and obj.tle[0].tle1 == tle[1]:
             # Stored TLE is already the latest available for this satellite

@@ -1,5 +1,5 @@
 from optparse import make_option
-from orbit import satellite
+from satellite_tle import fetch_tle_from_celestrak
 
 from django.core.management.base import BaseCommand, CommandError
 
@@ -28,8 +28,8 @@ class Command(BaseCommand):
                     raise CommandError('Satellite with Identifier {} does not exist'.format(item))
 
             try:
-                sat = satellite(item)
-            except IndexError:
+                tle = fetch_tle_from_celestrak(item)
+            except LookupError:
                 raise CommandError('Satellite with Identifier {} does not exist'.format(item))
 
             try:
@@ -37,8 +37,7 @@ class Command(BaseCommand):
             except Satellite.DoesNotExist:
                 obj = Satellite(norad_cat_id=item)
 
-            obj.name = sat.name()
-            tle = sat.tle()
+            obj.name = tle[0]
             obj.tle0 = tle[0]
             obj.tle1 = tle[1]
             obj.tle2 = tle[2]

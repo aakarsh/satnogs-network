@@ -179,8 +179,8 @@ def create_station_windows(scheduled_obs, overlapped, pass_params, observer, sat
     return station_windows
 
 
-def next_pass(observer, satellite, issue105=False):
-    tr, azr, tt, altt, ts, azs = observer.next_pass(satellite)
+def next_pass(observer, satellite):
+    tr, azr, tt, altt, ts, azs = observer.next_pass(satellite, True)
     # Convert output of pyephems.next_pass into processible values
     pass_start = make_aware(ephem.Date(tr).datetime(), utc)
     pass_end = make_aware(ephem.Date(ts).datetime(), utc)
@@ -188,18 +188,6 @@ def next_pass(observer, satellite, issue105=False):
     pass_azr = float(format(math.degrees(azr), '.0f'))
     pass_azs = float(format(math.degrees(azs), '.0f'))
     pass_altitude = float(format(math.degrees(altt), '.0f'))
-
-    if ephem.Date(tr).datetime() > ephem.Date(ts).datetime():
-        # set time before rise time (bug in pyephem)
-        # https://github.com/brandon-rhodes/pyephem/issues/105
-        # move observer time after the current pass end
-        time_start_new = pass_end + timedelta(minutes=1)
-        observer.date = time_start_new.strftime("%Y-%m-%d %H:%M:%S.%f")
-        if issue105:
-            raise ValueError('Recursion of next_pass() due to\
-                              https://github.com/brandon-rhodes/pyephem/issues/105')
-        else:
-            return next_pass(observer, satellite, True)
 
     return {'rise_time': pass_start,
             'set_time': pass_end,
