@@ -6,6 +6,7 @@ variables:
   GITLAB_CI_IMAGE_PYTHON3: 'python:3'
   GITLAB_CI_PYPI_DOCKER_COMPOSE: 'docker-compose~=1.23.0'
   GITLAB_CI_PYPI_TOX: 'tox~=3.8.0'
+  GITLAB_CI_PYPI_SPHINX_RTD_THEME: 'sphinx_rtd_theme~=0.4.0'
 stages:
   - static
   - build
@@ -26,6 +27,19 @@ static_python:
     - pip install "$GITLAB_CI_PYPI_TOX"
   script:
     - tox -e flake8
+docs:
+  stage: build
+  image: ${GITLAB_CI_IMAGE_PYTHON3}
+  before_script:
+    - pip install "$GITLAB_CI_PYPI_SPHINX_RTD_THEME"
+  script:
+    - cd docs
+    - make html SPHINXOPTS="-W"
+  artifacts:
+    expire_in: 1 week
+    when: always
+    paths:
+      - docs/_build/html
 build:
   stage: build
   image: ${GITLAB_CI_IMAGE_PYTHON2}
@@ -121,3 +135,13 @@ trigger_latest:
       - tags
     variables:
       - $PIPELINE_TRIGGERS_LATEST
+pages:
+  stage: deploy
+  image: ${GITLAB_CI_IMAGE_ALPINE}
+  script:
+    - mv docs/_build/html/ public/
+  artifacts:
+    paths:
+      - public
+  only:
+    - tags
