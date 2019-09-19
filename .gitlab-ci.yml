@@ -1,3 +1,11 @@
+variables:
+  GITLAB_CI_IMAGE_ALPINE: 'alpine:3.9'
+  GITLAB_CI_IMAGE_DOCKER: 'docker:18.09'
+  GITLAB_CI_IMAGE_NODE: 'node:11.13'
+  GITLAB_CI_IMAGE_PYTHON2: 'python:2'
+  GITLAB_CI_IMAGE_PYTHON3: 'python:3'
+  GITLAB_CI_PYPI_DOCKER_COMPOSE: 'docker-compose~=1.23.0'
+  GITLAB_CI_PYPI_TOX: 'tox~=3.8.0'
 stages:
   - static
   - build
@@ -6,21 +14,21 @@ stages:
   - trigger
 static_js_css:
   stage: static
-  image: node:11.13
+  image: ${GITLAB_CI_IMAGE_NODE}
   script:
     - npm install -g eslint stylelint
     - eslint 'network/static/js/*.js'
     - stylelint 'network/static/css/*.css' 'network/static/css/*.scss'
 static_python:
   stage: static
-  image: python:2.7
+  image: ${GITLAB_CI_IMAGE_PYTHON2}
   before_script:
-    - pip install tox~=3.8.0
+    - pip install "$GITLAB_CI_PYPI_TOX"
   script:
     - tox -e flake8
 build:
   stage: build
-  image: python:2.7
+  image: ${GITLAB_CI_IMAGE_PYTHON2}
   script:
     - rm -rf dist
     - python setup.py sdist bdist_wheel
@@ -31,7 +39,7 @@ build:
       - dist
 build3:
   stage: build
-  image: python:3.6
+  image: ${GITLAB_CI_IMAGE_PYTHON3}
   script:
     - rm -rf dist
     - python setup.py sdist bdist_wheel
@@ -42,21 +50,21 @@ build3:
       - dist
 test:
   stage: test
-  image: python:2.7
+  image: ${GITLAB_CI_IMAGE_PYTHON2}
   before_script:
-    - pip install tox~=3.8.0
+    - pip install "$GITLAB_CI_PYPI_TOX"
     - apt-get update
     - apt-get install -y ruby-sass
   script:
     - tox -e deps,pytest
 docker:
   stage: deploy
-  image: docker:18.09
+  image: ${GITLAB_CI_IMAGE_DOCKER}
   services:
-    - docker:18.09-dind
+    - ${GITLAB_CI_IMAGE_DOCKER}-dind
   before_script:
     - apk --update add py-pip
-    - pip install docker-compose~=1.23.0
+    - pip install "$GITLAB_CI_PYPI_DOCKER_COMPOSE"
   script:
     - |
       [ -z "$CI_REGISTRY_IMAGE" ] || {
@@ -91,7 +99,7 @@ docker:
       - tags
 trigger_master:
   stage: trigger
-  image: alpine:3.9
+  image: ${GITLAB_CI_IMAGE_ALPINE}
   before_script:
     - apk add --no-cache curl
   script:
@@ -103,7 +111,7 @@ trigger_master:
       - $PIPELINE_TRIGGERS_MASTER
 trigger_latest:
   stage: trigger
-  image: alpine:3.9
+  image: ${GITLAB_CI_IMAGE_ALPINE}
   before_script:
     - apk add --no-cache curl
   script:
