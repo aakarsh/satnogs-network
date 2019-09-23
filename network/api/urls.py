@@ -1,6 +1,6 @@
 from rest_framework import routers
-from network.api import views
 
+from network.api import views
 
 router = routers.DefaultRouter()
 

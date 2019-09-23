@@ -3,11 +3,10 @@ from __future__ import absolute_import
 import os
 
 from celery import Celery
-
+from django.conf import settings  # noqa
 
 os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'network.settings')
 
-from django.conf import settings  # noqa
 
 RUN_DAILY = 60 * 60 * 24
 RUN_EVERY_TWO_HOURS = 2 * 60 * 60

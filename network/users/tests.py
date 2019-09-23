@@ -1,11 +1,11 @@
 import datetime
-import pytest
 
 import factory
-from factory import fuzzy
+from django.test import Client, TestCase
 from django.utils.timezone import utc
-from django.test import TestCase, Client
+from factory import fuzzy
 
+import pytest
 from network.users.models import User
 
 

@@ -1,7 +1,7 @@
 import math
 
 from django.core.cache import cache
-from django.db.models import IntegerField, Sum, Case, When
+from django.db.models import Case, IntegerField, Sum, When
 from django.utils.timezone import now
 
 from network.base.models import Observation

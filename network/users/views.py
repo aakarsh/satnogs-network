@@ -1,18 +1,15 @@
-from django.core.urlresolvers import reverse
-from django.shortcuts import get_object_or_404, render
-from django.views.generic import RedirectView
-from django.views.generic import UpdateView
-from django.db.models import Count
-
 from braces.views import LoginRequiredMixin
-
+from django.core.urlresolvers import reverse
+from django.db.models import Count
+from django.shortcuts import get_object_or_404, render
+from django.views.generic import RedirectView, UpdateView
 from rest_framework.authtoken.models import Token
 
+from network.base.forms import StationForm
+from network.base.models import Antenna, Observation, Station
+from network.base.perms import schedule_perms
 from network.users.forms import UserForm
 from network.users.models import User
-from network.base.forms import StationForm
-from network.base.models import Station, Observation, Antenna
-from network.base.perms import schedule_perms
 
 
 class UserRedirectView(LoginRequiredMixin, RedirectView):

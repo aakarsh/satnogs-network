@@ -1,16 +1,11 @@
 import json
-import pytest
 
 from django.test import TestCase
-
 from rest_framework.utils.encoders import JSONEncoder
 
-from network.base.tests import (
-    ObservationFactory,
-    SatelliteFactory,
-    StationFactory,
-    AntennaFactory
-)
+import pytest
+from network.base.tests import AntennaFactory, ObservationFactory, \
+    SatelliteFactory, StationFactory
 
 
 @pytest.mark.django_db(transaction=True)

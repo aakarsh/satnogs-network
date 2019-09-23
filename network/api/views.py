@@ -1,16 +1,15 @@
 from django.core.exceptions import ObjectDoesNotExist
 from django.shortcuts import get_object_or_404
 from django.utils.timezone import now
-
-from rest_framework import viewsets, mixins, status
+from rest_framework import mixins, status, viewsets
 from rest_framework.response import Response
 from rest_framework.serializers import ValidationError
 
+from network.api import filters, pagination, serializers
 from network.api.perms import StationOwnerPermission
-from network.api import serializers, filters, pagination
-from network.base.validators import (ObservationOverlapError, NegativeElevationError,
-                                     SinglePassError)
-from network.base.models import Observation, Station, Transmitter, LatestTle
+from network.base.models import LatestTle, Observation, Station, Transmitter
+from network.base.validators import NegativeElevationError, \
+    ObservationOverlapError, SinglePassError
 
 
 class ObservationView(mixins.ListModelMixin, mixins.RetrieveModelMixin,

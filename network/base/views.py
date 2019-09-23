@@ -1,37 +1,40 @@
 import urllib2
-import ephem
-from operator import itemgetter
-from datetime import datetime, timedelta
 from collections import defaultdict
+from datetime import datetime, timedelta
+from operator import itemgetter
 
-from django.db.models import Count
+import ephem
 from django.conf import settings
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.core.urlresolvers import reverse
-from django.db.models import Prefetch
-from django.http import JsonResponse, HttpResponseNotFound, HttpResponseServerError, HttpResponse
-from django.shortcuts import get_object_or_404, render, redirect
-from django.utils.timezone import now, make_aware, utc
+from django.db.models import Count, Prefetch
+from django.forms import ValidationError, formset_factory
+from django.http import HttpResponse, HttpResponseNotFound, \
+    HttpResponseServerError, JsonResponse
+from django.shortcuts import get_object_or_404, redirect, render
 from django.utils.text import slugify
+from django.utils.timezone import make_aware, now, utc
 from django.views.generic import ListView
-from django.forms import formset_factory, ValidationError
-
 from rest_framework import serializers, viewsets
+
+from network.base.db_api import DBConnectionError, get_transmitter_by_uuid, \
+    get_transmitters_by_norad_id, get_transmitters_by_status
 from network.base.decorators import admin_required, ajax_required
-from network.base.db_api import (get_transmitter_by_uuid, get_transmitters_by_norad_id,
-                                 get_transmitters_by_status, DBConnectionError)
-from network.base.forms import (ObservationForm, BaseObservationFormSet, StationForm,
-                                SatelliteFilterForm)
-from network.base.validators import (is_transmitter_in_station_range, ObservationOverlapError,
-                                     NegativeElevationError, SinglePassError)
-from network.base.models import (Station, Observation, Satellite, Antenna, StationStatusLog,
-                                 LatestTle)
-from network.base.scheduling import (create_new_observation, predict_available_observation_windows,
-                                     get_available_stations)
-from network.base.perms import schedule_perms, schedule_station_perms, delete_perms, vet_perms
-from network.base.tasks import update_all_tle, fetch_data
-from network.base.stats import transmitter_stats_by_uuid, satellite_stats_by_transmitter_list
+from network.base.forms import BaseObservationFormSet, ObservationForm, \
+    SatelliteFilterForm, StationForm
+from network.base.models import Antenna, LatestTle, Observation, Satellite, \
+    Station, StationStatusLog
+from network.base.perms import delete_perms, schedule_perms, \
+    schedule_station_perms, vet_perms
+from network.base.scheduling import create_new_observation, \
+    get_available_stations, predict_available_observation_windows
+from network.base.stats import satellite_stats_by_transmitter_list, \
+    transmitter_stats_by_uuid
+from network.base.tasks import fetch_data, update_all_tle
+from network.base.validators import NegativeElevationError, \
+    ObservationOverlapError, SinglePassError, \
+    is_transmitter_in_station_range
 from network.users.models import User
 
 

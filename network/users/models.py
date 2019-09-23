@@ -1,9 +1,8 @@
-from rest_framework.authtoken.models import Token
-
 from django.contrib.auth.models import AbstractUser
 from django.core.validators import MaxLengthValidator
 from django.db import models
 from django.db.models.signals import post_save
+from rest_framework.authtoken.models import Token
 
 
 def gen_token(sender, instance, created, **kwargs):

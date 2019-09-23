@@ -1,7 +1,7 @@
 from optparse import make_option
-from satellite_tle import fetch_tle_from_celestrak
 
 from django.core.management.base import BaseCommand, CommandError
+from satellite_tle import fetch_tle_from_celestrak
 
 from network.base.models import Satellite
 

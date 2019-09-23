@@ -1,14 +1,14 @@
 import math
 from datetime import timedelta
 
-from django.conf import settings
-from django.utils.timezone import now, make_aware, utc
-from network.base.models import Satellite, LatestTle, Observation
-from network.base.perms import schedule_station_perms
-from network.base.validators import (ObservationOverlapError, NegativeElevationError,
-                                     SinglePassError)
-
 import ephem
+from django.conf import settings
+from django.utils.timezone import make_aware, now, utc
+
+from network.base.models import LatestTle, Observation, Satellite
+from network.base.perms import schedule_station_perms
+from network.base.validators import NegativeElevationError, \
+    ObservationOverlapError, SinglePassError
 
 
 def get_altitude(observer, satellite, date):

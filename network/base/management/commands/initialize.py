@@ -1,9 +1,9 @@
-from django.core.management.base import BaseCommand
 from django.core.management import call_command
+from django.core.management.base import BaseCommand
 
 from network.base.models import Antenna
-from network.base.tests import (generate_payload, generate_payload_name,
-                                DemodDataFactory, StationFactory, ObservationFactory)
+from network.base.tests import DemodDataFactory, ObservationFactory, \
+    StationFactory, generate_payload, generate_payload_name
 
 
 class Command(BaseCommand):

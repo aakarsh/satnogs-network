@@ -1,25 +1,25 @@
+import logging
 import os
 from datetime import timedelta
-from PIL import Image
-import requests
-from shortuuidfield import ShortUUIDField
-import logging
 
+import requests
 from django.conf import settings
 from django.core.cache import cache
-from django.core.validators import MaxValueValidator, MinValueValidator
 from django.core.exceptions import ValidationError
-from django.dispatch import receiver
+from django.core.validators import MaxValueValidator, MinValueValidator
 from django.db import models
 from django.db.models import OuterRef, Subquery
 from django.db.models.signals import post_save
+from django.dispatch import receiver
 from django.urls import reverse
 from django.utils.html import format_html
 from django.utils.timezone import now
-
-from network.users.models import User
-from network.base.managers import ObservationManager
+from PIL import Image
 from rest_framework.authtoken.models import Token
+from shortuuidfield import ShortUUIDField
+
+from network.base.managers import ObservationManager
+from network.users.models import User
 
 ANTENNA_BANDS = ['HF', 'VHF', 'UHF', 'L', 'S', 'C', 'X', 'KU']
 ANTENNA_TYPES = (

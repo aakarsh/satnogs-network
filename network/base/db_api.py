@@ -1,5 +1,4 @@
 import requests
-
 from django.conf import settings
 
 db_api_url = settings.DB_API_ENDPOINT

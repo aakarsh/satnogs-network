@@ -1,11 +1,7 @@
-from datetime import timedelta
 import json
 import os
-from requests.exceptions import ReadTimeout, HTTPError
 import urllib2
-
-from internetarchive import upload
-from satellite_tle import fetch_tle_from_celestrak
+from datetime import timedelta
 
 from django.conf import settings
 from django.contrib.sites.models import Site
@@ -13,11 +9,14 @@ from django.core.cache import cache
 from django.core.mail import send_mail
 from django.db.models import Prefetch
 from django.utils.timezone import now
+from internetarchive import upload
+from requests.exceptions import HTTPError, ReadTimeout
+from satellite_tle import fetch_tle_from_celestrak
 
-from network.base.models import (Satellite, Tle, LatestTle, Transmitter, Observation, Station,
-                                 DemodData)
-from network.celery import app
+from network.base.models import DemodData, LatestTle, Observation, Satellite, \
+    Station, Tle, Transmitter
 from network.base.utils import demod_to_db
+from network.celery import app
 
 
 @app.task(ignore_result=True)

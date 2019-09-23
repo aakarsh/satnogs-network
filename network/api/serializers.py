@@ -1,14 +1,16 @@
 from rest_framework import serializers
 
-from network.base.models import Observation, Station, DemodData, Antenna, Transmitter
-from network.base.stats import transmitter_stats_by_uuid
-from network.base.db_api import get_transmitters_by_uuid_list, DBConnectionError
-from network.base.perms import check_schedule_perms_per_station, UserNoPermissionError
+from network.base.db_api import DBConnectionError, \
+    get_transmitters_by_uuid_list
+from network.base.models import Antenna, DemodData, Observation, Station, \
+    Transmitter
+from network.base.perms import UserNoPermissionError, \
+    check_schedule_perms_per_station
 from network.base.scheduling import create_new_observation
-from network.base.validators import (ObservationOverlapError, OutOfRangeError,
-                                     check_transmitter_station_pairs, check_start_datetime,
-                                     check_end_datetime, check_start_end_datetimes,
-                                     check_overlaps)
+from network.base.stats import transmitter_stats_by_uuid
+from network.base.validators import ObservationOverlapError, OutOfRangeError, \
+    check_end_datetime, check_overlaps, check_start_datetime, \
+    check_start_end_datetimes, check_transmitter_station_pairs
 
 
 class DemodDataSerializer(serializers.ModelSerializer):

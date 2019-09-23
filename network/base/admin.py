@@ -1,7 +1,7 @@
 from django.contrib import admin
 
-from network.base.models import (Antenna, Satellite, Station, Transmitter,
-                                 Observation, Tle, DemodData)
+from network.base.models import Antenna, DemodData, Observation, Satellite, \
+    Station, Tle, Transmitter
 from network.base.utils import export_as_csv, export_station_status
 
 

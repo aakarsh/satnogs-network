@@ -1,14 +1,13 @@
+from allauth import urls as allauth_urls
+from avatar import urls as avatar_urls
 from django.conf import settings
 from django.conf.urls import include, url
 from django.contrib import admin
 from django.views.static import serve
 
-from avatar import urls as avatar_urls
-from allauth import urls as allauth_urls
-
+from network.api.urls import api_urlpatterns
 from network.base.urls import base_urlpatterns
 from network.users.urls import users_urlpatterns
-from network.api.urls import api_urlpatterns
 
 handler404 = 'network.base.views.custom_404'
 handler500 = 'network.base.views.custom_500'

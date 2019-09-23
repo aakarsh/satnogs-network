@@ -1,19 +1,18 @@
 import random
 from datetime import datetime, timedelta
-import pytest
 
 import factory
+from django.contrib.auth.models import Group
+from django.db import transaction
+from django.test import Client, TestCase
+from django.utils.timezone import now
 from factory import fuzzy
 
-from django.db import transaction
-from django.contrib.auth.models import Group
-from django.test import TestCase, Client
-from django.utils.timezone import now
-
-from network.base.models import (ANTENNA_BANDS, ANTENNA_TYPES, OBSERVATION_STATUSES,
-                                 Antenna, Satellite, Tle, Station, Observation, DemodData)
+import pytest
+from network.base.models import ANTENNA_BANDS, ANTENNA_TYPES, \
+    OBSERVATION_STATUSES, Antenna, DemodData, Observation, Satellite, \
+    Station, Tle
 from network.users.tests import UserFactory
-
 
 ANTENNA_BAND_IDS = [c[0] for c in ANTENNA_BANDS]
 ANTENNA_TYPE_IDS = [c[0] for c in ANTENNA_TYPES]

@@ -4,7 +4,6 @@ ellipses to truncate pages outside an adjacency
 """
 from django import template
 
-
 register = template.Library()
 
 

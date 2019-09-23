@@ -1,6 +1,6 @@
 from django.contrib import admin
-from django.contrib.auth.forms import UserCreationForm, UserChangeForm
 from django.contrib.auth.admin import UserAdmin as AuthUserAdmin
+from django.contrib.auth.forms import UserChangeForm, UserCreationForm
 from django.db.models import Count
 
 from network.users.models import User
