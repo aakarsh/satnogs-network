@@ -25,7 +25,7 @@ static_python:
   before_script:
     - pip install "$GITLAB_CI_PYPI_TOX"
   script:
-    - tox -e py2-flake8
+    - tox -e "py2-flake8,isort"
 docs:
   stage: build
   image: ${GITLAB_CI_IMAGE_PYTHON3}
