@@ -7,11 +7,11 @@ Updating Python dependencies
 
 To update the Python dependencies:
 
-#. Execute script to refresh `requirements{-dev}.txt` files:
+#. Execute script to refresh ``requirements{-dev}.txt`` files::
 
-    $ ./contrib/refresh-requirements.sh
+     $ ./contrib/refresh-requirements.sh
 
-#. Stage and commit `requirements{-dev}.txt` files
+#. Stage and commit ``requirements{-dev}.txt`` files.
 
 
 Updating frontend dependencies
