@@ -1,41 +1,44 @@
 /* global require */
 
-var gulp = require('gulp');
-var eslint = require('gulp-eslint');
-var stylelint = require('gulp-stylelint');
+const gulp = require('gulp');
 
-var lintPathsJS = [
+const lintPathsJS = [
     'network/static/js/*.js',
     'gulpfile.js'
 ];
 
-var lintPathsCSS = [
+const lintPathsCSS = [
     'network/static/css/*.scss',
     'network/static/css/*.css'
 ];
 
-gulp.task('js:lint', () => {
+gulp.task('js:lint', function() {
+    const eslint = require('gulp-eslint');
+
     return gulp.src(lintPathsJS)
         .pipe(eslint())
         .pipe(eslint.format())
         .pipe(eslint.failAfterError());
 });
 
-gulp.task('css:lint', () => {
+gulp.task('css:lint', function() {
+    const stylelint = require('gulp-stylelint');
+
     return gulp.src(lintPathsCSS)
         .pipe(stylelint({
             reporters: [{ formatter: 'string', console: true}]
         }));
 });
 
-gulp.task('assets', function(){
-    var p = require('./package.json');
-    var assets = p.assets;
+gulp.task('assets', function() {
+    const p = require('./package.json');
+    const assets = p.assets;
+
     return gulp.src(assets, {cwd : 'node_modules/**'})
         .pipe(gulp.dest('network/static/lib'));
 });
 
-gulp.task('test', () => {
+gulp.task('test', function() {
     gulp.start('js:lint');
     gulp.start('css:lint');
 });
