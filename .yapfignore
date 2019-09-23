@@ -1,5 +1,5 @@
+node_modules
 network/_version.py
-network/base/migrations
 network/*/migrations
 .tox
 build
