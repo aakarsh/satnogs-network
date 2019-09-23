@@ -19,6 +19,16 @@ Docker Installation
 
      $ cp env-dist .env
 
+#. **Install frontend dependencies**
+
+   Install dependencies with ``npm``::
+
+     $ npm install
+
+   Test and copy the newly downlodaded static assets::
+
+     $ ./node_modules/.bin/gulp
+
 #. **Run it!**
 
    Run satnogs-network::
