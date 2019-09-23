@@ -18,8 +18,8 @@
    * @return boolean
    */
   function isUrl(string) {
-     var regexp = /^(ftp|http|https):\/\/(\w+:{0,1}\w*@)?(\S+)(:[0-9]+)?(\/|\/([\w#!:.?+=&%@!\-\/]))?/;
-     return regexp.test(string);
+    var urlRegexp = /^(https?:\/\/|ftps?:\/\/)?([a-z0-9%-]+\.){1,}([a-z0-9-]+)?(:(\d{1,5}))?(\/([a-z0-9\-._~:/?#[\]@!$&'()*+,;=%]+)?)?$/i;
+    return urlRegexp.test(string);
   }
 
   /**
@@ -29,11 +29,19 @@
   function json2html(json, options) {
     var html = '';
     if (typeof json === 'string') {
-      // Escape tags
-      json = json.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+      // Escape tags and quotes
+      json = json
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/'/g, '&apos;')
+        .replace(/"/g, '&quot;');
+
       if (options.withLinks && isUrl(json)) {
         html += '<a href="' + json + '" class="json-string" target="_blank">' + json + '</a>';
       } else {
+        // Escape double quotes in the rendered non-URL string.
+        json = json.replace(/&quot;/g, '\\&quot;');
         html += '<span class="json-string">"' + json + '"</span>';
       }
     } else if (typeof json === 'number') {
@@ -63,11 +71,11 @@
         html += '[]';
       }
     } else if (typeof json === 'object') {
-      var key_count = Object.keys(json).length;
-      if (key_count > 0) {
+      var keyCount = Object.keys(json).length;
+      if (keyCount > 0) {
         html += '{<ul class="json-dict">';
         for (var key in json) {
-          if (json.hasOwnProperty(key)) {
+          if (Object.prototype.hasOwnProperty.call(json, key)) {
             html += '<li>';
             var keyRepr = options.withQuotes ?
               '<span class="json-string">"' + key + '"</span>' : key;
@@ -79,7 +87,7 @@
             }
             html += ': ' + json2html(json[key], options);
             // Add comma if item is not last
-            if (--key_count > 0) {
+            if (--keyCount > 0) {
               html += ',';
             }
             html += '</li>';

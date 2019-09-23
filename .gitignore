@@ -23,8 +23,8 @@ nosetests.xml
 # Media & Static
 media
 /staticfiles/*
+/network/static/lib/
 node_modules
-yarn-error.log
 *.css.map
 .sass-cache
 

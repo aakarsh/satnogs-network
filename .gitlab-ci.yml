@@ -16,9 +16,13 @@ static_js_css:
   stage: static
   image: ${GITLAB_CI_IMAGE_NODE}
   script:
-    - npm install -g eslint stylelint
-    - eslint 'network/static/js/*.js'
-    - stylelint 'network/static/css/*.css' 'network/static/css/*.scss'
+    - npm ci
+    - node_modules/.bin/gulp
+  artifacts:
+    expire_in: 1 week
+    when: always
+    paths:
+      - db/static/lib
 static_python:
   stage: static
   image: ${GITLAB_CI_IMAGE_PYTHON2}

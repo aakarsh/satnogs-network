@@ -6,6 +6,7 @@ There are always bugs to file; bugs to fix in code; improvements to be made to t
 
 The below instructions are for software developers who want to work on `satnogs-network code <http://gitlab.com/librespacefoundation/satnogs/satnogs-network>`_.
 
+
 Workflow
 --------
 
@@ -31,6 +32,7 @@ If you're asked to change your commit message or code, you can amend or rebase a
 
 If you need more Git expertise, a good resource is the `Git book <http://git-scm.com/book>`_.
 
+
 Templates
 ---------
 
@@ -40,23 +42,34 @@ satnogs-network uses `Django's template engine <https://docs.djangoproject.com/e
 Frontend development
 --------------------
 
-To be able to manage the required javascript libraries, install the development dependencies with npm::
+Third-party static assets are not included in this repository.
+The frontend dependencies are managed with ``npm``.
+Development tasks like the copying of assets, code linting and tests are managed with ``gulp``.
 
-  $ npm install
+To download third-party static assets:
 
-Development tasks like the download of assets, code linting and tests are managed with gulp::
+#. Install dependencies with ``npm``::
 
-  $ gulp
+     $ npm install
 
-Frontend dependencies are stored in packages.json, handled by yarn. To add a new dependency, e.g. satellite.js, call::
+#. Test and copy the newly downlodaded static assets::
 
-  $ yarn add satellite.js
+     $ ./node_modules/.bin/gulp
 
-Manually add the new required files to the list of "assets" in packages.json, then start the download with::
+To add new or remove existing third-party static assets:
 
-  $ gulp assets
+#. Install a new dependency::
 
-The assets are stored in the repository, thus don't forget to create a commit after you add/update/remove dependencies.
+     $ npm install <package>
+
+#. Uninstall an existing dependency::
+
+     $ npm uninstall <package>
+
+#. Copy the newly downlodaded static assets::
+
+     $ ./node_modules/.bin/gulp assets
+
 
 Simulating station heartbeats
 -----------------------------
@@ -66,10 +79,12 @@ In order to simulate an heartbeat of the stations 7, 23 and 42, the following co
 
   $ docker-compose exec web django-admin update_station_last_seen 7 23 42
 
+
 Coding Style
 ------------
 
 Follow the `PEP8 <http://www.python.org/dev/peps/pep-0008/>`_ and `PEP257 <http://www.python.org/dev/peps/pep-0257/#multi-line-docstrings>`_ Style Guides.
+
 
 What to work on
 ---------------

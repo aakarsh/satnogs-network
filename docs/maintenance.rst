@@ -4,6 +4,7 @@ Maintenance
 
 Updating Python dependencies
 ----------------------------
+
 To update the Python dependencies:
 
 #. Execute script to refresh `requirements{-dev}.txt` files:
@@ -15,17 +16,16 @@ To update the Python dependencies:
 
 Updating frontend dependencies
 ------------------------------
-The frontend dependencies are managed with `npm` as defined in the `package.json`.
-The following are required to perform an update of the dependencies:
 
-#. Bump versions in `package.json`
+The frontend dependencies are managed with ``npm``.
+To update the frontend dependencies, while respecting semver:
 
-#. Download and install the latest version of the dependencies
+#. Update all the packages listed in ``package.json``::
 
-    $ npm install
+     $ npm update
 
-#. Move the installed version into to satnogs-network source tree
+#. Test and copy the newly downlodaded static assets::
 
-    $ ./node_modules/.bin/gulp
+     $ ./node_modules/.bin/gulp
 
-#. Stage & commit the updated files in `network/static/`.
+#. Stage and commit ``package-lock.json`` file.
