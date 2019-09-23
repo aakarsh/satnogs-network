@@ -30,3 +30,6 @@ node_modules
 
 # Celery
 celerybeat-schedule
+
+# Documentation
+/docs/_build/
