@@ -22,7 +22,7 @@ static_js_css:
     expire_in: 1 week
     when: always
     paths:
-      - db/static/lib
+      - network/static/lib
 static_python:
   stage: static
   image: ${GITLAB_CI_IMAGE_PYTHON2}
