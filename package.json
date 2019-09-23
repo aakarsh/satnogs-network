@@ -9,9 +9,10 @@
     "author": "SatNOGS",
     "license": "AGPL-3.0",
     "devDependencies": {
-        "gulp": "^3.9.1",
-        "gulp-eslint": "^3.0.1",
-        "gulp-stylelint": "^3.9.0"
+        "gulp": "^4.0.1",
+        "gulp-eslint": "^5.0.0",
+        "gulp-stylelint": "^9.0.0",
+        "stylelint": "^10.0.1"
     },
     "dependencies": {
         "bootstrap": "^3.3.7",
