@@ -12,14 +12,11 @@ from network.base.validators import NegativeElevationError, \
     ObservationOverlapError, SinglePassError
 
 
-class ObservationView(mixins.ListModelMixin, mixins.RetrieveModelMixin,
-                      mixins.UpdateModelMixin, mixins.CreateModelMixin,
-                      viewsets.GenericViewSet):
+class ObservationView(mixins.ListModelMixin, mixins.RetrieveModelMixin, mixins.UpdateModelMixin,
+                      mixins.CreateModelMixin, viewsets.GenericViewSet):
     queryset = Observation.objects.all()
     filter_class = filters.ObservationViewFilter
-    permission_classes = [
-        StationOwnerPermission
-    ]
+    permission_classes = [StationOwnerPermission]
     pagination_class = pagination.LinkedHeaderPageNumberPagination
 
     def get_serializer_class(self):
@@ -63,18 +60,22 @@ class ObservationView(mixins.ListModelMixin, mixins.RetrieveModelMixin,
             try:
                 file_path = 'data_obs/{0}/{1}'.format(instance.id, request.data.get('demoddata'))
                 instance.demoddata.get(payload_demod=file_path)
-                return Response(data='This data file has already been uploaded',
-                                status=status.HTTP_403_FORBIDDEN)
+                return Response(
+                    data='This data file has already been uploaded',
+                    status=status.HTTP_403_FORBIDDEN
+                )
             except ObjectDoesNotExist:
                 instance.demoddata.create(payload_demod=request.data.get('demoddata'))
         if request.data.get('waterfall'):
             if instance.has_waterfall:
-                return Response(data='Watefall has already been uploaded',
-                                status=status.HTTP_403_FORBIDDEN)
+                return Response(
+                    data='Watefall has already been uploaded', status=status.HTTP_403_FORBIDDEN
+                )
         if request.data.get('payload'):
             if instance.has_audio:
-                return Response(data='Audio has already been uploaded',
-                                status=status.HTTP_403_FORBIDDEN)
+                return Response(
+                    data='Audio has already been uploaded', status=status.HTTP_403_FORBIDDEN
+                )
 
         super(ObservationView, self).update(request, *args, **kwargs)
         return Response(status=status.HTTP_200_OK)

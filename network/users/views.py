@@ -16,8 +16,7 @@ class UserRedirectView(LoginRequiredMixin, RedirectView):
     permanent = False
 
     def get_redirect_url(self):
-        return reverse("users:view_user",
-                       kwargs={"username": self.request.user.username})
+        return reverse("users:view_user", kwargs={"username": self.request.user.username})
 
 
 class UserUpdateView(LoginRequiredMixin, UpdateView):
@@ -27,8 +26,7 @@ class UserUpdateView(LoginRequiredMixin, UpdateView):
     model = User
 
     def get_success_url(self):
-        return reverse("users:view_user",
-                       kwargs={"username": self.request.user.username})
+        return reverse("users:view_user", kwargs={"username": self.request.user.username})
 
     def get_object(self):
         return User.objects.get(username=self.request.user.username)
@@ -53,7 +51,14 @@ def view_user(request, username):
     form = StationForm()
     antennas = Antenna.objects.all()
 
-    return render(request, 'users/user_detail.html',
-                  {'user': user, 'observations': observations, 'stations': stations,
-                   'token': token, 'form': form, 'antennas': antennas,
-                   'can_schedule': can_schedule})
+    return render(
+        request, 'users/user_detail.html', {
+            'user': user,
+            'observations': observations,
+            'stations': stations,
+            'token': token,
+            'form': form,
+            'antennas': antennas,
+            'can_schedule': can_schedule
+        }
+    )

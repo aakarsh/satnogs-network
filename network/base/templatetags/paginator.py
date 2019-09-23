@@ -25,8 +25,7 @@ def paginator(context, request, adjacent_pages=2):
         end_page = paginator.num_pages + 1
 
     # Generate a list of pages to include in the paginator template
-    page_numbers = [n for n in range(start_page, end_page)
-                    if n > 0 and n <= paginator.num_pages]
+    page_numbers = [n for n in range(start_page, end_page) if n > 0 and n <= paginator.num_pages]
 
     return {
         'page_obj': page_obj,

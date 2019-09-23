@@ -13,28 +13,22 @@ def transmitter_stats_by_uuid(uuid):
         # Sum - Case - When should be replaced with Count and filter when we move to Django 2.*
         # more at https://docs.djangoproject.com/en/2.2/ref/models/conditional-expressions in
         # "Conditional aggregation" section.
-        stats = Observation.objects.filter(
-            transmitter_uuid=uuid
-        ).exclude(
+        stats = Observation.objects.filter(transmitter_uuid=uuid).exclude(
             vetted_status='failed'
         ).aggregate(
-            good=Sum(
-                Case(When(vetted_status='good', then=1),
-                     output_field=IntegerField())
-            ),
-            bad=Sum(
-                Case(When(vetted_status='bad', then=1),
-                     output_field=IntegerField())
-            ),
+            good=Sum(Case(When(vetted_status='good', then=1), output_field=IntegerField())),
+            bad=Sum(Case(When(vetted_status='bad', then=1), output_field=IntegerField())),
             unvetted=Sum(
-                Case(When(vetted_status='unknown',
-                          end__lte=now(), then=1),
-                     output_field=IntegerField())
+                Case(
+                    When(vetted_status='unknown', end__lte=now(), then=1),
+                    output_field=IntegerField()
+                )
             ),
             future=Sum(
-                Case(When(vetted_status='unknown',
-                          end__gt=now(), then=1),
-                     output_field=IntegerField())
+                Case(
+                    When(vetted_status='unknown', end__gt=now(), then=1),
+                    output_field=IntegerField()
+                )
             )
         )
         cache.set('tr-{0}-stats'.format(uuid), stats, 3600)

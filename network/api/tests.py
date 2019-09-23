@@ -45,10 +45,14 @@ class StationViewApiTest(TestCase):
     def test_station_view_api(self):
 
         ants = self.station.antenna.all()
-        ser_ants = [{u'band': ant.band,
-                     u'frequency': ant.frequency,
-                     u'frequency_max': ant.frequency_max,
-                     u'antenna_type': ant.antenna_type} for ant in ants]
+        ser_ants = [
+            {
+                u'band': ant.band,
+                u'frequency': ant.frequency,
+                u'frequency_max': ant.frequency_max,
+                u'antenna_type': ant.antenna_type
+            } for ant in ants
+        ]
 
         station_serialized = {
             u'altitude': self.station.alt,
@@ -66,7 +70,8 @@ class StationViewApiTest(TestCase):
             u'observations': 0,
             u'qthlocator': self.station.qthlocator,
             u'target_utilization': self.station.target_utilization,
-            u'status': self.station.get_status_display()}
+            u'status': self.station.get_status_display()
+        }
 
         response = self.client.get('/api/stations/')
         response_json = json.loads(response.content)

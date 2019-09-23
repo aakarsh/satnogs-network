@@ -40,8 +40,8 @@ LOCAL_APPS = (
 )
 
 if AUTH0:
-    THIRD_PARTY_APPS += ('social_django',)
-    LOCAL_APPS += ('auth0login',)
+    THIRD_PARTY_APPS += ('social_django', )
+    LOCAL_APPS += ('auth0login', )
 
 INSTALLED_APPS = DJANGO_APPS + THIRD_PARTY_APPS + LOCAL_APPS
 
@@ -70,22 +70,19 @@ EMAIL_HOST_USER = config('EMAIL_HOST_USER', default='')
 EMAIL_HOST_PASSWORD = config('EMAIL_HOST_PASSWORD', default='')
 DEFAULT_FROM_EMAIL = config('DEFAULT_FROM_EMAIL', default='noreply@satnogs.org')
 EMAIL_FOR_STATIONS_ISSUES = config('EMAIL_FOR_STATIONS_ISSUES', default='')
-ADMINS = [
-    ('SatNOGS Admins', DEFAULT_FROM_EMAIL)
-]
+ADMINS = [('SatNOGS Admins', DEFAULT_FROM_EMAIL)]
 MANAGERS = ADMINS
 SERVER_EMAIL = DEFAULT_FROM_EMAIL
 
 # Cache
 CACHES = {
     'default': {
-        'BACKEND': config('CACHE_BACKEND',
-                          default='django.core.cache.backends.locmem.LocMemCache'),
+        'BACKEND':
+        config('CACHE_BACKEND', default='django.core.cache.backends.locmem.LocMemCache'),
         'LOCATION': config('CACHE_LOCATION', default='unique-location'),
         'OPTIONS': {
             'MAX_ENTRIES': 5000,
-            'CLIENT_CLASS': config('CACHE_CLIENT_CLASS',
-                                   default=''),
+            'CLIENT_CLASS': config('CACHE_CLIENT_CLASS', default=''),
         },
         'KEY_PREFIX': 'network-{0}'.format(ENVIRONMENT),
     }
@@ -123,13 +120,14 @@ TEMPLATES = [
                 'network.base.context_processors.logout_block',
             ],
             'loaders': [
-                ('django.template.loaders.cached.Loader', [
-                    'django.template.loaders.filesystem.Loader',
-                    'django.template.loaders.app_directories.Loader',
-                ]),
+                (
+                    'django.template.loaders.cached.Loader', [
+                        'django.template.loaders.filesystem.Loader',
+                        'django.template.loaders.app_directories.Loader',
+                    ]
+                ),
             ],
         },
-
     },
 ]
 
@@ -153,12 +151,9 @@ COMPRESS_ENABLED = config('COMPRESS_ENABLED', default=False, cast=bool)
 COMPRESS_OFFLINE = config('COMPRESS_OFFLINE', default=False, cast=bool)
 COMPRESS_CACHE_BACKEND = config('COMPRESS_CACHE_BACKEND', default='default')
 COMPRESS_CSS_FILTERS = [
-    'compressor.filters.css_default.CssAbsoluteFilter',
-    'compressor.filters.cssmin.rCSSMinFilter'
+    'compressor.filters.css_default.CssAbsoluteFilter', 'compressor.filters.cssmin.rCSSMinFilter'
 ]
-COMPRESS_PRECOMPILERS = (
-    ('text/scss', 'sass --scss {infile} {outfile}'),
-)
+COMPRESS_PRECOMPILERS = (('text/scss', 'sass --scss {infile} {outfile}'), )
 
 # App conf
 ROOT_URLCONF = 'network.urls'
@@ -166,11 +161,9 @@ WSGI_APPLICATION = 'network.wsgi.application'
 TEST_RUNNER = 'django.test.runner.DiscoverRunner'
 
 # Auth
-AUTHENTICATION_BACKENDS = (
-    'django.contrib.auth.backends.ModelBackend',
-)
+AUTHENTICATION_BACKENDS = ('django.contrib.auth.backends.ModelBackend', )
 if AUTH0:
-    AUTHENTICATION_BACKENDS += ('auth0login.auth0backend.Auth0',)
+    AUTHENTICATION_BACKENDS += ('auth0login.auth0backend.Auth0', )
 
 ACCOUNT_ADAPTER = 'allauth.account.adapter.DefaultAccountAdapter'
 ACCOUNT_AUTHENTICATION_METHOD = 'username'
@@ -230,10 +223,7 @@ LOGGING = {
 # Sentry
 SENTRY_ENABLED = config('SENTRY_ENABLED', default=False, cast=bool)
 if SENTRY_ENABLED:
-    sentry_sdk.init(
-        dsn=config('SENTRY_DSN', default=''),
-        integrations=[DjangoIntegration()]
-    )
+    sentry_sdk.init(dsn=config('SENTRY_DSN', default=''), integrations=[DjangoIntegration()])
 
 # Celery
 CELERY_ENABLE_UTC = USE_TZ
@@ -255,15 +245,10 @@ CELERY_BROKER_TRANSPORT_OPTIONS = {
 
 # API
 REST_FRAMEWORK = {
-    'DEFAULT_PERMISSION_CLASSES': (
-        'rest_framework.permissions.DjangoModelPermissionsOrAnonReadOnly',
-    ),
-    'DEFAULT_AUTHENTICATION_CLASSES': (
-        'rest_framework.authentication.TokenAuthentication',
-    ),
-    'DEFAULT_FILTER_BACKENDS': (
-        'django_filters.rest_framework.DjangoFilterBackend',
-    )
+    'DEFAULT_PERMISSION_CLASSES':
+    ('rest_framework.permissions.DjangoModelPermissionsOrAnonReadOnly', ),
+    'DEFAULT_AUTHENTICATION_CLASSES': ('rest_framework.authentication.TokenAuthentication', ),
+    'DEFAULT_FILTER_BACKENDS': ('django_filters.rest_framework.DjangoFilterBackend', )
 }
 
 # Security
@@ -296,12 +281,8 @@ CSP_STYLE_SRC = (
     "'self'",
     "'unsafe-inline'",
 )
-CSP_WORKER_SRC = (
-    'blob:',
-)
-CSP_CHILD_SRC = (
-    'blob:',
-)
+CSP_WORKER_SRC = ('blob:', )
+CSP_CHILD_SRC = ('blob:', )
 
 # Database
 DATABASE_URL = config('DATABASE_URL', default='sqlite:///db.sqlite3')
@@ -363,7 +344,7 @@ ARCHIVE_COLLECTION = config('ARCHIVE_COLLECTION', default='test_collection')
 ARCHIVE_URL = 'https://archive.org/download/'
 
 if AUTH0:
-    SOCIAL_AUTH_TRAILING_SLASH = False             # Remove end slash from routes
+    SOCIAL_AUTH_TRAILING_SLASH = False  # Remove end slash from routes
     SOCIAL_AUTH_AUTH0_DOMAIN = config('SOCIAL_AUTH_AUTH0_DOMAIN', default='YOUR_AUTH0_DOMAIN')
     SOCIAL_AUTH_AUTH0_KEY = config('SOCIAL_AUTH_AUTH0_KEY', default='YOUR_CLIENT_ID')
     SOCIAL_AUTH_AUTH0_SECRET = config('SOCIAL_AUTH_AUTH0_SECRET', default='YOUR_CLIENT_SECRET')

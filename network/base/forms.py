@@ -14,18 +14,27 @@ class ObservationForm(forms.ModelForm):
 
     start = forms.DateTimeField(
         input_formats=['%Y-%m-%d %H:%M:%S.%f', '%Y-%m-%d %H:%M:%S'],
-        error_messages={'invalid': 'Start datetime should have either "%Y-%m-%d %H:%M:%S.%f" or'
-                                   ' "%Y-%m-%d %H:%M:%S" format.',
-                        'required': 'Start datetime is required.'})
+        error_messages={
+            'invalid': 'Start datetime should have either "%Y-%m-%d %H:%M:%S.%f" or'
+            ' "%Y-%m-%d %H:%M:%S" format.',
+            'required': 'Start datetime is required.'
+        }
+    )
     end = forms.DateTimeField(
         input_formats=['%Y-%m-%d %H:%M:%S.%f', '%Y-%m-%d %H:%M:%S'],
-        error_messages={'invalid': 'End datetime should have either "%Y-%m-%d %H:%M:%S.%f" or'
-                                   ' "%Y-%m-%d %H:%M:%S" format.',
-                        'required': 'End datetime is required.'})
+        error_messages={
+            'invalid': 'End datetime should have either "%Y-%m-%d %H:%M:%S.%f" or'
+            ' "%Y-%m-%d %H:%M:%S" format.',
+            'required': 'End datetime is required.'
+        }
+    )
     ground_station = forms.ModelChoiceField(
         queryset=Station.objects.filter(status__gt=0),
-        error_messages={'invalid_choice': 'Station(s) should exist and be online.',
-                        'required': 'Station is required.'})
+        error_messages={
+            'invalid_choice': 'Station(s) should exist and be online.',
+            'required': 'Station is required.'
+        }
+    )
 
     def clean_start(self):
         start = self.cleaned_data['start']
@@ -58,11 +67,7 @@ class ObservationForm(forms.ModelForm):
     class Meta:
         model = Observation
         fields = ['transmitter_uuid', 'start', 'end', 'ground_station']
-        error_messages = {
-            'transmitter_uuid': {
-                'required': "Transmitter is required"
-            }
-        }
+        error_messages = {'transmitter_uuid': {'required': "Transmitter is required"}}
 
 
 class BaseObservationFormSet(forms.BaseFormSet):
@@ -116,8 +121,9 @@ class BaseObservationFormSet(forms.BaseFormSet):
             raise forms.ValidationError(e)
 
         transmitter_uuid_station_set = set(transmitter_uuid_station_list)
-        transmitter_station_list = [(transmitters[pair[0]], pair[1])
-                                    for pair in transmitter_uuid_station_set]
+        transmitter_station_list = [
+            (transmitters[pair[0]], pair[1]) for pair in transmitter_uuid_station_set
+        ]
         try:
             check_transmitter_station_pairs(transmitter_station_list)
         except OutOfRangeError as e:
@@ -127,9 +133,10 @@ class BaseObservationFormSet(forms.BaseFormSet):
 class StationForm(forms.ModelForm):
     class Meta:
         model = Station
-        fields = ['name', 'image', 'alt', 'lat', 'lng', 'qthlocator',
-                  'horizon', 'antenna', 'testing', 'description',
-                  'target_utilization']
+        fields = [
+            'name', 'image', 'alt', 'lat', 'lng', 'qthlocator', 'horizon', 'antenna', 'testing',
+            'description', 'target_utilization'
+        ]
         image = forms.ImageField(required=False)
 
 

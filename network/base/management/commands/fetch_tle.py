@@ -8,11 +8,9 @@ from network.base.models import Satellite
 
 class Command(BaseCommand):
     option_list = BaseCommand.option_list + (
-        make_option('--delete',
-                    action='store_true',
-                    dest='delete',
-                    default=False,
-                    help='Delete Satellite'),
+        make_option(
+            '--delete', action='store_true', dest='delete', default=False, help='Delete Satellite'
+        ),
     )
     args = '<Satellite Identifiers>'
     help = 'Updates/Inserts TLEs for certain Satellites'

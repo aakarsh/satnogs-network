@@ -50,8 +50,9 @@ def get_transmitters_by_uuid_list(uuid_list):
         transmitters_list = get_transmitters()
 
         transmitters = {t['uuid']: t for t in transmitters_list if t['uuid'] in uuid_list}
-        invalid_transmitters = [str(uuid) for uuid
-                                in set(uuid_list).difference(set(transmitters.keys()))]
+        invalid_transmitters = [
+            str(uuid) for uuid in set(uuid_list).difference(set(transmitters.keys()))
+        ]
         if not invalid_transmitters:
             return transmitters
         else:

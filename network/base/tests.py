@@ -30,8 +30,9 @@ def generate_payload():
 
 
 def generate_payload_name():
-    filename = datetime.strftime(fuzzy.FuzzyDateTime(now() - timedelta(days=10), now()).fuzz(),
-                                 '%Y%m%dT%H%M%SZ')
+    filename = datetime.strftime(
+        fuzzy.FuzzyDateTime(now() - timedelta(days=10), now()).fuzz(), '%Y%m%dT%H%M%SZ'
+    )
     return filename
 
 
@@ -99,11 +100,8 @@ class ObservationFactory(factory.django.DjangoModelFactory):
     satellite = factory.SubFactory(SatelliteFactory)
     tle = factory.SubFactory(TleFactory)
     author = factory.SubFactory(UserFactory)
-    start = fuzzy.FuzzyDateTime(now() - timedelta(days=3),
-                                now() + timedelta(days=3))
-    end = factory.LazyAttribute(
-        lambda x: x.start + timedelta(hours=random.randint(1, 8))
-    )
+    start = fuzzy.FuzzyDateTime(now() - timedelta(days=3), now() + timedelta(days=3))
+    end = factory.LazyAttribute(lambda x: x.start + timedelta(hours=random.randint(1, 8)))
     ground_station = factory.Iterator(Station.objects.all())
     payload = factory.django.FileField(filename='data.ogg')
     vetted_datetime = factory.LazyAttribute(
@@ -120,8 +118,10 @@ class ObservationFactory(factory.django.DjangoModelFactory):
     transmitter_mode = fuzzy.FuzzyText(length=10)
     transmitter_invert = fuzzy.FuzzyChoice(choices=[True, False])
     transmitter_baud = fuzzy.FuzzyInteger(4000, 22000, step=1000)
-    transmitter_created = fuzzy.FuzzyDateTime(now() - timedelta(days=100),
-                                              now() - timedelta(days=3))
+    transmitter_created = fuzzy.FuzzyDateTime(
+        now() - timedelta(days=100),
+        now() - timedelta(days=3)
+    )
 
     class Meta:
         model = Observation

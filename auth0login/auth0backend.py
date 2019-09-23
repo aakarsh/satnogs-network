@@ -7,9 +7,7 @@ class Auth0(BaseOAuth2):
     name = 'auth0'
     SCOPE_SEPARATOR = ' '
     ACCESS_TOKEN_METHOD = 'POST'
-    EXTRA_DATA = [
-        ('email', 'email')
-    ]
+    EXTRA_DATA = [('email', 'email')]
 
     def authorization_url(self):
         """Return the authorization endpoint."""
@@ -29,7 +27,9 @@ class Auth0(BaseOAuth2):
         resp = requests.get(url, headers=headers)
         userinfo = resp.json()
 
-        return {'username': userinfo['nickname'],
-                'email': userinfo['email'],
-                # 'first_name': userinfo['name'],
-                'user_id': userinfo['sub']}
+        return {
+            'username': userinfo['nickname'],
+            'email': userinfo['email'],
+            # 'first_name': userinfo['name'],
+            'user_id': userinfo['sub']
+        }

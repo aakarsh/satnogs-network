@@ -24,11 +24,8 @@ def update_all_tle():
     """Task to update all satellite TLEs"""
     latest_tle_queryset = LatestTle.objects.all()
     satellites = Satellite.objects.exclude(
-        manual_tle=True,
-        norad_follow_id__isnull=True
-    ).prefetch_related(
-        Prefetch('tles', queryset=latest_tle_queryset, to_attr='tle')
-    )
+        manual_tle=True, norad_follow_id__isnull=True
+    ).prefetch_related(Prefetch('tles', queryset=latest_tle_queryset, to_attr='tle'))
 
     print "==Fetching TLEs=="
 
@@ -100,18 +97,25 @@ def archive_audio(obs_id):
     ogg = obs.payload.path
     filename = obs.payload.name.split('/')[-1]
     site = Site.objects.get_current()
-    description = ('<p>Audio file from SatNOGS{0} <a href="{1}/observations/{2}">'
-                   'Observation {3}</a>.</p>').format(suffix, site.domain,
-                                                      obs.id, obs.id)
-    md = dict(collection=settings.ARCHIVE_COLLECTION,
-              title=identifier,
-              mediatype='audio',
-              licenseurl='http://creativecommons.org/licenses/by-sa/4.0/',
-              description=description)
+    description = (
+        '<p>Audio file from SatNOGS{0} <a href="{1}/observations/{2}">'
+        'Observation {3}</a>.</p>'
+    ).format(suffix, site.domain, obs.id, obs.id)
+    md = dict(
+        collection=settings.ARCHIVE_COLLECTION,
+        title=identifier,
+        mediatype='audio',
+        licenseurl='http://creativecommons.org/licenses/by-sa/4.0/',
+        description=description
+    )
     try:
-        res = upload(identifier, files=[ogg], metadata=md,
-                     access_key=settings.S3_ACCESS_KEY,
-                     secret_key=settings.S3_SECRET_KEY)
+        res = upload(
+            identifier,
+            files=[ogg],
+            metadata=md,
+            access_key=settings.S3_ACCESS_KEY,
+            secret_key=settings.S3_SECRET_KEY
+        )
     except (ReadTimeout, HTTPError):
         return
     if res[0].status_code == 200:
@@ -142,9 +146,11 @@ def sync_to_db():
     """Task to send demod data to db / SiDS"""
     q = now() - timedelta(days=1)
     transmitters = Transmitter.objects.filter(sync_to_db=True).values_list('uuid', flat=True)
-    frames = DemodData.objects.filter(observation__end__gte=q,
-                                      copied_to_db=False,
-                                      observation__transmitter_uuid__in=transmitters)
+    frames = DemodData.objects.filter(
+        observation__end__gte=q,
+        copied_to_db=False,
+        observation__transmitter_uuid__in=transmitters
+    )
     for frame in frames:
         try:
             if not frame.is_image() and not frame.copied_to_db:
@@ -177,8 +183,9 @@ def notify_for_stations_without_results():
         time_limit = now() - timedelta(seconds=settings.OBS_NO_RESULTS_IGNORE_TIME)
         last_check = time_limit - timedelta(seconds=settings.OBS_NO_RESULTS_CHECK_PERIOD)
         for station in Station.objects.filter(status=2):
-            last_obs = Observation.objects.filter(ground_station=station,
-                                                  end__lt=time_limit).order_by("-end")[:obs_limit]
+            last_obs = Observation.objects.filter(
+                ground_station=station, end__lt=time_limit
+            ).order_by("-end")[:obs_limit]
             obs_without_results = 0
             obs_after_last_check = False
             for observation in last_obs:
@@ -191,8 +198,10 @@ def notify_for_stations_without_results():
         if len(stations) > 0:
             # Notify user
             subject = '[satnogs] Station with observations without results'
-            send_mail(subject, stations, settings.DEFAULT_FROM_EMAIL,
-                      [settings.EMAIL_FOR_STATIONS_ISSUES], False)
+            send_mail(
+                subject, stations, settings.DEFAULT_FROM_EMAIL,
+                [settings.EMAIL_FOR_STATIONS_ISSUES], False
+            )
 
 
 @app.task(ignore_result=True)
@@ -200,8 +209,9 @@ def stations_cache_rates():
     stations = Station.objects.all()
     for station in stations:
         observations = station.observations.exclude(testing=True).exclude(vetted_status="unknown")
-        success = observations.filter(id__in=(o.id for o in observations
-                                              if o.is_good or o.is_bad)).count()
+        success = observations.filter(
+            id__in=(o.id for o in observations if o.is_good or o.is_bad)
+        ).count()
         if observations:
             rate = int(100 * (float(success) / float(observations.count())))
             cache.set('station-{0}-rate'.format(station.id), rate, 60 * 60 * 2)

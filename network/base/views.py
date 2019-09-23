@@ -59,8 +59,12 @@ class StationAllView(viewsets.ReadOnlyModelViewSet):
 
 def index(request):
     """View to render index page."""
-    return render(request, 'base/home.html', {'mapbox_id': settings.MAPBOX_MAP_ID,
-                                              'mapbox_token': settings.MAPBOX_TOKEN})
+    return render(
+        request, 'base/home.html', {
+            'mapbox_id': settings.MAPBOX_MAP_ID,
+            'mapbox_token': settings.MAPBOX_TOKEN
+        }
+    )
 
 
 def custom_404(request):
@@ -75,8 +79,7 @@ def custom_500(request):
 
 def robots(request):
     data = render(request, 'robots.txt', {'environment': settings.ENVIRONMENT})
-    response = HttpResponse(data,
-                            content_type='text/plain; charset=utf-8')
+    response = HttpResponse(data, content_type='text/plain; charset=utf-8')
     return response
 
 
@@ -146,24 +149,19 @@ class ObservationListView(ListView):
 
         observations = Observation.objects.all()
         if not norad_cat_id == '':
-            observations = observations.filter(
-                satellite__norad_cat_id=norad_cat_id)
+            observations = observations.filter(satellite__norad_cat_id=norad_cat_id)
             self.filtered = True
         if not observer == '':
-            observations = observations.filter(
-                author=observer)
+            observations = observations.filter(author=observer)
             self.filtered = True
         if not station == '':
-            observations = observations.filter(
-                ground_station_id=station)
+            observations = observations.filter(ground_station_id=station)
             self.filtered = True
         if not start == '':
-            observations = observations.filter(
-                start__gt=start)
+            observations = observations.filter(start__gt=start)
             self.filtered = True
         if not end == '':
-            observations = observations.filter(
-                end__lt=end)
+            observations = observations.filter(end__lt=end)
             self.filtered = True
 
         if not bad:
@@ -234,8 +232,9 @@ class ObservationListView(ListView):
 
 
 def observation_new_post(request):
-    ObservationFormSet = formset_factory(ObservationForm, formset=BaseObservationFormSet,
-                                         min_num=1, validate_min=True)
+    ObservationFormSet = formset_factory(
+        ObservationForm, formset=BaseObservationFormSet, min_num=1, validate_min=True
+    )
     formset = ObservationFormSet(request.user, request.POST, prefix='obs')
     try:
         if formset.is_valid():
@@ -247,8 +246,9 @@ def observation_new_post(request):
                 transmitter_uuid = observation_data['transmitter_uuid']
                 transmitter = formset.transmitters[transmitter_uuid]
                 author = request.user
-                observation = create_new_observation(station=station, transmitter=transmitter,
-                                                     start=start, end=end, author=author)
+                observation = create_new_observation(
+                    station=station, transmitter=transmitter, start=start, end=end, author=author
+                )
                 new_observations.append(observation)
 
             total = formset.total_form_count()
@@ -265,8 +265,9 @@ def observation_new_post(request):
             # If it's a single observation redirect to that one
             if total == 1:
                 messages.success(request, 'Observation was scheduled successfully.')
-                return redirect(reverse('base:observation_view',
-                                        kwargs={'id': new_observations[0].id}))
+                return redirect(
+                    reverse('base:observation_view', kwargs={'id': new_observations[0].id})
+                )
 
             messages.success(request, str(total) + ' Observations were scheduled successfully.')
             return redirect(reverse('base:observations_list'))
@@ -338,12 +339,16 @@ def observation_new(request):
         else:
             obs_filter['exists'] = False
 
-    return render(request, 'base/observation_new.html',
-                  {'satellites': satellites, 'obs_filter': obs_filter,
-                   'date_min_start': settings.OBSERVATION_DATE_MIN_START,
-                   'date_min_end': settings.OBSERVATION_DATE_MIN_END,
-                   'date_max_range': settings.OBSERVATION_DATE_MAX_RANGE,
-                   'warn_min_obs': settings.OBSERVATION_WARN_MIN_OBS})
+    return render(
+        request, 'base/observation_new.html', {
+            'satellites': satellites,
+            'obs_filter': obs_filter,
+            'date_min_start': settings.OBSERVATION_DATE_MIN_START,
+            'date_min_end': settings.OBSERVATION_DATE_MIN_END,
+            'date_max_range': settings.OBSERVATION_DATE_MAX_RANGE,
+            'warn_min_obs': settings.OBSERVATION_WARN_MIN_OBS
+        }
+    )
 
 
 @ajax_required
@@ -358,32 +363,24 @@ def prediction_windows(request):
     try:
         sat = Satellite.objects.filter(status='alive').get(norad_cat_id=sat_norad_id)
     except Satellite.DoesNotExist:
-        data = [{
-            'error': 'You should select a Satellite first.'
-        }]
+        data = [{'error': 'You should select a Satellite first.'}]
         return JsonResponse(data, safe=False)
 
     try:
         tle = LatestTle.objects.get(satellite_id=sat.id)
     except LatestTle.DoesNotExist:
-        data = [{
-            'error': 'No TLEs for this satellite yet.'
-        }]
+        data = [{'error': 'No TLEs for this satellite yet.'}]
         return JsonResponse(data, safe=False)
 
     try:
         transmitter = get_transmitter_by_uuid(transmitter)
         if len(transmitter) == 0:
-            data = [{
-                'error': 'You should select a valid Transmitter.'
-            }]
+            data = [{'error': 'You should select a valid Transmitter.'}]
             return JsonResponse(data, safe=False)
         else:
             downlink = transmitter[0]['downlink_low']
     except DBConnectionError as e:
-        data = [{
-            'error': e.message
-        }]
+        data = [{'error': e.message}]
         return JsonResponse(data, safe=False)
 
     start = make_aware(datetime.strptime(start, '%Y-%m-%d %H:%M'), utc)
@@ -393,42 +390,37 @@ def prediction_windows(request):
 
     scheduled_obs_queryset = Observation.objects.filter(end__gt=now())
     stations = Station.objects.filter(status__gt=0).prefetch_related(
-        Prefetch('observations',
-                 queryset=scheduled_obs_queryset,
-                 to_attr='scheduled_obs'),
-        'antenna')
+        Prefetch('observations', queryset=scheduled_obs_queryset, to_attr='scheduled_obs'),
+        'antenna'
+    )
     if len(station_ids) > 0 and station_ids != ['']:
         stations = stations.filter(id__in=station_ids)
         if len(stations) == 0:
             if len(station_ids) == 1:
-                data = [{
-                    'error': 'Station is offline or it doesn\'t exist.'
-                }]
+                data = [{'error': 'Station is offline or it doesn\'t exist.'}]
             else:
-                data = [{
-                    'error': 'Stations are offline or they don\'t exist.'
-                }]
+                data = [{'error': 'Stations are offline or they don\'t exist.'}]
             return JsonResponse(data, safe=False)
 
     passes_found = defaultdict(list)
     available_stations = get_available_stations(stations, downlink, request.user)
     for station in available_stations:
-        station_passes, station_windows = predict_available_observation_windows(station,
-                                                                                min_horizon,
-                                                                                overlapped,
-                                                                                tle,
-                                                                                start,
-                                                                                end,
-                                                                                sat)
+        station_passes, station_windows = predict_available_observation_windows(
+            station, min_horizon, overlapped, tle, start, end, sat
+        )
         passes_found[station.id] = station_passes
         if station_windows:
-            data.append({'id': station.id,
-                         'name': station.name,
-                         'status': station.status,
-                         'lng': station.lng,
-                         'lat': station.lat,
-                         'alt': station.alt,
-                         'window': station_windows})
+            data.append(
+                {
+                    'id': station.id,
+                    'name': station.name,
+                    'status': station.status,
+                    'lng': station.lng,
+                    'lat': station.lat,
+                    'alt': station.alt,
+                    'window': station_windows
+                }
+            )
 
     if not data:
         error_message = 'Satellite is always below horizon or ' \
@@ -440,9 +432,13 @@ def prediction_windows(request):
             else:
                 error_details[station.id] = 'No free observation time during passes available.\n'
 
-        data = [{'error': error_message,
-                 'error_details': error_details,
-                 'passes_found': passes_found}]
+        data = [
+            {
+                'error': error_message,
+                'error_details': error_details,
+                'passes_found': passes_found
+            }
+        ]
 
     return JsonResponse(data, safe=False)
 
@@ -456,8 +452,10 @@ def observation_view(request, id):
     can_delete = delete_perms(request.user, observation)
 
     if observation.has_audio and not observation.audio_url:
-        messages.error(request, 'Audio file is not currently available,'
-                       ' if the problem persists please contact an administrator.')
+        messages.error(
+            request, 'Audio file is not currently available,'
+            ' if the problem persists please contact an administrator.'
+        )
 
     if settings.ENVIRONMENT == 'production':
         discuss_slug = 'https://community.libre.space/t/observation-{0}-{1}-{2}' \
@@ -476,14 +474,24 @@ def observation_view(request, id):
         except urllib2.URLError:
             has_comments = False
 
-        return render(request, 'base/observation_view.html',
-                      {'observation': observation, 'has_comments': has_comments,
-                       'discuss_url': discuss_url, 'discuss_slug': discuss_slug,
-                       'can_vet': can_vet, 'can_delete': can_delete})
+        return render(
+            request, 'base/observation_view.html', {
+                'observation': observation,
+                'has_comments': has_comments,
+                'discuss_url': discuss_url,
+                'discuss_slug': discuss_slug,
+                'can_vet': can_vet,
+                'can_delete': can_delete
+            }
+        )
 
-    return render(request, 'base/observation_view.html',
-                  {'observation': observation, 'can_vet': can_vet,
-                   'can_delete': can_delete})
+    return render(
+        request, 'base/observation_view.html', {
+            'observation': observation,
+            'can_vet': can_vet,
+            'can_delete': can_delete
+        }
+    )
 
 
 @login_required
@@ -505,9 +513,7 @@ def observation_vet(request, id):
     try:
         observation = Observation.objects.get(id=id)
     except Observation.DoesNotExist:
-        data = {
-            'error': 'Observation does not exist.'
-        }
+        data = {'error': 'Observation does not exist.'}
         return JsonResponse(data, safe=False)
 
     status = request.POST.get('status', None)
@@ -519,9 +525,7 @@ def observation_vet(request, id):
         }
         return JsonResponse(data, safe=False)
     if not can_vet:
-        data = {
-            'error': 'Permission denied.'
-        }
+        data = {'error': 'Permission denied.'}
         return JsonResponse(data, safe=False)
 
     observation.vetted_status = status
@@ -545,10 +549,17 @@ def stations_list(request):
     online = stations.filter(status=2).count()
     testing = stations.filter(status=1).count()
 
-    return render(request, 'base/stations.html',
-                  {'stations': stations, 'form': form, 'antennas': antennas,
-                   'online': online, 'testing': testing,
-                   'mapbox_id': settings.MAPBOX_MAP_ID, 'mapbox_token': settings.MAPBOX_TOKEN})
+    return render(
+        request, 'base/stations.html', {
+            'stations': stations,
+            'form': form,
+            'antennas': antennas,
+            'online': online,
+            'testing': testing,
+            'mapbox_id': settings.MAPBOX_MAP_ID,
+            'mapbox_token': settings.MAPBOX_TOKEN
+        }
+    )
 
 
 def station_view(request, id):
@@ -577,25 +588,40 @@ def station_view(request, id):
 
     if request.user.is_authenticated():
         if request.user == station.owner:
-            wiki_help = ('<a href="{0}" target="_blank" class="wiki-help"><span class="glyphicon '
-                         'glyphicon-question-sign" aria-hidden="true"></span>'
-                         '</a>'.format(settings.WIKI_STATION_URL))
+            wiki_help = (
+                '<a href="{0}" target="_blank" class="wiki-help"><span class="glyphicon '
+                'glyphicon-question-sign" aria-hidden="true"></span>'
+                '</a>'.format(settings.WIKI_STATION_URL)
+            )
             if station.is_offline:
-                messages.error(request, ('Your Station is offline. You should make '
-                                         'sure it can successfully connect to the Network API. '
-                                         '{0}'.format(wiki_help)))
+                messages.error(
+                    request, (
+                        'Your Station is offline. You should make '
+                        'sure it can successfully connect to the Network API. '
+                        '{0}'.format(wiki_help)
+                    )
+                )
             if station.is_testing:
-                messages.warning(request, ('Your Station is in Testing mode. Once you are sure '
-                                           'it returns good observations you can put it online. '
-                                           '{0}'.format(wiki_help)))
+                messages.warning(
+                    request, (
+                        'Your Station is in Testing mode. Once you are sure '
+                        'it returns good observations you can put it online. '
+                        '{0}'.format(wiki_help)
+                    )
+                )
 
-    return render(request, 'base/station_view.html',
-                  {'station': station, 'form': form, 'antennas': antennas,
-                   'mapbox_id': settings.MAPBOX_MAP_ID,
-                   'mapbox_token': settings.MAPBOX_TOKEN,
-                   'can_schedule': can_schedule,
-                   'unsupported_frequencies': unsupported_frequencies,
-                   'uptime': uptime})
+    return render(
+        request, 'base/station_view.html', {
+            'station': station,
+            'form': form,
+            'antennas': antennas,
+            'mapbox_id': settings.MAPBOX_MAP_ID,
+            'mapbox_token': settings.MAPBOX_TOKEN,
+            'can_schedule': can_schedule,
+            'unsupported_frequencies': unsupported_frequencies,
+            'uptime': uptime
+        }
+    )
 
 
 def station_log(request, id):
@@ -603,8 +629,12 @@ def station_log(request, id):
     station = get_object_or_404(Station, id=id)
     station_log = StationStatusLog.objects.filter(station=station)
 
-    return render(request, 'base/station_log.html',
-                  {'station': station, 'station_log': station_log})
+    return render(
+        request, 'base/station_log.html', {
+            'station': station,
+            'station_log': station_log
+        }
+    )
 
 
 @ajax_required
@@ -612,29 +642,21 @@ def scheduling_stations(request):
     """Returns json with stations on which user has permissions to schedule"""
     uuid = request.POST.get('transmitter', None)
     if uuid is None:
-        data = [{
-            'error': 'You should select a Transmitter.'
-        }]
+        data = [{'error': 'You should select a Transmitter.'}]
         return JsonResponse(data, safe=False)
     else:
         try:
             transmitter = get_transmitter_by_uuid(uuid)
             if len(transmitter) == 0:
-                data = [{
-                    'error': 'You should select a Transmitter.'
-                }]
+                data = [{'error': 'You should select a Transmitter.'}]
                 return JsonResponse(data, safe=False)
             else:
                 downlink = transmitter[0]['downlink_low']
                 if downlink is None:
-                    data = [{
-                        'error': 'You should select a valid Transmitter.'
-                    }]
+                    data = [{'error': 'You should select a valid Transmitter.'}]
                     return JsonResponse(data, safe=False)
         except DBConnectionError as e:
-            data = [{
-                'error': e.message
-            }]
+            data = [{'error': e.message}]
             return JsonResponse(data, safe=False)
 
     stations = Station.objects.filter(status__gt=0)
@@ -654,18 +676,16 @@ def pass_predictions(request, id):
     scheduled_obs_queryset = Observation.objects.filter(end__gt=now())
     station = get_object_or_404(
         Station.objects.prefetch_related(
-            Prefetch('observations',
-                     queryset=scheduled_obs_queryset,
-                     to_attr='scheduled_obs'),
-            'antenna'),
-        id=id)
+            Prefetch('observations', queryset=scheduled_obs_queryset, to_attr='scheduled_obs'),
+            'antenna'
+        ),
+        id=id
+    )
     unsupported_frequencies = request.GET.get('unsupported_frequencies', '0')
 
     try:
         latest_tle_queryset = LatestTle.objects.all()
-        satellites = Satellite.objects.filter(
-            status='alive'
-        ).prefetch_related(
+        satellites = Satellite.objects.filter(status='alive').prefetch_related(
             Prefetch('tles', queryset=latest_tle_queryset, to_attr='tle')
         )
     except Satellite.DoesNotExist:
@@ -697,8 +717,10 @@ def pass_predictions(request, id):
             # ground station antenna frequency capabilities
             if int(unsupported_frequencies) == 0:
                 norad_id = satellite.norad_cat_id
-                transmitters = [t for t in all_transmitters if t['norad_cat_id'] == norad_id and
-                                is_transmitter_in_station_range(t, station)]
+                transmitters = [
+                    t for t in all_transmitters if t['norad_cat_id'] == norad_id
+                    and is_transmitter_in_station_range(t, station)  # noqa: W503
+                ]
                 if not transmitters:
                     continue
 
@@ -707,13 +729,9 @@ def pass_predictions(request, id):
             else:
                 continue
 
-            station_passes, station_windows = predict_available_observation_windows(station,
-                                                                                    None,
-                                                                                    2,
-                                                                                    tle,
-                                                                                    start,
-                                                                                    end,
-                                                                                    satellite)
+            station_passes, station_windows = predict_available_observation_windows(
+                station, None, 2, tle, start, end, satellite
+            )
 
             if station_windows:
                 satellite_stats = satellite_stats_by_transmitter_list(transmitters)
@@ -721,36 +739,40 @@ def pass_predictions(request, id):
                     valid = window['start'] > observation_min_start and window['valid_duration']
                     window_start = datetime.strptime(window['start'], '%Y-%m-%d %H:%M:%S.%f')
                     window_end = datetime.strptime(window['end'], '%Y-%m-%d %H:%M:%S.%f')
-                    sat_pass = {'name': str(satellite.name),
-                                'id': str(satellite.id),
-                                'success_rate': str(satellite_stats['success_rate']),
-                                'bad_rate': str(satellite_stats['bad_rate']),
-                                'unvetted_rate': str(satellite_stats['unvetted_rate']),
-                                'future_rate': str(satellite_stats['future_rate']),
-                                'total_count': str(satellite_stats['total_count']),
-                                'good_count': str(satellite_stats['good_count']),
-                                'bad_count': str(satellite_stats['bad_count']),
-                                'unvetted_count': str(satellite_stats['unvetted_count']),
-                                'future_count': str(satellite_stats['future_count']),
-                                'norad_cat_id': str(satellite.norad_cat_id),
-                                'tle1': window['tle1'],
-                                'tle2': window['tle2'],
-                                'tr': window_start,          # Rise time
-                                'azr': window['az_start'],   # Rise Azimuth
-                                'altt': window['elev_max'],  # Max altitude
-                                'ts': window_end,            # Set time
-                                'azs': window['az_end'],     # Set azimuth
-                                'valid': valid,
-                                'overlapped': window['overlapped'],
-                                'overlap_ratio': window['overlap_ratio']}
+                    sat_pass = {
+                        'name': str(satellite.name),
+                        'id': str(satellite.id),
+                        'success_rate': str(satellite_stats['success_rate']),
+                        'bad_rate': str(satellite_stats['bad_rate']),
+                        'unvetted_rate': str(satellite_stats['unvetted_rate']),
+                        'future_rate': str(satellite_stats['future_rate']),
+                        'total_count': str(satellite_stats['total_count']),
+                        'good_count': str(satellite_stats['good_count']),
+                        'bad_count': str(satellite_stats['bad_count']),
+                        'unvetted_count': str(satellite_stats['unvetted_count']),
+                        'future_count': str(satellite_stats['future_count']),
+                        'norad_cat_id': str(satellite.norad_cat_id),
+                        'tle1': window['tle1'],
+                        'tle2': window['tle2'],
+                        'tr': window_start,  # Rise time
+                        'azr': window['az_start'],  # Rise Azimuth
+                        'altt': window['elev_max'],  # Max altitude
+                        'ts': window_end,  # Set time
+                        'azs': window['az_end'],  # Set azimuth
+                        'valid': valid,
+                        'overlapped': window['overlapped'],
+                        'overlap_ratio': window['overlap_ratio']
+                    }
                     nextpasses.append(sat_pass)
 
     data = {
         'id': id,
         'nextpasses': sorted(nextpasses, key=itemgetter('tr')),
-        'ground_station': {'lng': str(station.lng),
-                           'lat': str(station.lat),
-                           'alt': station.alt}
+        'ground_station': {
+            'lng': str(station.lng),
+            'lat': str(station.lat),
+            'alt': station.alt
+        }
     }
 
     return JsonResponse(data, safe=False)
@@ -778,17 +800,29 @@ def station_edit(request, id=None):
             messages.success(request, 'Ground Station saved successfully.')
             return redirect(reverse('base:station_view', kwargs={'id': f.id}))
         else:
-            messages.error(request, ('Your Ground Station submission has some '
-                                     'errors. {0}').format(form.errors))
-            return render(request, 'base/station_edit.html',
-                          {'form': form, 'station': station, 'antennas': antennas})
+            messages.error(
+                request, ('Your Ground Station submission has some '
+                          'errors. {0}').format(form.errors)
+            )
+            return render(
+                request, 'base/station_edit.html', {
+                    'form': form,
+                    'station': station,
+                    'antennas': antennas
+                }
+            )
     else:
         if station:
             form = StationForm(instance=station)
         else:
             form = StationForm()
-        return render(request, 'base/station_edit.html',
-                      {'form': form, 'station': station, 'antennas': antennas})
+        return render(
+            request, 'base/station_edit.html', {
+                'form': form,
+                'station': station,
+                'antennas': antennas
+            }
+        )
 
 
 @login_required
@@ -814,17 +848,13 @@ def satellite_view(request, id):
     try:
         sat = Satellite.objects.get(norad_cat_id=id)
     except Satellite.DoesNotExist:
-        data = {
-            'error': 'Unable to find that satellite.'
-        }
+        data = {'error': 'Unable to find that satellite.'}
         return JsonResponse(data, safe=False)
 
     try:
         transmitters = get_transmitters_by_norad_id(norad_id=id)
     except DBConnectionError as e:
-        data = [{
-            'error': e.message
-        }]
+        data = [{'error': e.message}]
         return JsonResponse(data, safe=False)
     satellite_stats = satellite_stats_by_transmitter_list(transmitters)
     data = {
@@ -850,21 +880,18 @@ def transmitters_view(request):
     try:
         Satellite.objects.get(norad_cat_id=norad_id)
     except Satellite.DoesNotExist:
-        data = {
-            'error': 'Unable to find that satellite.'
-        }
+        data = {'error': 'Unable to find that satellite.'}
         return JsonResponse(data, safe=False)
 
     try:
         transmitters = get_transmitters_by_norad_id(norad_id)
     except DBConnectionError as e:
-        data = [{
-            'error': e.message
-        }]
+        data = [{'error': e.message}]
         return JsonResponse(data, safe=False)
 
-    transmitters = [t for t in transmitters
-                    if t['status'] == 'active' and t['downlink_low'] is not None]
+    transmitters = [
+        t for t in transmitters if t['status'] == 'active' and t['downlink_low'] is not None
+    ]
     if station_id:
         supported_transmitters = []
         station = Station.objects.get(id=station_id)
@@ -874,8 +901,6 @@ def transmitters_view(request):
                 supported_transmitters.append(transmitter)
         transmitters = supported_transmitters
 
-    data = {
-        'transmitters': transmitters_with_stats(transmitters)
-    }
+    data = {'transmitters': transmitters_with_stats(transmitters)}
 
     return JsonResponse(data, safe=False)

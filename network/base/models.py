@@ -37,7 +37,7 @@ ANTENNA_TYPES = (
     ('eggbeater', 'Eggbeater'),
     ('lindenblad', 'Lindenblad'),
     ('paralindy', 'Parasitic Lindenblad'),
-    ('patch', 'Patch')
+    ('patch', 'Patch')  # yapf: disable
 )
 OBSERVATION_STATUSES = (
     ('unknown', 'Unknown'),
@@ -126,34 +126,41 @@ class Antenna(models.Model):
     """Model for antennas tracked with SatNOGS."""
     frequency = models.PositiveIntegerField()
     frequency_max = models.PositiveIntegerField()
-    band = models.CharField(choices=zip(ANTENNA_BANDS, ANTENNA_BANDS),
-                            max_length=5)
+    band = models.CharField(choices=zip(ANTENNA_BANDS, ANTENNA_BANDS), max_length=5)
     antenna_type = models.CharField(choices=ANTENNA_TYPES, max_length=15)
 
     def __unicode__(self):
-        return '{0} - {1} - {2} - {3}'.format(self.band, self.antenna_type,
-                                              self.frequency,
-                                              self.frequency_max)
+        return '{0} - {1} - {2} - {3}'.format(
+            self.band, self.antenna_type, self.frequency, self.frequency_max
+        )
 
 
 class Station(models.Model):
     """Model for SatNOGS ground stations."""
-    owner = models.ForeignKey(User, related_name="ground_stations",
-                              on_delete=models.SET_NULL, null=True, blank=True)
+    owner = models.ForeignKey(
+        User, related_name="ground_stations", on_delete=models.SET_NULL, null=True, blank=True
+    )
     name = models.CharField(max_length=45)
-    image = models.ImageField(upload_to='ground_stations', blank=True,
-                              validators=[validate_image])
+    image = models.ImageField(upload_to='ground_stations', blank=True, validators=[validate_image])
     alt = models.PositiveIntegerField(help_text='In meters above sea level')
-    lat = models.FloatField(validators=[MaxValueValidator(90), MinValueValidator(-90)],
-                            help_text='eg. 38.01697')
-    lng = models.FloatField(validators=[MaxValueValidator(180), MinValueValidator(-180)],
-                            help_text='eg. 23.7314')
+    lat = models.FloatField(
+        validators=[MaxValueValidator(90), MinValueValidator(-90)], help_text='eg. 38.01697'
+    )
+    lng = models.FloatField(
+        validators=[MaxValueValidator(180), MinValueValidator(-180)], help_text='eg. 23.7314'
+    )
     qthlocator = models.CharField(max_length=255, blank=True)
     location = models.CharField(max_length=255, blank=True)
-    antenna = models.ManyToManyField(Antenna, blank=True, related_name="stations",
-                                     help_text=('If you want to add a new Antenna contact '
-                                                '<a href="https://community.satnogs.org/" '
-                                                'target="_blank">SatNOGS Team</a>'))
+    antenna = models.ManyToManyField(
+        Antenna,
+        blank=True,
+        related_name="stations",
+        help_text=(
+            'If you want to add a new Antenna contact '
+            '<a href="https://community.satnogs.org/" '
+            'target="_blank">SatNOGS Team</a>'
+        )
+    )
     featured_date = models.DateField(null=True, blank=True)
     created = models.DateTimeField(auto_now_add=True)
     testing = models.BooleanField(default=True)
@@ -162,11 +169,13 @@ class Station(models.Model):
     horizon = models.PositiveIntegerField(help_text='In degrees above 0', default=10)
     description = models.TextField(max_length=500, blank=True, help_text='Max 500 characters')
     client_version = models.CharField(max_length=45, blank=True)
-    target_utilization = models.IntegerField(validators=[MaxValueValidator(100),
-                                                         MinValueValidator(0)],
-                                             help_text='Target utilization factor for '
-                                                       'your station',
-                                             null=True, blank=True)
+    target_utilization = models.IntegerField(
+        validators=[MaxValueValidator(100), MinValueValidator(0)],
+        help_text='Target utilization factor for '
+        'your station',
+        null=True,
+        blank=True
+    )
 
     class Meta:
         ordering = ['-status']
@@ -208,8 +217,9 @@ class Station(models.Model):
         rate = cache.get('station-{0}-rate'.format(self.id))
         if not rate:
             observations = self.observations.exclude(testing=True).exclude(vetted_status="unknown")
-            success = observations.filter(id__in=(o.id for o in observations
-                                                  if o.is_good or o.is_bad)).count()
+            success = observations.filter(
+                id__in=(o.id for o in observations if o.is_good or o.is_bad)
+            ).count()
             if observations:
                 rate = int(100 * (float(success) / float(observations.count())))
                 cache.set('station-{0}-rate'.format(self.id), rate)
@@ -243,8 +253,9 @@ post_save.connect(_station_post_save, sender=Station)
 
 
 class StationStatusLog(models.Model):
-    station = models.ForeignKey(Station, related_name='station_logs',
-                                on_delete=models.CASCADE, null=True, blank=True)
+    station = models.ForeignKey(
+        Station, related_name='station_logs', on_delete=models.CASCADE, null=True, blank=True
+    )
     status = models.IntegerField(choices=STATION_STATUSES, default=0)
     changed = models.DateTimeField(auto_now_add=True)
 
@@ -263,8 +274,9 @@ class Satellite(models.Model):
     names = models.TextField(blank=True)
     image = models.CharField(max_length=100, blank=True, null=True)
     manual_tle = models.BooleanField(default=False)
-    status = models.CharField(choices=zip(SATELLITE_STATUS, SATELLITE_STATUS),
-                              max_length=10, default='alive')
+    status = models.CharField(
+        choices=zip(SATELLITE_STATUS, SATELLITE_STATUS), max_length=10, default='alive'
+    )
 
     class Meta:
         ordering = ['norad_cat_id']
@@ -284,8 +296,9 @@ class Tle(models.Model):
     tle1 = models.CharField(max_length=200, blank=True)
     tle2 = models.CharField(max_length=200, blank=True)
     updated = models.DateTimeField(auto_now=True, blank=True)
-    satellite = models.ForeignKey(Satellite, related_name='tles',
-                                  on_delete=models.CASCADE, null=True, blank=True)
+    satellite = models.ForeignKey(
+        Satellite, related_name='tles', on_delete=models.CASCADE, null=True, blank=True
+    )
 
     class Meta:
         ordering = ['tle0']
@@ -305,15 +318,14 @@ post_save.connect(_tle_post_save, sender=Tle)
 
 class LatestTleManager(models.Manager):
     """Django Manager for latest Tle objects"""
-
     def get_queryset(self):
         """Returns query of latest Tle
 
         :returns: the latest Tle for each Satellite
         """
         subquery = Tle.objects.filter(satellite=OuterRef('satellite')).order_by('-updated')
-        return super(LatestTleManager, self).get_queryset().filter(
-            updated=Subquery(subquery.values('updated')[:1]))
+        return super(LatestTleManager,
+                     self).get_queryset().filter(updated=Subquery(subquery.values('updated')[:1]))
 
 
 class LatestTle(Tle):
@@ -333,25 +345,31 @@ class Transmitter(models.Model):
 
 class Observation(models.Model):
     """Model for SatNOGS observations."""
-    satellite = models.ForeignKey(Satellite, related_name='observations',
-                                  on_delete=models.SET_NULL, null=True, blank=True)
-    tle = models.ForeignKey(Tle, related_name='observations',
-                            on_delete=models.SET_NULL, null=True, blank=True)
-    author = models.ForeignKey(User, related_name='observations',
-                               on_delete=models.SET_NULL, null=True, blank=True)
+    satellite = models.ForeignKey(
+        Satellite, related_name='observations', on_delete=models.SET_NULL, null=True, blank=True
+    )
+    tle = models.ForeignKey(
+        Tle, related_name='observations', on_delete=models.SET_NULL, null=True, blank=True
+    )
+    author = models.ForeignKey(
+        User, related_name='observations', on_delete=models.SET_NULL, null=True, blank=True
+    )
     start = models.DateTimeField()
     end = models.DateTimeField()
-    ground_station = models.ForeignKey(Station, related_name='observations',
-                                       on_delete=models.SET_NULL, null=True, blank=True)
+    ground_station = models.ForeignKey(
+        Station, related_name='observations', on_delete=models.SET_NULL, null=True, blank=True
+    )
     client_version = models.CharField(max_length=255, blank=True)
     client_metadata = models.TextField(blank=True)
     payload = models.FileField(upload_to=_name_obs_files, blank=True, null=True)
     waterfall = models.ImageField(upload_to=_name_obs_files, blank=True, null=True)
     vetted_datetime = models.DateTimeField(null=True, blank=True)
-    vetted_user = models.ForeignKey(User, related_name='observations_vetted',
-                                    on_delete=models.SET_NULL, null=True, blank=True)
-    vetted_status = models.CharField(choices=OBSERVATION_STATUSES,
-                                     max_length=20, default='unknown')
+    vetted_user = models.ForeignKey(
+        User, related_name='observations_vetted', on_delete=models.SET_NULL, null=True, blank=True
+    )
+    vetted_status = models.CharField(
+        choices=OBSERVATION_STATUSES, max_length=20, default='unknown'
+    )
     testing = models.BooleanField(default=False)
     rise_azimuth = models.FloatField(blank=True, null=True)
     max_altitude = models.FloatField(blank=True, null=True)
@@ -361,8 +379,9 @@ class Observation(models.Model):
     archive_url = models.URLField(blank=True, null=True)
     transmitter_uuid = ShortUUIDField(auto=False, db_index=True)
     transmitter_description = models.TextField(default='')
-    transmitter_type = models.CharField(choices=zip(TRANSMITTER_TYPE, TRANSMITTER_TYPE),
-                                        max_length=11, default='Transmitter')
+    transmitter_type = models.CharField(
+        choices=zip(TRANSMITTER_TYPE, TRANSMITTER_TYPE), max_length=11, default='Transmitter'
+    )
     transmitter_uplink_low = models.BigIntegerField(blank=True, null=True)
     transmitter_uplink_high = models.BigIntegerField(blank=True, null=True)
     transmitter_uplink_drift = models.IntegerField(blank=True, null=True)
@@ -449,8 +468,7 @@ class Observation(models.Model):
                     return url
                 except Exception as e:
                     logger = logging.getLogger(__name__)
-                    logger.warning("Error in request to '%s'. Error: %s",
-                                   self.archive_url, e)
+                    logger.warning("Error in request to '%s'. Error: %s", self.archive_url, e)
                     return ''
             else:
                 return self.payload.url
@@ -480,8 +498,9 @@ post_save.connect(_observation_post_save, sender=Observation)
 
 
 class DemodData(models.Model):
-    observation = models.ForeignKey(Observation, related_name='demoddata',
-                                    on_delete=models.CASCADE)
+    observation = models.ForeignKey(
+        Observation, related_name='demoddata', on_delete=models.CASCADE
+    )
     payload_demod = models.FileField(upload_to=_name_obs_demoddata, unique=True)
     copied_to_db = models.BooleanField(default=False)
 

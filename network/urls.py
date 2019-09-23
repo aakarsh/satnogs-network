@@ -15,23 +15,18 @@ handler500 = 'network.base.views.custom_500'
 urlpatterns = [
     # Base urls
     url(r'^', include(base_urlpatterns)),
-
     url(r'^admin/', admin.site.urls),
     url(r'^users/', include(users_urlpatterns)),
     url(r'^accounts/', include(allauth_urls)),
     url(r'^avatar/', include(avatar_urls)),
-
     url(r'^api/', include(api_urlpatterns))
 ]
 
 # Auth0
 if settings.AUTH0:
-    urlpatterns += [
-        url(r'^', include('auth0login.urls'))
-    ]
+    urlpatterns += [url(r'^', include('auth0login.urls'))]
 
 if settings.DEBUG:
     urlpatterns += [
-        url(r'^media/(?P<path>.*)$', serve,
-            {'document_root': settings.MEDIA_ROOT}),
+        url(r'^media/(?P<path>.*)$', serve, {'document_root': settings.MEDIA_ROOT}),
     ]

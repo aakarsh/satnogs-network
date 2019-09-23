@@ -11,6 +11,7 @@ def admin_required(function):
             return function(request, *args, **kwargs)
         else:
             return redirect(reverse('base:home'))
+
     return wrap
 
 
@@ -19,4 +20,5 @@ def ajax_required(function):
         if not request.is_ajax():
             return HttpResponseBadRequest()
         return function(request, *args, **kwargs)
+
     return wrap

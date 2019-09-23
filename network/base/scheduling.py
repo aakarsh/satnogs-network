@@ -69,10 +69,12 @@ def resolve_overlaps(scheduled_obs, start, end):
                 if start < datum.start and end > datum.end:
                     # In case of splitting the window  to two we
                     # check for overlaps for each generated window.
-                    window1 = resolve_overlaps(scheduled_obs,
-                                               start, datum.start - timedelta(seconds=30))
-                    window2 = resolve_overlaps(scheduled_obs,
-                                               datum.end + timedelta(seconds=30), end)
+                    window1 = resolve_overlaps(
+                        scheduled_obs, start, datum.start - timedelta(seconds=30)
+                    )
+                    window2 = resolve_overlaps(
+                        scheduled_obs, datum.end + timedelta(seconds=30), end
+                    )
                     return (window1[0] + window2[0], True)
                 if datum.start <= start:
                     start = datum.end + timedelta(seconds=30)
@@ -81,19 +83,23 @@ def resolve_overlaps(scheduled_obs, start, end):
     return ([(start, end)], overlapped)
 
 
-def create_station_window(window_start, window_end, azr, azs, altitude, tle,
-                          valid_duration, overlapped, overlap_ratio=0):
-    return {'start': window_start.strftime("%Y-%m-%d %H:%M:%S.%f"),
-            'end': window_end.strftime("%Y-%m-%d %H:%M:%S.%f"),
-            'az_start': azr,
-            'az_end': azs,
-            'elev_max': altitude,
-            'tle0': tle.tle0,
-            'tle1': tle.tle1,
-            'tle2': tle.tle2,
-            'valid_duration': valid_duration,
-            'overlapped': overlapped,
-            'overlap_ratio': overlap_ratio}
+def create_station_window(
+        window_start, window_end, azr, azs, altitude, tle, valid_duration, overlapped,
+        overlap_ratio=0
+):
+    return {
+        'start': window_start.strftime("%Y-%m-%d %H:%M:%S.%f"),
+        'end': window_end.strftime("%Y-%m-%d %H:%M:%S.%f"),
+        'az_start': azr,
+        'az_end': azs,
+        'elev_max': altitude,
+        'tle0': tle.tle0,
+        'tle1': tle.tle1,
+        'tle2': tle.tle2,
+        'valid_duration': valid_duration,
+        'overlapped': overlapped,
+        'overlap_ratio': overlap_ratio
+    }
 
 
 def create_station_windows(scheduled_obs, overlapped, pass_params, observer, satellite, tle):
@@ -106,9 +112,9 @@ def create_station_windows(scheduled_obs, overlapped, pass_params, observer, sat
     """
     station_windows = []
 
-    windows, windows_changed = resolve_overlaps(scheduled_obs,
-                                                pass_params['rise_time'],
-                                                pass_params['set_time'])
+    windows, windows_changed = resolve_overlaps(
+        scheduled_obs, pass_params['rise_time'], pass_params['set_time']
+    )
 
     if len(windows) == 0:
         # No overlapping windows found
@@ -120,25 +126,21 @@ def create_station_windows(scheduled_obs, overlapped, pass_params, observer, sat
         elif overlapped == 1:
             initial_duration = (pass_params['set_time'] - pass_params['rise_time']).total_seconds()
             for window_start, window_end in windows:
-                altitude = max_altitude_in_window(observer, satellite,
-                                                  pass_params['tca_time'],
-                                                  window_start, window_end)
+                altitude = max_altitude_in_window(
+                    observer, satellite, pass_params['tca_time'], window_start, window_end
+                )
                 window_duration = (window_end - window_start).total_seconds()
                 if not over_min_duration(window_duration):
                     continue
 
                 # Add a window for a partial pass
-                station_windows.append(create_station_window(
-                    window_start,
-                    window_end,
-                    get_azimuth(observer, satellite, window_start),
-                    get_azimuth(observer, satellite, window_end),
-                    altitude,
-                    tle,
-                    True,
-                    True,
-                    min(1, 1 - (window_duration / initial_duration))
-                ))
+                station_windows.append(
+                    create_station_window(
+                        window_start, window_end, get_azimuth(observer, satellite, window_start),
+                        get_azimuth(observer, satellite, window_end), altitude, tle, True, True,
+                        min(1, 1 - (window_duration / initial_duration))
+                    )
+                )
         elif overlapped == 2:
             initial_duration = (pass_params['set_time'] - pass_params['rise_time']).total_seconds()
             total_window_duration = 0
@@ -150,32 +152,23 @@ def create_station_windows(scheduled_obs, overlapped, pass_params, observer, sat
                 total_window_duration += window_duration
 
             # Add a window for the overlapped pass
-            station_windows.append(create_station_window(
-                pass_params['rise_time'],
-                pass_params['set_time'],
-                pass_params['rise_az'],
-                pass_params['set_az'],
-                pass_params['tca_alt'],
-                tle,
-                duration_validity,
-                True,
-                min(1, 1 - (window_duration / initial_duration))
-            ))
+            station_windows.append(
+                create_station_window(
+                    pass_params['rise_time'], pass_params['set_time'], pass_params['rise_az'],
+                    pass_params['set_az'], pass_params['tca_alt'], tle, duration_validity, True,
+                    min(1, 1 - (window_duration / initial_duration))
+                )
+            )
     else:
         window_duration = (windows[0][1] - windows[0][0]).total_seconds()
         if over_min_duration(window_duration):
             # Add a window for a full pass
-            station_windows.append(create_station_window(
-                pass_params['rise_time'],
-                pass_params['set_time'],
-                pass_params['rise_az'],
-                pass_params['set_az'],
-                pass_params['tca_alt'],
-                tle,
-                True,
-                False,
-                0
-            ))
+            station_windows.append(
+                create_station_window(
+                    pass_params['rise_time'], pass_params['set_time'], pass_params['rise_az'],
+                    pass_params['set_az'], pass_params['tca_alt'], tle, True, False, 0
+                )
+            )
     return station_windows
 
 
@@ -189,16 +182,17 @@ def next_pass(observer, satellite):
     pass_azs = float(format(math.degrees(azs), '.0f'))
     pass_altitude = float(format(math.degrees(altt), '.0f'))
 
-    return {'rise_time': pass_start,
-            'set_time': pass_end,
-            'tca_time': pass_tca,
-            'rise_az': pass_azr,
-            'set_az': pass_azs,
-            'tca_alt': pass_altitude}
+    return {
+        'rise_time': pass_start,
+        'set_time': pass_end,
+        'tca_time': pass_tca,
+        'rise_az': pass_azr,
+        'set_az': pass_azs,
+        'tca_alt': pass_altitude
+    }
 
 
-def predict_available_observation_windows(station, min_horizon, overlapped, tle,
-                                          start, end, sat):
+def predict_available_observation_windows(station, min_horizon, overlapped, tle, start, end, sat):
     '''Calculate available observation windows for a certain station and satellite during
     the given time period.
 
@@ -269,8 +263,11 @@ def predict_available_observation_windows(station, min_horizon, overlapped, tle,
         # Adjust or discard window if overlaps exist
         scheduled_obs = station.scheduled_obs
 
-        station_windows.extend(create_station_windows(scheduled_obs, overlapped, pass_params,
-                                                      observer, satellite, tle))
+        station_windows.extend(
+            create_station_windows(
+                scheduled_obs, overlapped, pass_params, observer, satellite, tle
+            )
+        )
     return passes_found, station_windows
 
 
@@ -280,15 +277,14 @@ def create_new_observation(station, transmitter, start, end, author):
 
     if window[1]:
         raise ObservationOverlapError(
-            'One or more observations of station {0} overlap with the already scheduled ones.'
-            .format(station.id))
+            'One or more observations of station {0} overlap with the already scheduled ones.'.
+            format(station.id)
+        )
 
     sat = Satellite.objects.get(norad_cat_id=transmitter['norad_cat_id'])
     tle = LatestTle.objects.get(satellite_id=sat.id)
 
-    sat_ephem = ephem.readtle(str(tle.tle0),
-                              str(tle.tle1),
-                              str(tle.tle2))
+    sat_ephem = ephem.readtle(str(tle.tle0), str(tle.tle1), str(tle.tle2))
     observer = ephem.Observer()
     observer.lon = str(station.lng)
     observer.lat = str(station.lat)
@@ -305,13 +301,17 @@ def create_new_observation(station, transmitter, start, end, author):
     if rise_altitude < 0:
         raise NegativeElevationError(
             "Satellite with transmitter {} has negative altitude ({})"
-            " for station {} at start datetime: {}"
-            .format(transmitter['uuid'], rise_altitude, station.id, start))
+            " for station {} at start datetime: {}".format(
+                transmitter['uuid'], rise_altitude, station.id, start
+            )
+        )
     if set_altitude < 0:
         raise NegativeElevationError(
             "Satellite with transmitter {} has negative altitude ({})"
-            " for station {} at end datetime: {}"
-            .format(transmitter['uuid'], set_altitude, station.id, end))
+            " for station {} at end datetime: {}".format(
+                transmitter['uuid'], set_altitude, station.id, end
+            )
+        )
     # Using a short time (1min later) after start for finding the next pass of the satellite to
     # check that end datetime is before the start datetime of the next pass, in other words that
     # end time belongs to the same single pass.
@@ -320,22 +320,34 @@ def create_new_observation(station, transmitter, start, end, author):
     if next_satellite_pass['rise_time'] < end:
         raise SinglePassError(
             "Observation should include only one pass of the satellite with transmitter {}"
-            " on station {}, please check start({}) and end({}) datetimes and try again"
-            .format(transmitter['uuid'], station.id, start, end))
+            " on station {}, please check start({}) and end({}) datetimes and try again".format(
+                transmitter['uuid'], station.id, start, end
+            )
+        )
 
     return Observation(
-        satellite=sat, tle=tle, author=author, start=start, end=end,
-        ground_station=station, rise_azimuth=rise_azimuth, max_altitude=max_altitude,
-        set_azimuth=set_azimuth, transmitter_uuid=transmitter['uuid'],
-        transmitter_description=transmitter['description'], transmitter_type=transmitter['type'],
+        satellite=sat,
+        tle=tle,
+        author=author,
+        start=start,
+        end=end,
+        ground_station=station,
+        rise_azimuth=rise_azimuth,
+        max_altitude=max_altitude,
+        set_azimuth=set_azimuth,
+        transmitter_uuid=transmitter['uuid'],
+        transmitter_description=transmitter['description'],
+        transmitter_type=transmitter['type'],
         transmitter_uplink_low=transmitter['uplink_low'],
         transmitter_uplink_high=transmitter['uplink_high'],
         transmitter_uplink_drift=transmitter['uplink_drift'],
         transmitter_downlink_low=transmitter['downlink_low'],
         transmitter_downlink_high=transmitter['downlink_high'],
         transmitter_downlink_drift=transmitter['downlink_drift'],
-        transmitter_mode=transmitter['mode'], transmitter_invert=transmitter['invert'],
-        transmitter_baud=transmitter['baud'], transmitter_created=transmitter['updated']
+        transmitter_mode=transmitter['mode'],
+        transmitter_invert=transmitter['invert'],
+        transmitter_baud=transmitter['baud'],
+        transmitter_created=transmitter['updated']
     )
 
 

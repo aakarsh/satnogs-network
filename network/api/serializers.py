@@ -31,27 +31,27 @@ class ObservationSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Observation
-        fields = ('id', 'start', 'end', 'ground_station', 'transmitter', 'norad_cat_id',
-                  'payload', 'waterfall', 'demoddata', 'station_name', 'station_lat',
-                  'station_lng', 'station_alt', 'vetted_status', 'archived', 'archive_url',
-                  'client_version', 'client_metadata', 'vetted_user', 'vetted_datetime',
-                  'rise_azimuth', 'set_azimuth', 'max_altitude', 'transmitter_uuid',
-                  'transmitter_description', 'transmitter_type', 'transmitter_uplink_low',
-                  'transmitter_uplink_high', 'transmitter_uplink_drift',
-                  'transmitter_downlink_low', 'transmitter_downlink_high',
-                  'transmitter_downlink_drift', 'transmitter_mode', 'transmitter_invert',
-                  'transmitter_baud', 'transmitter_updated', 'tle')
-        read_only_fields = ['id', 'start', 'end', 'observation', 'ground_station',
-                            'transmitter', 'norad_cat_id', 'archived', 'archive_url',
-                            'station_name', 'station_lat', 'station_lng', 'vetted_user',
-                            'station_alt', 'vetted_status', 'vetted_datetime', 'rise_azimuth',
-                            'set_azimuth', 'max_altitude', 'transmitter_uuid',
-                            'transmitter_description', 'transmitter_type',
-                            'transmitter_uplink_low', 'transmitter_uplink_high',
-                            'transmitter_uplink_drift', 'transmitter_downlink_low',
-                            'transmitter_downlink_high', 'transmitter_downlink_drift',
-                            'transmitter_mode', 'transmitter_invert', 'transmitter_baud',
-                            'transmitter_created', 'transmitter_updated', 'tle']
+        fields = (
+            'id', 'start', 'end', 'ground_station', 'transmitter', 'norad_cat_id', 'payload',
+            'waterfall', 'demoddata', 'station_name', 'station_lat', 'station_lng', 'station_alt',
+            'vetted_status', 'archived', 'archive_url', 'client_version', 'client_metadata',
+            'vetted_user', 'vetted_datetime', 'rise_azimuth', 'set_azimuth', 'max_altitude',
+            'transmitter_uuid', 'transmitter_description', 'transmitter_type',
+            'transmitter_uplink_low', 'transmitter_uplink_high', 'transmitter_uplink_drift',
+            'transmitter_downlink_low', 'transmitter_downlink_high', 'transmitter_downlink_drift',
+            'transmitter_mode', 'transmitter_invert', 'transmitter_baud', 'transmitter_updated',
+            'tle'
+        )
+        read_only_fields = [
+            'id', 'start', 'end', 'observation', 'ground_station', 'transmitter', 'norad_cat_id',
+            'archived', 'archive_url', 'station_name', 'station_lat', 'station_lng', 'vetted_user',
+            'station_alt', 'vetted_status', 'vetted_datetime', 'rise_azimuth', 'set_azimuth',
+            'max_altitude', 'transmitter_uuid', 'transmitter_description', 'transmitter_type',
+            'transmitter_uplink_low', 'transmitter_uplink_high', 'transmitter_uplink_drift',
+            'transmitter_downlink_low', 'transmitter_downlink_high', 'transmitter_downlink_drift',
+            'transmitter_mode', 'transmitter_invert', 'transmitter_baud', 'transmitter_created',
+            'transmitter_updated', 'tle'
+        ]
 
     def update(self, instance, validated_data):
         validated_data.pop('demoddata')
@@ -141,8 +141,9 @@ class NewObservationListSerializer(serializers.ListSerializer):
             raise serializers.ValidationError(e)
 
         transmitter_uuid_station_set = set(transmitter_uuid_station_list)
-        transmitter_station_list = [(transmitters[pair[0]], pair[1])
-                                    for pair in transmitter_uuid_station_set]
+        transmitter_station_list = [
+            (transmitters[pair[0]], pair[1]) for pair in transmitter_uuid_station_set
+        ]
         try:
             check_transmitter_station_pairs(transmitter_station_list)
         except OutOfRangeError as e:
@@ -158,8 +159,9 @@ class NewObservationListSerializer(serializers.ListSerializer):
             transmitter_uuid = observation_data['transmitter_uuid']
             transmitter = self.transmitters[transmitter_uuid]
             author = self.context['request'].user
-            observation = create_new_observation(station=station, transmitter=transmitter,
-                                                 start=start, end=end, author=author)
+            observation = create_new_observation(
+                station=station, transmitter=transmitter, start=start, end=end, author=author
+            )
             new_observations.append(observation)
 
         for observation in new_observations:
@@ -171,24 +173,36 @@ class NewObservationListSerializer(serializers.ListSerializer):
 class NewObservationSerializer(serializers.Serializer):
     start = serializers.DateTimeField(
         input_formats=['%Y-%m-%d %H:%M:%S.%f', '%Y-%m-%d %H:%M:%S'],
-        error_messages={'invalid': 'Start datetime should have either \'%Y-%m-%d %H:%M:%S.%f\' or'
-                                   ' \'%Y-%m-%d %H:%M:%S\' format.',
-                        'required': 'Start(\'start\' key) datetime is required.'})
+        error_messages={
+            'invalid': 'Start datetime should have either \'%Y-%m-%d %H:%M:%S.%f\' or'
+            ' \'%Y-%m-%d %H:%M:%S\' format.',
+            'required': 'Start(\'start\' key) datetime is required.'
+        }
+    )
     end = serializers.DateTimeField(
         input_formats=['%Y-%m-%d %H:%M:%S.%f', '%Y-%m-%d %H:%M:%S'],
-        error_messages={'invalid': 'End datetime should have either \'%Y-%m-%d %H:%M:%S.%f\' or'
-                                   ' \'%Y-%m-%d %H:%M:%S\' format.',
-                        'required': 'End datetime(\'end\' key) is required.'})
+        error_messages={
+            'invalid': 'End datetime should have either \'%Y-%m-%d %H:%M:%S.%f\' or'
+            ' \'%Y-%m-%d %H:%M:%S\' format.',
+            'required': 'End datetime(\'end\' key) is required.'
+        }
+    )
     ground_station = serializers.PrimaryKeyRelatedField(
         queryset=Station.objects.filter(status__gt=0),
         allow_null=False,
-        error_messages={'does_not_exist': 'Station should exist and be online.',
-                        'required': 'Station(\'ground_station\' key) is required.'})
+        error_messages={
+            'does_not_exist': 'Station should exist and be online.',
+            'required': 'Station(\'ground_station\' key) is required.'
+        }
+    )
     transmitter_uuid = serializers.CharField(
         max_length=22,
         min_length=22,
-        error_messages={'invalid': 'Transmitter UUID should be valid.',
-                        'required': 'Transmitter UUID(\'transmitter_uuid\' key) is required.'})
+        error_messages={
+            'invalid': 'Transmitter UUID should be valid.',
+            'required': 'Transmitter UUID(\'transmitter_uuid\' key) is required.'
+        }
+    )
 
     def validate_start(self, value):
         try:
@@ -217,15 +231,16 @@ class NewObservationSerializer(serializers.Serializer):
         # If in the future we want to implement this serializer accepting and creating observation
         # from single object instead from a list of objects, we should remove raising the exception
         # below and implement the validations that exist now only on NewObservationListSerializer
-        raise serializers.ValidationError("Serializer is implemented for accepting and schedule\
-                                           only lists of observations")
+        raise serializers.ValidationError(
+            "Serializer is implemented for accepting and schedule\
+                                           only lists of observations"
+        )
 
     class Meta:
         list_serializer_class = NewObservationListSerializer
 
 
 class AntennaSerializer(serializers.ModelSerializer):
-
     class Meta:
         model = Antenna
         fields = ('frequency', 'frequency_max', 'band', 'antenna_type')
@@ -240,10 +255,11 @@ class StationSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Station
-        fields = ('id', 'name', 'altitude', 'min_horizon', 'lat', 'lng',
-                  'qthlocator', 'location', 'antenna', 'created', 'last_seen',
-                  'status', 'observations', 'description', 'client_version',
-                  'target_utilization')
+        fields = (
+            'id', 'name', 'altitude', 'min_horizon', 'lat', 'lng', 'qthlocator', 'location',
+            'antenna', 'created', 'last_seen', 'status', 'observations', 'description',
+            'client_version', 'target_utilization'
+        )
 
     def get_altitude(self, obj):
         return obj.alt
@@ -254,6 +270,7 @@ class StationSerializer(serializers.ModelSerializer):
     def get_antenna(self, obj):
         def antenna_name(antenna):
             return (antenna.band + " " + antenna.get_antenna_type_display())
+
         try:
             return [antenna_name(ant) for ant in obj.antenna.all()]
         except AttributeError:
@@ -283,8 +300,10 @@ class JobSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Observation
-        fields = ('id', 'start', 'end', 'ground_station', 'tle0', 'tle1', 'tle2',
-                  'frequency', 'mode', 'transmitter', 'baud')
+        fields = (
+            'id', 'start', 'end', 'ground_station', 'tle0', 'tle1', 'tle2', 'frequency', 'mode',
+            'transmitter', 'baud'
+        )
 
     def get_frequency(self, obj):
         frequency = obj.transmitter_downlink_low

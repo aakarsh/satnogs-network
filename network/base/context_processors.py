@@ -23,9 +23,9 @@ def stage_notice(request):
 
 def user_processor(request):
     if request.user.is_authenticated():
-        owner_vetting_count = Observation.objects.filter(author=request.user,
-                                                         vetted_status='unknown',
-                                                         end__lt=now()).count()
+        owner_vetting_count = Observation.objects.filter(
+            author=request.user, vetted_status='unknown', end__lt=now()
+        ).count()
         return {'owner_vetting_count': owner_vetting_count}
     else:
         return {'owner_vetting_count': ''}
