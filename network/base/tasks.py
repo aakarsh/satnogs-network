@@ -54,7 +54,7 @@ def update_all_tle():
 def fetch_data():
     """Task to fetch all data from DB"""
     apiurl = settings.DB_API_ENDPOINT
-    if len(apiurl) == 0:
+    if not apiurl:
         return
     satellites_url = "{0}satellites".format(apiurl)
     transmitters_url = "{0}transmitters".format(apiurl)
@@ -177,7 +177,7 @@ def station_status_update():
 def notify_for_stations_without_results():
     """Task to send email for stations with observations without results."""
     email_to = settings.EMAIL_FOR_STATIONS_ISSUES
-    if email_to is not None and len(email_to) > 0:
+    if email_to:
         stations = ''
         obs_limit = settings.OBS_NO_RESULTS_MIN_COUNT
         time_limit = now() - timedelta(seconds=settings.OBS_NO_RESULTS_IGNORE_TIME)
@@ -195,7 +195,7 @@ def notify_for_stations_without_results():
                     obs_after_last_check = True
             if obs_without_results == obs_limit and obs_after_last_check:
                 stations += ' ' + str(station.id)
-        if len(stations) > 0:
+        if stations:
             # Notify user
             subject = '[satnogs] Station with observations without results'
             send_mail(

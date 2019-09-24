@@ -9,7 +9,7 @@ class DBConnectionError(Exception):
 
 
 def transmitters_api_request(url):
-    if len(db_api_url) == 0:
+    if not db_api_url:
         raise DBConnectionError('Error in DB API connection. Blank DB API URL!')
     try:
         request = requests.get(url)

@@ -116,7 +116,7 @@ def create_station_windows(scheduled_obs, overlapped, pass_params, observer, sat
         scheduled_obs, pass_params['rise_time'], pass_params['set_time']
     )
 
-    if len(windows) == 0:
+    if not windows:
         # No overlapping windows found
         return []
     if windows_changed:

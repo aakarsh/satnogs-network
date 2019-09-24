@@ -10,7 +10,7 @@ class Command(BaseCommand):
 
     def handle(self, *args, **options):
         db_api_url = settings.DB_API_ENDPOINT
-        if len(db_api_url) == 0:
+        if not db_api_url:
             self.stdout.write("Zero length api url, fetching is stopped")
             return
         satellites_url = "{}satellites".format(db_api_url)

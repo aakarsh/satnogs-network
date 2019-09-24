@@ -374,7 +374,7 @@ def prediction_windows(request):
 
     try:
         transmitter = get_transmitter_by_uuid(transmitter)
-        if len(transmitter) == 0:
+        if not transmitter:
             data = [{'error': 'You should select a valid Transmitter.'}]
             return JsonResponse(data, safe=False)
         else:
@@ -393,9 +393,9 @@ def prediction_windows(request):
         Prefetch('observations', queryset=scheduled_obs_queryset, to_attr='scheduled_obs'),
         'antenna'
     )
-    if len(station_ids) > 0 and station_ids != ['']:
+    if station_ids and station_ids != ['']:
         stations = stations.filter(id__in=station_ids)
-        if len(stations) == 0:
+        if not stations:
             if len(station_ids) == 1:
                 data = [{'error': 'Station is offline or it doesn\'t exist.'}]
             else:
@@ -647,7 +647,7 @@ def scheduling_stations(request):
     else:
         try:
             transmitter = get_transmitter_by_uuid(uuid)
-            if len(transmitter) == 0:
+            if not transmitter:
                 data = [{'error': 'You should select a Transmitter.'}]
                 return JsonResponse(data, safe=False)
             else:
