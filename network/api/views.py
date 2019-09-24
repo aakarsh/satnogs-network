@@ -31,25 +31,26 @@ class ObservationView(mixins.ListModelMixin, mixins.RetrieveModelMixin, mixins.U
                 observations = serializer.save()
                 serialized_obs = serializers.ObservationSerializer(observations, many=True)
                 data = serialized_obs.data
-                return Response(data, status=status.HTTP_200_OK)
+                response = Response(data, status=status.HTTP_200_OK)
             else:
                 data = serializer.errors
-                return Response(data, status=status.HTTP_400_BAD_REQUEST)
+                response = Response(data, status=status.HTTP_400_BAD_REQUEST)
         except ValidationError as e:
             data = e.message
-            return Response(data, status=status.HTTP_400_BAD_REQUEST)
+            response = Response(data, status=status.HTTP_400_BAD_REQUEST)
         except LatestTle.DoesNotExist:
             data = 'Scheduling failed: Satellite without TLE'
-            return Response(data, status=status.HTTP_501_NOT_IMPLEMENTED)
+            response = Response(data, status=status.HTTP_501_NOT_IMPLEMENTED)
         except ObservationOverlapError as e:
             data = e.message
-            return Response(data, status=status.HTTP_409_CONFLICT)
+            response = Response(data, status=status.HTTP_409_CONFLICT)
         except NegativeElevationError as e:
             data = e.message
-            return Response(data, status=status.HTTP_400_BAD_REQUEST)
+            response = Response(data, status=status.HTTP_400_BAD_REQUEST)
         except SinglePassError as e:
             data = e.message
-            return Response(data, status=status.HTTP_400_BAD_REQUEST)
+            response = Response(data, status=status.HTTP_400_BAD_REQUEST)
+        return response
 
     def update(self, request, *args, **kwargs):
         instance = self.get_object()

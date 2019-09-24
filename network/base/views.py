@@ -265,12 +265,15 @@ def observation_new_post(request):
             # If it's a single observation redirect to that one
             if total == 1:
                 messages.success(request, 'Observation was scheduled successfully.')
-                return redirect(
+                response = redirect(
                     reverse('base:observation_view', kwargs={'id': new_observations[0].id})
                 )
-
-            messages.success(request, str(total) + ' Observations were scheduled successfully.')
-            return redirect(reverse('base:observations_list'))
+            else:
+                messages.success(
+                    request,
+                    str(total) + ' Observations were scheduled successfully.'
+                )
+                response = redirect(reverse('base:observations_list'))
 
         else:
             errors_list = [error for error in formset.errors if error]
@@ -279,23 +282,24 @@ def observation_new_post(request):
                     messages.error(request, '{0}'.format(errors_list[0][field][0]))
             else:
                 messages.error(request, '{0}'.format(formset.non_form_errors()[0]))
-            return redirect(reverse('base:observation_new'))
+            response = redirect(reverse('base:observation_new'))
     except ValidationError as e:
         messages.error(request, '{0}'.format(e.message))
-        return redirect(reverse('base:observation_new'))
+        response = redirect(reverse('base:observation_new'))
     except LatestTle.DoesNotExist:
         message = 'Scheduling failed: Satellite without TLE'
         messages.error(request, '{0}'.format(message))
-        return redirect(reverse('base:observation_new'))
+        response = redirect(reverse('base:observation_new'))
     except ObservationOverlapError as e:
         messages.error(request, '{0}'.format(e.message))
-        return redirect(reverse('base:observation_new'))
+        response = redirect(reverse('base:observation_new'))
     except NegativeElevationError as e:
         messages.error(request, '{0}'.format(e.message))
-        return redirect(reverse('base:observation_new'))
+        response = redirect(reverse('base:observation_new'))
     except SinglePassError as e:
         messages.error(request, '{0}'.format(e.message))
-        return redirect(reverse('base:observation_new'))
+        response = redirect(reverse('base:observation_new'))
+    return response
 
 
 @login_required
@@ -643,31 +647,34 @@ def scheduling_stations(request):
     uuid = request.POST.get('transmitter', None)
     if uuid is None:
         data = [{'error': 'You should select a Transmitter.'}]
-        return JsonResponse(data, safe=False)
+        json_response = JsonResponse(data, safe=False)
     else:
         try:
             transmitter = get_transmitter_by_uuid(uuid)
             if not transmitter:
                 data = [{'error': 'You should select a Transmitter.'}]
-                return JsonResponse(data, safe=False)
+                json_response = JsonResponse(data, safe=False)
             else:
                 downlink = transmitter[0]['downlink_low']
                 if downlink is None:
                     data = [{'error': 'You should select a valid Transmitter.'}]
-                    return JsonResponse(data, safe=False)
+                    json_response = JsonResponse(data, safe=False)
         except DBConnectionError as e:
             data = [{'error': e.message}]
-            return JsonResponse(data, safe=False)
+            json_response = JsonResponse(data, safe=False)
 
-    stations = Station.objects.filter(status__gt=0)
-    available_stations = get_available_stations(stations, downlink, request.user)
-    import sys
-    sys.stdout.flush()
-    data = {
-        'stations': StationSerializer(available_stations, many=True).data,
-    }
+    if not json_response:
+        stations = Station.objects.filter(status__gt=0)
+        available_stations = get_available_stations(stations, downlink, request.user)
+        import sys
+        sys.stdout.flush()
+        data = {
+            'stations': StationSerializer(available_stations, many=True).data,
+        }
 
-    return JsonResponse(data, safe=False)
+        json_response = JsonResponse(data, safe=False)
+
+    return json_response
 
 
 @ajax_required
