@@ -19,7 +19,4 @@ class StationOwnerPermission(permissions.BasePermission):
             return True
         if request.method == 'POST' and schedule_perms(request.user):
             return True
-        if request.user.is_authenticated() and request.user == obj.ground_station.owner:
-            return True
-        else:
-            return False
+        return request.user.is_authenticated() and request.user == obj.ground_station.owner
