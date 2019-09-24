@@ -42,8 +42,7 @@ def max_altitude_in_window(observer, satellite, pass_tca, window_start, window_e
         # Observation window in the first half of the pass
         # Thus highest altitude right at the end of the window
         return get_altitude(observer, satellite, window_end)
-    else:
-        return get_altitude(observer, satellite, pass_tca)
+    return get_altitude(observer, satellite, pass_tca)
 
 
 def resolve_overlaps(scheduled_obs, start, end):

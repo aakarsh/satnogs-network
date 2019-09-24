@@ -57,8 +57,7 @@ def check_start_end_datetimes(start, end):
 def downlink_low_is_in_range(antenna, transmitter):
     if transmitter['downlink_low'] is not None:
         return antenna.frequency <= transmitter['downlink_low'] <= antenna.frequency_max
-    else:
-        return False
+    return False
 
 
 def is_transmitter_in_station_range(transmitter, station):

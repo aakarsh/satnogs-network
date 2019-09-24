@@ -9,8 +9,7 @@ def admin_required(function):
             return redirect(reverse('account_login'))
         if request.user.is_superuser:
             return function(request, *args, **kwargs)
-        else:
-            return redirect(reverse('base:home'))
+        return redirect(reverse('base:home'))
 
     return wrap
 

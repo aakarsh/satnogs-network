@@ -183,8 +183,7 @@ class Station(models.Model):
     def get_image(self):
         if self.image and hasattr(self.image, 'url'):
             return self.image.url
-        else:
-            return settings.STATION_DEFAULT_IMAGE
+        return settings.STATION_DEFAULT_IMAGE
 
     @property
     def is_online(self):
@@ -284,8 +283,7 @@ class Satellite(models.Model):
     def get_image(self):
         if self.image:
             return self.image
-        else:
-            return settings.SATELLITE_DEFAULT_IMAGE
+        return settings.SATELLITE_DEFAULT_IMAGE
 
     def __unicode__(self):
         return self.name

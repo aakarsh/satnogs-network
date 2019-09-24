@@ -21,8 +21,7 @@ class User(AbstractUser):
     def displayname(self):
         if self.get_full_name():
             return self.get_full_name()
-        else:
-            return self.username
+        return self.username
 
     def __unicode__(self):
         return self.username
