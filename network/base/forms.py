@@ -60,7 +60,7 @@ class ObservationForm(forms.ModelForm):
         if any(self.errors):
             # If there are errors in fields validation no need for validating the form
             return
-        cleaned_data = super(forms.ModelForm, self).clean()
+        cleaned_data = super(ObservationForm, self).clean()
         start = cleaned_data['start']
         end = cleaned_data['end']
         try:
