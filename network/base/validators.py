@@ -44,7 +44,7 @@ def check_end_datetime(end):
 
 
 def check_start_end_datetimes(start, end):
-    if (start > end):
+    if start > end:
         raise ValueError("End datetime should be after Start datetime!")
     if (end - start) < timedelta(seconds=settings.OBSERVATION_DURATION_MIN):
         raise ValueError(

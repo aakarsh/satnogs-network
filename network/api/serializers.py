@@ -273,7 +273,7 @@ class StationSerializer(serializers.ModelSerializer):
 
     def get_antenna(self, obj):
         def antenna_name(antenna):
-            return (antenna.band + " " + antenna.get_antenna_type_display())
+            return antenna.band + " " + antenna.get_antenna_type_display()
 
         try:
             return [antenna_name(ant) for ant in obj.antenna.all()]

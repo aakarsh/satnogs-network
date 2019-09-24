@@ -31,7 +31,7 @@ def update_all_tle():
 
     for obj in satellites:
         norad_id = obj.norad_cat_id
-        if (obj.manual_tle):
+        if obj.manual_tle:
             norad_id = obj.norad_follow_id
 
         try:

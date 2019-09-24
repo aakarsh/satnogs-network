@@ -7,7 +7,6 @@ ignored-argument-names=args|kwargs
 disable=
     C0103,
     C0111,
-    C0325,
     C0412,
     C1801,
     E1101,

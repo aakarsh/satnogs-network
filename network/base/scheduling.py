@@ -362,7 +362,7 @@ def get_available_stations(stations, downlink, user):
             continue
         frequency_supported = False
         for gs_antenna in station.antenna.all():
-            if (gs_antenna.frequency <= downlink <= gs_antenna.frequency_max):
+            if gs_antenna.frequency <= downlink <= gs_antenna.frequency_max:
                 frequency_supported = True
         if not frequency_supported:
             continue
