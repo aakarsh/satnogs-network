@@ -21,6 +21,7 @@ class HasStationListFilter(admin.SimpleListFilter):
             return queryset.annotate(count=Count('ground_stations')).filter(count__gt=0)
         if self.value() == '0':
             return queryset.annotate(count=Count('ground_stations')).filter(count__lt=1)
+        return None
 
 
 class UserAdmin(AuthUserAdmin):
