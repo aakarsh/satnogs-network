@@ -99,14 +99,14 @@ class ObservationSerializer(serializers.ModelSerializer):
 
 
 class NewObservationListSerializer(serializers.ListSerializer):
-    def validate(self, data):
+    def validate(self, attrs):
         user = self.context['request'].user
         station_list = []
         transmitter_uuid_list = []
         transmitter_uuid_station_list = []
         start_end_per_station = {}
 
-        for observation in data:
+        for observation in attrs:
             station = observation.get('ground_station')
             transmitter_uuid = observation.get('transmitter_uuid')
             start = observation.get('start')
@@ -148,7 +148,7 @@ class NewObservationListSerializer(serializers.ListSerializer):
             check_transmitter_station_pairs(transmitter_station_list)
         except OutOfRangeError as e:
             raise serializers.ValidationError(e, code='invalid')
-        return data
+        return attrs
 
     def create(self, validated_data):
         new_observations = []
@@ -222,14 +222,14 @@ class NewObservationSerializer(serializers.Serializer):
             raise serializers.ValidationError(e, code='invalid')
         return value
 
-    def validate(self, data):
-        start = data['start']
-        end = data['end']
+    def validate(self, attrs):
+        start = attrs['start']
+        end = attrs['end']
         try:
             check_start_end_datetimes(start, end)
         except ValueError as e:
             raise serializers.ValidationError(e, code='invalid')
-        return data
+        return attrs
 
     def create(self, validated_data):
         # If in the future we want to implement this serializer accepting and creating observation
