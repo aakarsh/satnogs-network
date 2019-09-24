@@ -174,17 +174,21 @@ class NewObservationSerializer(serializers.Serializer):
     start = serializers.DateTimeField(
         input_formats=['%Y-%m-%d %H:%M:%S.%f', '%Y-%m-%d %H:%M:%S'],
         error_messages={
-            'invalid': 'Start datetime should have either \'%Y-%m-%d %H:%M:%S.%f\' or'
-            ' \'%Y-%m-%d %H:%M:%S\' format.',
-            'required': 'Start(\'start\' key) datetime is required.'
+            'invalid':
+            'Start datetime should have either \'%Y-%m-%d %H:%M:%S.%f\' or \'%Y-%m-%d %H:%M:%S\' '
+            'format.',
+            'required':
+            'Start(\'start\' key) datetime is required.'
         }
     )
     end = serializers.DateTimeField(
         input_formats=['%Y-%m-%d %H:%M:%S.%f', '%Y-%m-%d %H:%M:%S'],
         error_messages={
-            'invalid': 'End datetime should have either \'%Y-%m-%d %H:%M:%S.%f\' or'
-            ' \'%Y-%m-%d %H:%M:%S\' format.',
-            'required': 'End datetime(\'end\' key) is required.'
+            'invalid':
+            'End datetime should have either \'%Y-%m-%d %H:%M:%S.%f\' or \'%Y-%m-%d %H:%M:%S\' '
+            'format.',
+            'required':
+            'End datetime(\'end\' key) is required.'
         }
     )
     ground_station = serializers.PrimaryKeyRelatedField(
