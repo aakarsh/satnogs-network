@@ -1,0 +1,39 @@
+[MASTER]
+ignore=_version.py,migrations
+load-plugins=pylint_django
+ignored-argument-names=args|kwargs
+
+[MESSAGES CONTROL]
+disable=
+    C0103,
+    C0111,
+    C0325,
+    C0330,
+    C0412,
+    C1801,
+    E1003,
+    E1101,
+    E1121,
+    R0201,
+    R0401,
+    R0801, # needs to remain disabled see https://github.com/PyCQA/pylint/issues/214
+    R0901,
+    R0903,
+    R0911,
+    R0912,
+    R0913,
+    R0914,
+    R0915,
+    R1703,
+    R1705,
+    R1710,
+    W0201,
+    W0221,
+    W0223,
+    W0612,
+    W0613,
+    W0621,
+    W0622,
+    W0703,
+    W1505,
+    W5101,
