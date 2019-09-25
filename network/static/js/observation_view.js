@@ -1,4 +1,4 @@
-/* global WaveSurfer URI calcPolarPlotSVG */
+/* global WaveSurfer calcPolarPlotSVG */
 
 $(document).ready(function() {
     'use strict';
@@ -90,8 +90,8 @@ $(document).ready(function() {
     });
 
     // Handle Observation tabs
-    var uri = new URI(location.href);
-    var tab = uri.hash();
+    var uri = new URL(location.href);
+    var tab = uri.hash;
     $('.observation-tabs li a[href="' + tab + '"]').tab('show');
 
     // Delete confirmation

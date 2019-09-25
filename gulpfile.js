@@ -9,6 +9,9 @@ const lintPathsJS = [
 
 const lintPathsCSS = [
     'network/static/css/*.scss',
+    'network/static/css/common/*.scss',
+    'network/static/css/pages/*.scss',
+    'network/static/css/partials/*.scss',
     'network/static/css/*.css'
 ];
 

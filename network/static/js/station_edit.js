@@ -20,8 +20,12 @@ $(document).ready(function() {
         value: utilization_value});
 
     var station_image = $('#station-image').data('existing');
-    $('#station-image').fileinput({
-        initialPreview: station_image,
-        initialPreviewAsData: true,
-    });
+    if(station_image === undefined){
+        $('#station-image').fileinput();
+    } else {
+        $('#station-image').fileinput({
+            initialPreview: station_image,
+            initialPreviewAsData: true,
+        });
+    }
 });

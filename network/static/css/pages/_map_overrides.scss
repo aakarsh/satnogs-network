@@ -1,5 +1,7 @@
 // Temporary file with overrides until issue https://github.com/mapbox/mapbox-gl-js/issues/7896 is resolved
 
+/* stylelint-disable declaration-no-important  */
+
 .mapboxgl-ctrl-icon.mapboxgl-ctrl-zoom-out {
     background-image: url("data:image/svg+xml;charset=utf-8,%3Csvg%20viewBox='0%200%2020%2020'%20xmlns='http://www.w3.org/2000/svg'%3E%20%3Cpath%20style='fill:%23333333;'%20d='m%207,9%20c%20-0.554,0%20-1,0.446%20-1,1%200,0.554%200.446,1%201,1%20l%206,0%20c%200.554,0%201,-0.446%201,-1%200,-0.554%20-0.446,-1%20-1,-1%20z'/%3E%20%3C/svg%3E") !important;
 }
@@ -11,3 +13,5 @@
 .mapboxgl-ctrl-icon.mapboxgl-ctrl-compass > .mapboxgl-ctrl-compass-arrow {
     background-image: url("data:image/svg+xml;charset=utf-8,%3Csvg%20viewBox='0%200%2020%2020'%20xmlns='http://www.w3.org/2000/svg'%3E%20%3Cpolygon%20fill='%23333333'%20points='6,9%2010,1%2014,9'/%3E%20%3Cpolygon%20fill='%23CCCCCC'%20points='6,11%2010,19%2014,11%20'/%3E%20%3C/svg%3E") !important;
 }
+
+/* stylelint-enable */
