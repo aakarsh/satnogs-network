@@ -15,6 +15,10 @@ pip-log.txt
 nosetests.xml
 .pytest_cache
 
+# build artifacts
+build
+dist
+
 # Sqlite
 *.db
 *.sqlite
