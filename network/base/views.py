@@ -736,7 +736,7 @@ def pass_predictions(request, id):
             else:
                 continue
 
-            station_passes, station_windows = predict_available_observation_windows(
+            _, station_windows = predict_available_observation_windows(
                 station, None, 2, tle, start, end, satellite
             )
 

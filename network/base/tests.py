@@ -164,7 +164,7 @@ class StationListViewTest(TestCase):
     stations = []
 
     def setUp(self):
-        for x in xrange(1, 10):
+        for _ in xrange(1, 10):
             self.stations.append(StationFactory())
 
     def test_station_list(self):
@@ -195,19 +195,19 @@ class ObservationsListViewTest(TestCase):
         self.observations_unvetted = []
         self.observations = []
         with transaction.atomic():
-            for x in xrange(1, 10):
+            for _ in xrange(1, 10):
                 self.satellites.append(SatelliteFactory())
-            for x in xrange(1, 10):
+            for _ in xrange(1, 10):
                 self.stations.append(StationFactory())
-            for x in xrange(1, 5):
+            for _ in xrange(1, 5):
                 obs = ObservationFactory(vetted_status='bad')
                 self.observations_bad.append(obs)
                 self.observations.append(obs)
-            for x in xrange(1, 5):
+            for _ in xrange(1, 5):
                 obs = ObservationFactory(vetted_status='good')
                 self.observations_good.append(obs)
                 self.observations.append(obs)
-            for x in xrange(1, 5):
+            for _ in xrange(1, 5):
                 obs = ObservationFactory(vetted_status='unknown')
                 self.observations_unvetted.append(obs)
                 self.observations.append(obs)
@@ -273,9 +273,9 @@ class ObservationViewTest(TestCase):
         self.user = UserFactory()
         g = Group.objects.get(name='Moderators')
         g.user_set.add(self.user)
-        for x in xrange(1, 10):
+        for _ in xrange(1, 10):
             self.satellites.append(SatelliteFactory())
-        for x in xrange(1, 10):
+        for _ in xrange(1, 10):
             self.stations.append(StationFactory())
         self.observation = ObservationFactory()
 
@@ -299,7 +299,7 @@ class ObservationDeleteTest(TestCase):
     def setUp(self):
         self.user = UserFactory()
         self.client.force_login(self.user)
-        for x in xrange(1, 10):
+        for _ in xrange(1, 10):
             self.satellites.append(SatelliteFactory())
         self.future_observation = ObservationFactory()
         self.future_observation.author = self.user
@@ -422,7 +422,7 @@ class ObservationModelTest(TestCase):
     admin = None
 
     def setUp(self):
-        for x in xrange(1, 10):
+        for _ in xrange(1, 10):
             self.satellites.append(SatelliteFactory())
         self.observation = ObservationFactory()
         self.observation.end = now()

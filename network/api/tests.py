@@ -18,9 +18,9 @@ class JobViewApiTest(TestCase):
     stations = []
 
     def setUp(self):
-        for x in xrange(1, 10):
+        for _ in xrange(1, 10):
             self.satellites.append(SatelliteFactory())
-        for x in xrange(1, 10):
+        for _ in xrange(1, 10):
             self.stations.append(StationFactory())
         self.observation = ObservationFactory()
 
