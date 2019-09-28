@@ -2,7 +2,7 @@ import requests
 from social_core.backends.oauth import BaseOAuth2
 
 
-class Auth0(BaseOAuth2):
+class Auth0(BaseOAuth2):  # pylint: disable=W0223
     """Auth0 OAuth authentication backend"""
     name = 'auth0'
     SCOPE_SEPARATOR = ' '

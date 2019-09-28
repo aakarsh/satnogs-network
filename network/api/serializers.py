@@ -169,6 +169,9 @@ class NewObservationListSerializer(serializers.ListSerializer):
 
         return new_observations
 
+    def update(self, instance, validated_data):
+        return None
+
 
 class NewObservationSerializer(serializers.Serializer):
     start = serializers.DateTimeField(
@@ -239,6 +242,9 @@ class NewObservationSerializer(serializers.Serializer):
             "Serializer is implemented for accepting and schedule\
                                            only lists of observations"
         )
+
+    def update(self, instance, validated_data):
+        return None
 
     class Meta:
         list_serializer_class = NewObservationListSerializer
