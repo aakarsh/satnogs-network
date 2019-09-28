@@ -2,7 +2,7 @@ import requests
 from social_core.backends.oauth import BaseOAuth2
 
 
-class Auth0(BaseOAuth2):  # pylint: disable=W0223
+class Auth0(BaseOAuth2):
     """Auth0 OAuth authentication backend"""
     name = 'auth0'
     SCOPE_SEPARATOR = ' '
@@ -16,6 +16,10 @@ class Auth0(BaseOAuth2):  # pylint: disable=W0223
     def access_token_url(self):
         """Return the token endpoint."""
         return "https://" + self.setting('DOMAIN') + "/oauth/token"
+
+    def auth_html(self):
+        """Return the login endpoint."""
+        return "https://" + self.setting('DOMAIN') + "/login/auth0"
 
     def get_user_id(self, details, response):
         """Return current user id."""
