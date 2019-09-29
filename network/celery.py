@@ -20,7 +20,7 @@ app.autodiscover_tasks(lambda: settings.INSTALLED_APPS)
 
 
 @app.on_after_finalize.connect
-def setup_periodic_tasks(sender, **kwargs):
+def setup_periodic_tasks(sender, **kwargs):  # pylint: disable=W0613
     from network.base.tasks import (
         update_all_tle, fetch_data, clean_observations, station_status_update,
         stations_cache_rates, notify_for_stations_without_results, sync_to_db

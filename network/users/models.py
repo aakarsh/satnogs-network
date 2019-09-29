@@ -5,7 +5,7 @@ from django.db.models.signals import post_save
 from rest_framework.authtoken.models import Token
 
 
-def gen_token(sender, instance, created, **kwargs):
+def gen_token(sender, instance, created, **kwargs):  # pylint: disable=W0613
     try:
         Token.objects.get(user=instance)
     except Token.DoesNotExist:

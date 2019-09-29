@@ -410,7 +410,7 @@ def prediction_windows(request):
     available_stations = get_available_stations(stations, downlink, request.user)
     for station in available_stations:
         station_passes, station_windows = predict_available_observation_windows(
-            station, min_horizon, overlapped, tle, start, end, sat
+            station, min_horizon, overlapped, tle, start, end
         )
         passes_found[station.id] = station_passes
         if station_windows:
@@ -737,7 +737,7 @@ def pass_predictions(request, id):
                 continue
 
             _, station_windows = predict_available_observation_windows(
-                station, None, 2, tle, start, end, satellite
+                station, None, 2, tle, start, end
             )
 
             if station_windows:

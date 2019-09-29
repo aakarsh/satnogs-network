@@ -61,7 +61,7 @@ class StationFactory(factory.django.DjangoModelFactory):
     horizon = fuzzy.FuzzyInteger(10, 20)
 
     @factory.post_generation
-    def antennas(self, create, extracted, **kwargs):
+    def antennas(self, create, extracted, **kwargs):  # pylint: disable=W0613
         if not create:
             return
 

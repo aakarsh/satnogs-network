@@ -191,7 +191,7 @@ def next_pass(observer, satellite):
     }
 
 
-def predict_available_observation_windows(station, min_horizon, overlapped, tle, start, end, sat):
+def predict_available_observation_windows(station, min_horizon, overlapped, tle, start, end):
     '''Calculate available observation windows for a certain station and satellite during
     the given time period.
 

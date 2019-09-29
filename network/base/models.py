@@ -64,7 +64,7 @@ def _name_obs_demoddata(instance, filename):
     return 'data_obs/{0}/{1}'.format(instance.observation.id, filename)
 
 
-def _observation_post_save(sender, instance, created, **kwargs):
+def _observation_post_save(sender, instance, created, **kwargs):  # pylint: disable=W0613
     """
     Post save Observation operations
     * Auto vet as good obserfvation with Demod Data
@@ -82,7 +82,7 @@ def _observation_post_save(sender, instance, created, **kwargs):
     post_save.connect(_observation_post_save, sender=Observation)
 
 
-def _station_post_save(sender, instance, created, **kwargs):
+def _station_post_save(sender, instance, created, **kwargs):  # pylint: disable=W0613
     """
     Post save Station operations
     * Store current status
@@ -104,7 +104,7 @@ def _station_post_save(sender, instance, created, **kwargs):
     post_save.connect(_station_post_save, sender=Station)
 
 
-def _tle_post_save(sender, instance, created, **kwargs):
+def _tle_post_save(sender, instance, created, **kwargs):  # pylint: disable=W0613
     """
     Post save Tle operations
     * Update TLE for future observations
@@ -483,7 +483,7 @@ class Observation(models.Model):
 
 
 @receiver(models.signals.post_delete, sender=Observation)
-def observation_remove_files(sender, instance, **kwargs):
+def observation_remove_files(sender, instance, **kwargs):  # pylint: disable=W0613
     if instance.payload:
         if os.path.isfile(instance.payload.path):
             os.remove(instance.payload.path)
@@ -522,7 +522,7 @@ class DemodData(models.Model):
 
 
 @receiver(models.signals.post_delete, sender=DemodData)
-def demoddata_remove_files(sender, instance, **kwargs):
+def demoddata_remove_files(sender, instance, **kwargs):  # pylint: disable=W0613
     if instance.payload_demod:
         if os.path.isfile(instance.payload_demod.path):
             os.remove(instance.payload_demod.path)
