@@ -44,36 +44,36 @@ $(document).ready(function() {
         map.on('load', function () {
             map.loadImage('/static/img/pin.png', function(error, image) {
                 map.addImage('pin', image);
-            });
-            var map_points = {
-                'id': 'points',
-                'type': 'symbol',
-                'source': {
-                    'type': 'geojson',
-                    'data': {
-                        'type': 'FeatureCollection',
-                        'features': [{
-                            'type': 'Feature',
-                            'geometry': {
-                                'type': 'Point',
-                                'coordinates': [
-                                    parseFloat(station_info.lng),
-                                    parseFloat(station_info.lat)]
-                            },
-                            'properties': {
-                                'description': '<a href="/stations/' + station_info.id + '">' + station_info.id + ' - ' + station_info.name + '</a>',
-                                'icon': 'circle'
-                            }
-                        }]
+                var map_points = {
+                    'id': 'points',
+                    'type': 'symbol',
+                    'source': {
+                        'type': 'geojson',
+                        'data': {
+                            'type': 'FeatureCollection',
+                            'features': [{
+                                'type': 'Feature',
+                                'geometry': {
+                                    'type': 'Point',
+                                    'coordinates': [
+                                        parseFloat(station_info.lng),
+                                        parseFloat(station_info.lat)]
+                                },
+                                'properties': {
+                                    'description': '<a href="/stations/' + station_info.id + '">' + station_info.id + ' - ' + station_info.name + '</a>',
+                                    'icon': 'circle'
+                                }
+                            }]
+                        }
+                    },
+                    'layout': {
+                        'icon-image': 'pin',
+                        'icon-size': 0.4,
+                        'icon-allow-overlap': true
                     }
-                },
-                'layout': {
-                    'icon-image': 'pin',
-                    'icon-size': 0.4,
-                    'icon-allow-overlap': true
-                }
-            };
-            map.addLayer(map_points);
+                };
+                map.addLayer(map_points);
+            });
             map.repaint = true;
         });
     }
