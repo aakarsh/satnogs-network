@@ -647,34 +647,28 @@ def scheduling_stations(request):
     uuid = request.POST.get('transmitter', None)
     if uuid is None:
         data = [{'error': 'You should select a Transmitter.'}]
-        json_response = JsonResponse(data, safe=False)
+        return JsonResponse(data, safe=False)
     else:
         try:
             transmitter = get_transmitter_by_uuid(uuid)
             if not transmitter:
-                data = [{'error': 'You should select a Transmitter.'}]
-                json_response = JsonResponse(data, safe=False)
+                data = [{'error': 'You should select a valid Transmitter.'}]
+                return JsonResponse(data, safe=False)
             else:
                 downlink = transmitter[0]['downlink_low']
                 if downlink is None:
                     data = [{'error': 'You should select a valid Transmitter.'}]
-                    json_response = JsonResponse(data, safe=False)
+                    return JsonResponse(data, safe=False)
         except DBConnectionError as e:
             data = [{'error': e.message}]
-            json_response = JsonResponse(data, safe=False)
+            return JsonResponse(data, safe=False)
 
-    if not json_response:
-        stations = Station.objects.filter(status__gt=0)
-        available_stations = get_available_stations(stations, downlink, request.user)
-        import sys
-        sys.stdout.flush()
-        data = {
-            'stations': StationSerializer(available_stations, many=True).data,
-        }
-
-        json_response = JsonResponse(data, safe=False)
-
-    return json_response
+    stations = Station.objects.filter(status__gt=0)
+    available_stations = get_available_stations(stations, downlink, request.user)
+    data = {
+        'stations': StationSerializer(available_stations, many=True).data,
+    }
+    return JsonResponse(data, safe=False)
 
 
 @ajax_required
