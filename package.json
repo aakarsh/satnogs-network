@@ -28,7 +28,7 @@
         "mapbox-gl": "^1.3.1",
         "moment": "^2.24.0",
         "satellite.js": "^3.0.1",
-        "wavesurfer.js": "^1.4.0"
+        "wavesurfer.js": "^3.1.0"
     },
     "assets": [
         "jquery/dist/jquery.min.js",

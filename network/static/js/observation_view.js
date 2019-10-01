@@ -20,7 +20,6 @@ $(document).ready(function() {
     $('.wave').each(function(){
         var $this = $(this);
         var wid = $this.data('id');
-        var wavesurfer = Object.create(WaveSurfer);
         var data_audio_url = $this.data('audio');
         var container_el = '#data-' + wid;
         $(container_el).css('opacity', '0');
@@ -42,10 +41,18 @@ $(document).ready(function() {
             progressDiv.css('display', 'none');
         };
 
-        wavesurfer.init({
+        var wavesurfer = WaveSurfer.create({
             container: container_el,
             waveColor: '#bf7fbf',
-            progressColor: 'purple'
+            progressColor: 'purple',
+            plugins: [
+                WaveSurfer.spectrogram.create({
+                    wavesurfer: wavesurfer,
+                    container: '#wave-spectrogram',
+                    fftSamples: 256,
+                    windowFunc: 'hann'
+                })
+            ]
         });
 
         wavesurfer.on('destroy', hideProgress);
@@ -67,13 +74,6 @@ $(document).ready(function() {
 
         wavesurfer.on('ready', function() {
             hideProgress();
-            var spectrogram = Object.create(WaveSurfer.Spectrogram);
-            spectrogram.init({
-                wavesurfer: wavesurfer,
-                container: '#wave-spectrogram',
-                fftSamples: 256,
-                windowFunc: 'hann'
-            });
 
             //$playbackTime.text(formatTime(wavesurfer.getCurrentTime()));
             $playbackTime.text(formatTime(wavesurfer.getCurrentTime()));
