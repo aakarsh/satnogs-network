@@ -172,14 +172,14 @@ def create_station_windows(scheduled_obs, overlapped, pass_params, observer, sat
 
 
 def next_pass(observer, satellite):
-    tr, azr, tt, altt, ts, azs = observer.next_pass(satellite, True)
+    rise_time, rise_az, tca_time, tca_alt, set_time, set_az = observer.next_pass(satellite, True)
     # Convert output of pyephems.next_pass into processible values
-    pass_start = make_aware(ephem.Date(tr).datetime(), utc)
-    pass_end = make_aware(ephem.Date(ts).datetime(), utc)
-    pass_tca = make_aware(ephem.Date(tt).datetime(), utc)
-    pass_azr = float(format(math.degrees(azr), '.0f'))
-    pass_azs = float(format(math.degrees(azs), '.0f'))
-    pass_altitude = float(format(math.degrees(altt), '.0f'))
+    pass_start = make_aware(ephem.Date(rise_time).datetime(), utc)
+    pass_end = make_aware(ephem.Date(set_time).datetime(), utc)
+    pass_tca = make_aware(ephem.Date(tca_time).datetime(), utc)
+    pass_azr = float(format(math.degrees(rise_az), '.0f'))
+    pass_azs = float(format(math.degrees(set_az), '.0f'))
+    pass_altitude = float(format(math.degrees(tca_alt), '.0f'))
 
     return {
         'rise_time': pass_start,

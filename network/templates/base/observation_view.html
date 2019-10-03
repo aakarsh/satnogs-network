@@ -41,7 +41,7 @@
           </a>
         {% endif %}
         {% if can_delete %}
-          <a href="{% url 'base:observation_delete' id=observation.id %}" id="obs-delete" class="btn btn-danger">
+          <a href="{% url 'base:observation_delete' observation_id=observation.id %}" id="obs-delete" class="btn btn-danger">
             <span class="glyphicon glyphicon-trash" aria-hidden="true" title="Delete Observation (x)"></span>
           </a>
         {% endif %}
@@ -63,7 +63,7 @@
         <span class="label label-default">Station</span>
         <span class="front-data">
           {% if observation.ground_station %}
-            <a href="{% url 'base:station_view' id=observation.ground_station.id %}">
+            <a href="{% url 'base:station_view' station_id=observation.ground_station.id %}">
               {{ observation.ground_station.id }} - {{ observation.ground_station.name }}
             </a>
           {% endif %}
@@ -416,7 +416,7 @@
         </a>
       {% endif %}
       {% if can_delete %}
-        <a href="{% url 'base:observation_delete' id=observation.id %}" id="obs-delete" class="btn btn-danger">
+        <a href="{% url 'base:observation_delete' observation_id=observation.id %}" id="obs-delete" class="btn btn-danger">
           <span class="glyphicon glyphicon-trash" aria-hidden="true" title="Delete Observation"></span> Delete
         </a>
       {% endif %}

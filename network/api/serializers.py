@@ -122,23 +122,23 @@ class NewObservationListSerializer(serializers.ListSerializer):
                 start_end_per_station[station_id].append((start, end))
         try:
             check_overlaps(start_end_per_station)
-        except ObservationOverlapError as e:
-            raise serializers.ValidationError(e, code='invalid')
+        except ObservationOverlapError as error:
+            raise serializers.ValidationError(error, code='invalid')
 
         station_list = list(set(station_list))
         try:
             check_schedule_perms_per_station(user, station_list)
-        except UserNoPermissionError as e:
-            raise serializers.ValidationError(e, code='forbidden')
+        except UserNoPermissionError as error:
+            raise serializers.ValidationError(error, code='forbidden')
 
         transmitter_uuid_list = list(set(transmitter_uuid_list))
         try:
             transmitters = get_transmitters_by_uuid_list(transmitter_uuid_list)
             self.transmitters = transmitters
-        except ValueError as e:
-            raise serializers.ValidationError(e, code='invalid')
-        except DBConnectionError as e:
-            raise serializers.ValidationError(e)
+        except ValueError as error:
+            raise serializers.ValidationError(error, code='invalid')
+        except DBConnectionError as error:
+            raise serializers.ValidationError(error)
 
         transmitter_uuid_station_set = set(transmitter_uuid_station_list)
         transmitter_station_list = [
@@ -146,8 +146,8 @@ class NewObservationListSerializer(serializers.ListSerializer):
         ]
         try:
             check_transmitter_station_pairs(transmitter_station_list)
-        except OutOfRangeError as e:
-            raise serializers.ValidationError(e, code='invalid')
+        except OutOfRangeError as error:
+            raise serializers.ValidationError(error, code='invalid')
         return attrs
 
     def create(self, validated_data):
@@ -214,15 +214,15 @@ class NewObservationSerializer(serializers.Serializer):
     def validate_start(self, value):
         try:
             check_start_datetime(value)
-        except ValueError as e:
-            raise serializers.ValidationError(e, code='invalid')
+        except ValueError as error:
+            raise serializers.ValidationError(error, code='invalid')
         return value
 
     def validate_end(self, value):
         try:
             check_end_datetime(value)
-        except ValueError as e:
-            raise serializers.ValidationError(e, code='invalid')
+        except ValueError as error:
+            raise serializers.ValidationError(error, code='invalid')
         return value
 
     def validate(self, attrs):
@@ -230,8 +230,8 @@ class NewObservationSerializer(serializers.Serializer):
         end = attrs['end']
         try:
             check_start_end_datetimes(start, end)
-        except ValueError as e:
-            raise serializers.ValidationError(e, code='invalid')
+        except ValueError as error:
+            raise serializers.ValidationError(error, code='invalid')
         return attrs
 
     def create(self, validated_data):

@@ -44,16 +44,16 @@ class ObservationForm(forms.ModelForm):
         start = self.cleaned_data['start']
         try:
             check_start_datetime(start)
-        except ValueError as e:
-            raise forms.ValidationError(e, code='invalid')
+        except ValueError as error:
+            raise forms.ValidationError(error, code='invalid')
         return start
 
     def clean_end(self):
         end = self.cleaned_data['end']
         try:
             check_end_datetime(end)
-        except ValueError as e:
-            raise forms.ValidationError(e, code='invalid')
+        except ValueError as error:
+            raise forms.ValidationError(error, code='invalid')
         return end
 
     def clean(self):
@@ -65,8 +65,8 @@ class ObservationForm(forms.ModelForm):
         end = cleaned_data['end']
         try:
             check_start_end_datetimes(start, end)
-        except ValueError as e:
-            raise forms.ValidationError(e, code='invalid')
+        except ValueError as error:
+            raise forms.ValidationError(error, code='invalid')
 
     class Meta:
         model = Observation
@@ -106,23 +106,23 @@ class BaseObservationFormSet(forms.BaseFormSet):
 
         try:
             check_overlaps(start_end_per_station)
-        except ObservationOverlapError as e:
-            raise forms.ValidationError(e, code='invalid')
+        except ObservationOverlapError as error:
+            raise forms.ValidationError(error, code='invalid')
 
         station_list = list(set(station_list))
         try:
             check_schedule_perms_per_station(self.user, station_list)
-        except UserNoPermissionError as e:
-            raise forms.ValidationError(e, code='forbidden')
+        except UserNoPermissionError as error:
+            raise forms.ValidationError(error, code='forbidden')
 
         transmitter_uuid_list = list(set(transmitter_uuid_list))
         try:
             transmitters = get_transmitters_by_uuid_list(transmitter_uuid_list)
             self.transmitters = transmitters
-        except ValueError as e:
-            raise forms.ValidationError(e, code='invalid')
-        except DBConnectionError as e:
-            raise forms.ValidationError(e)
+        except ValueError as error:
+            raise forms.ValidationError(error, code='invalid')
+        except DBConnectionError as error:
+            raise forms.ValidationError(error)
 
         transmitter_uuid_station_set = set(transmitter_uuid_station_list)
         transmitter_station_list = [
@@ -130,8 +130,8 @@ class BaseObservationFormSet(forms.BaseFormSet):
         ]
         try:
             check_transmitter_station_pairs(transmitter_station_list)
-        except OutOfRangeError as e:
-            raise forms.ValidationError(e, code='invalid')
+        except OutOfRangeError as error:
+            raise forms.ValidationError(error, code='invalid')
 
 
 class StationForm(forms.ModelForm):

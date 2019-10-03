@@ -461,12 +461,12 @@ class Observation(models.Model):
         if self.has_audio:
             if self.archive_url:
                 try:
-                    r = requests.get(self.archive_url, allow_redirects=False)
-                    url = r.headers['Location']
+                    request = requests.get(self.archive_url, allow_redirects=False)
+                    url = request.headers['Location']
                     return url
-                except Exception as e:
+                except Exception as error:
                     logger = logging.getLogger(__name__)
-                    logger.warning("Error in request to '%s'. Error: %s", self.archive_url, e)
+                    logger.warning("Error in request to '%s'. Error: %s", self.archive_url, error)
                     return ''
             else:
                 return self.payload.url
@@ -479,7 +479,7 @@ class Observation(models.Model):
         return str(self.id)
 
     def get_absolute_url(self):
-        return reverse('base:observation_view', kwargs={'id': self.id})
+        return reverse('base:observation_view', kwargs={'observation_id': self.id})
 
 
 @receiver(models.signals.post_delete, sender=Observation)
@@ -503,17 +503,17 @@ class DemodData(models.Model):
     copied_to_db = models.BooleanField(default=False)
 
     def is_image(self):
-        with open(self.payload_demod.path) as fp:
+        with open(self.payload_demod.path) as file_path:
             try:
-                Image.open(fp)
+                Image.open(file_path)
             except (IOError, TypeError):
                 return False
             else:
                 return True
 
     def display_payload(self):
-        with open(self.payload_demod.path) as fp:
-            payload = fp.read()
+        with open(self.payload_demod.path) as file_path:
+            payload = file_path.read()
             try:
                 return unicode(payload)
             except UnicodeDecodeError:

@@ -44,9 +44,9 @@
         </thead>
         <tbody>
           {% for station in stations.all %}
-            <tr class="station-row clickable-row" data-href="{% url 'base:station_view' id=station.id %}">
+            <tr class="station-row clickable-row" data-href="{% url 'base:station_view' station_id=station.id %}">
               <td>
-                <a href="{% url 'base:station_view' id=station.id %}">
+                <a href="{% url 'base:station_view' station_id=station.id %}">
                   <span class="station
                                {% if station.last_seen %}
                                  label label-{{ station.get_status_display|lower }}

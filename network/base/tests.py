@@ -169,9 +169,9 @@ class StationListViewTest(TestCase):
 
     def test_station_list(self):
         response = self.client.get('/stations/')
-        for x in self.stations:
-            self.assertContains(response, x.owner)
-            self.assertContains(response, x.name)
+        for station in self.stations:
+            self.assertContains(response, station.owner)
+            self.assertContains(response, station.name)
 
 
 @pytest.mark.django_db(transaction=True)
@@ -214,26 +214,26 @@ class ObservationsListViewTest(TestCase):
 
     def test_observations_list(self):
         response = self.client.get('/observations/')
-        for x in self.observations:
-            self.assertContains(response, x.transmitter_mode)
+        for observation in self.observations:
+            self.assertContains(response, observation.transmitter_mode)
 
     def test_observations_list_select_bad(self):
         response = self.client.get('/observations/?bad=1')
 
-        for x in self.observations_bad:
-            self.assertContains(response, x.transmitter_mode)
+        for observation in self.observations_bad:
+            self.assertContains(response, observation.transmitter_mode)
 
     def test_observations_list_select_good(self):
         response = self.client.get('/observations/?good=1')
 
-        for x in self.observations_good:
-            self.assertContains(response, x.transmitter_mode)
+        for observation in self.observations_good:
+            self.assertContains(response, observation.transmitter_mode)
 
     def test_observations_list_select_unvetted(self):
         response = self.client.get('/observations/?unvetted=1')
 
-        for x in self.observations_unvetted:
-            self.assertContains(response, x.transmitter_mode)
+        for observation in self.observations_unvetted:
+            self.assertContains(response, observation.transmitter_mode)
 
 
 class NotFoundErrorTest(TestCase):
@@ -271,8 +271,8 @@ class ObservationViewTest(TestCase):
 
     def setUp(self):
         self.user = UserFactory()
-        g = Group.objects.get(name='Moderators')
-        g.user_set.add(self.user)
+        moderators = Group.objects.get(name='Moderators')
+        moderators.user_set.add(self.user)
         for _ in xrange(1, 10):
             self.satellites.append(SatelliteFactory())
         for _ in xrange(1, 10):
@@ -323,8 +323,8 @@ class ObservationDeleteTest(TestCase):
     def test_future_observation_delete_moderator(self):
         """Deletion OK when user is moderator and observation is in future"""
         self.user = UserFactory()
-        g = Group.objects.get(name='Moderators')
-        g.user_set.add(self.user)
+        moderators = Group.objects.get(name='Moderators')
+        moderators.user_set.add(self.user)
         self.client.force_login(self.user)
         response = self.client.get('/observations/%d/delete/' % self.future_observation.id)
         self.assertRedirects(response, '/observations/')
@@ -342,8 +342,8 @@ class ObservationDeleteTest(TestCase):
     def test_past_observation_delete_moderator(self):
         """Deletion NOT OK when user is moderator and observation is in past"""
         self.user = UserFactory()
-        g = Group.objects.get(name='Moderators')
-        g.user_set.add(self.user)
+        moderators = Group.objects.get(name='Moderators')
+        moderators.user_set.add(self.user)
         self.client.force_login(self.user)
         response = self.client.get('/observations/%d/delete/' % self.past_observation.id)
         self.assertRedirects(response, '/observations/')

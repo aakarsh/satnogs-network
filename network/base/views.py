@@ -10,8 +10,7 @@ from django.contrib.auth.decorators import login_required
 from django.core.urlresolvers import reverse
 from django.db.models import Count, Prefetch
 from django.forms import ValidationError, formset_factory
-from django.http import HttpResponse, HttpResponseNotFound, \
-    HttpResponseServerError, JsonResponse
+from django.http import HttpResponse, JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.utils.text import slugify
 from django.utils.timezone import make_aware, now, utc
@@ -65,16 +64,6 @@ def index(request):
             'mapbox_token': settings.MAPBOX_TOKEN
         }
     )
-
-
-def custom_404(request):
-    """Custom 404 error handler."""
-    return HttpResponseNotFound(render(request, '404.html'))
-
-
-def custom_500(request):
-    """Custom 500 error handler."""
-    return HttpResponseServerError(render(request, '500.html'))
 
 
 def robots(request):
@@ -232,7 +221,7 @@ class ObservationListView(ListView):
 
 
 def observation_new_post(request):
-    ObservationFormSet = formset_factory(
+    ObservationFormSet = formset_factory(  # pylint: disable=C0103
         ObservationForm, formset=BaseObservationFormSet, min_num=1, validate_min=True
     )
     formset = ObservationFormSet(request.user, request.POST, prefix='obs')
@@ -266,7 +255,9 @@ def observation_new_post(request):
             if total == 1:
                 messages.success(request, 'Observation was scheduled successfully.')
                 response = redirect(
-                    reverse('base:observation_view', kwargs={'id': new_observations[0].id})
+                    reverse(
+                        'base:observation_view', kwargs={'observation_id': new_observations[0].id}
+                    )
                 )
             else:
                 messages.success(
@@ -283,21 +274,21 @@ def observation_new_post(request):
             else:
                 messages.error(request, '{0}'.format(formset.non_form_errors()[0]))
             response = redirect(reverse('base:observation_new'))
-    except ValidationError as e:
-        messages.error(request, '{0}'.format(e.message))
+    except ValidationError as error:
+        messages.error(request, '{0}'.format(error.message))
         response = redirect(reverse('base:observation_new'))
     except LatestTle.DoesNotExist:
         message = 'Scheduling failed: Satellite without TLE'
         messages.error(request, '{0}'.format(message))
         response = redirect(reverse('base:observation_new'))
-    except ObservationOverlapError as e:
-        messages.error(request, '{0}'.format(e.message))
+    except ObservationOverlapError as error:
+        messages.error(request, '{0}'.format(error.message))
         response = redirect(reverse('base:observation_new'))
-    except NegativeElevationError as e:
-        messages.error(request, '{0}'.format(e.message))
+    except NegativeElevationError as error:
+        messages.error(request, '{0}'.format(error.message))
         response = redirect(reverse('base:observation_new'))
-    except SinglePassError as e:
-        messages.error(request, '{0}'.format(e.message))
+    except SinglePassError as error:
+        messages.error(request, '{0}'.format(error.message))
         response = redirect(reverse('base:observation_new'))
     return response
 
@@ -383,8 +374,8 @@ def prediction_windows(request):
             return JsonResponse(data, safe=False)
         else:
             downlink = transmitter[0]['downlink_low']
-    except DBConnectionError as e:
-        data = [{'error': e.message}]
+    except DBConnectionError as error:
+        data = [{'error': error.message}]
         return JsonResponse(data, safe=False)
 
     start = make_aware(datetime.strptime(start, '%Y-%m-%d %H:%M'), utc)
@@ -447,9 +438,9 @@ def prediction_windows(request):
     return JsonResponse(data, safe=False)
 
 
-def observation_view(request, id):
+def observation_view(request, observation_id):
     """View for single observation page."""
-    observation = get_object_or_404(Observation, id=id)
+    observation = get_object_or_404(Observation, id=observation_id)
 
     can_vet = vet_perms(request.user, observation)
 
@@ -499,9 +490,9 @@ def observation_view(request, id):
 
 
 @login_required
-def observation_delete(request, id):
+def observation_delete(request, observation_id):
     """View for deleting observation."""
-    observation = get_object_or_404(Observation, id=id)
+    observation = get_object_or_404(Observation, id=observation_id)
     can_delete = delete_perms(request.user, observation)
     if can_delete:
         observation.delete()
@@ -513,9 +504,9 @@ def observation_delete(request, id):
 
 @login_required
 @ajax_required
-def observation_vet(request, id):
+def observation_vet(request, observation_id):
     try:
-        observation = Observation.objects.get(id=id)
+        observation = Observation.objects.get(id=observation_id)
     except Observation.DoesNotExist:
         data = {'error': 'Observation does not exist.'}
         return JsonResponse(data, safe=False)
@@ -566,9 +557,9 @@ def stations_list(request):
     )
 
 
-def station_view(request, id):
+def station_view(request, station_id):
     """View for single station page."""
-    station = get_object_or_404(Station, id=id)
+    station = get_object_or_404(Station, id=station_id)
     form = StationForm(instance=station)
     antennas = Antenna.objects.all()
     unsupported_frequencies = request.GET.get('unsupported_frequencies', '0')
@@ -628,9 +619,9 @@ def station_view(request, id):
     )
 
 
-def station_log(request, id):
+def station_log(request, station_id):
     """View for single station status log."""
-    station = get_object_or_404(Station, id=id)
+    station = get_object_or_404(Station, id=station_id)
     station_log = StationStatusLog.objects.filter(station=station)
 
     return render(
@@ -659,8 +650,8 @@ def scheduling_stations(request):
                 if downlink is None:
                     data = [{'error': 'You should select a valid Transmitter.'}]
                     return JsonResponse(data, safe=False)
-        except DBConnectionError as e:
-            data = [{'error': e.message}]
+        except DBConnectionError as error:
+            data = [{'error': error.message}]
             return JsonResponse(data, safe=False)
 
     stations = Station.objects.filter(status__gt=0)
@@ -672,7 +663,7 @@ def scheduling_stations(request):
 
 
 @ajax_required
-def pass_predictions(request, id):
+def pass_predictions(request, station_id):
     """Endpoint for pass predictions"""
     scheduled_obs_queryset = Observation.objects.filter(end__gt=now())
     station = get_object_or_404(
@@ -680,7 +671,7 @@ def pass_predictions(request, id):
             Prefetch('observations', queryset=scheduled_obs_queryset, to_attr='scheduled_obs'),
             'antenna'
         ),
-        id=id
+        id=station_id
     )
     unsupported_frequencies = request.GET.get('unsupported_frequencies', '0')
 
@@ -767,7 +758,7 @@ def pass_predictions(request, id):
                     nextpasses.append(sat_pass)
 
     data = {
-        'id': id,
+        'id': station_id,
         'nextpasses': sorted(nextpasses, key=itemgetter('tr')),
         'ground_station': {
             'lng': str(station.lng),
@@ -779,12 +770,12 @@ def pass_predictions(request, id):
     return JsonResponse(data, safe=False)
 
 
-def station_edit(request, id=None):
+def station_edit(request, station_id=None):
     """Edit or add a single station."""
     station = None
     antennas = Antenna.objects.all()
-    if id:
-        station = get_object_or_404(Station, id=id, owner=request.user)
+    if station_id:
+        station = get_object_or_404(Station, id=station_id, owner=request.user)
 
     if request.method == 'POST':
         if station:
@@ -792,14 +783,14 @@ def station_edit(request, id=None):
         else:
             form = StationForm(request.POST, request.FILES)
         if form.is_valid():
-            f = form.save(commit=False)
+            station_form = form.save(commit=False)
             if not station:
-                f.testing = True
-            f.owner = request.user
-            f.save()
+                station_form.testing = True
+            station_form.owner = request.user
+            station_form.save()
             form.save_m2m()
             messages.success(request, 'Ground Station saved successfully.')
-            return redirect(reverse('base:station_view', kwargs={'id': f.id}))
+            return redirect(reverse('base:station_view', kwargs={'station_id': station_form.id}))
         else:
             messages.error(
                 request, ('Your Ground Station submission has some '
@@ -827,13 +818,13 @@ def station_edit(request, id=None):
 
 
 @login_required
-def station_delete(request, id):
+def station_delete(request, station_id):
     """View for deleting a station."""
-    me = request.user
-    station = get_object_or_404(Station, id=id, owner=request.user)
+    username = request.user
+    station = get_object_or_404(Station, id=station_id, owner=request.user)
     station.delete()
     messages.success(request, 'Ground Station deleted successfully.')
-    return redirect(reverse('users:view_user', kwargs={'username': me}))
+    return redirect(reverse('users:view_user', kwargs={'username': username}))
 
 
 def transmitters_with_stats(transmitters_list):
@@ -845,21 +836,21 @@ def transmitters_with_stats(transmitters_list):
     return transmitters_with_stats_list
 
 
-def satellite_view(request, id):
+def satellite_view(request, norad_id):
     try:
-        sat = Satellite.objects.get(norad_cat_id=id)
+        sat = Satellite.objects.get(norad_cat_id=norad_id)
     except Satellite.DoesNotExist:
         data = {'error': 'Unable to find that satellite.'}
         return JsonResponse(data, safe=False)
 
     try:
-        transmitters = get_transmitters_by_norad_id(norad_id=id)
-    except DBConnectionError as e:
-        data = [{'error': e.message}]
+        transmitters = get_transmitters_by_norad_id(norad_id=norad_id)
+    except DBConnectionError as error:
+        data = [{'error': error.message}]
         return JsonResponse(data, safe=False)
     satellite_stats = satellite_stats_by_transmitter_list(transmitters)
     data = {
-        'id': id,
+        'id': norad_id,
         'name': sat.name,
         'names': sat.names,
         'image': sat.image,
@@ -886,8 +877,8 @@ def transmitters_view(request):
 
     try:
         transmitters = get_transmitters_by_norad_id(norad_id)
-    except DBConnectionError as e:
-        data = [{'error': e.message}]
+    except DBConnectionError as error:
+        data = [{'error': error.message}]
         return JsonResponse(data, safe=False)
 
     transmitters = [

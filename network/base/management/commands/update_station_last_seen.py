@@ -10,12 +10,12 @@ class Command(LabelCommand):
 
     def handle_label(self, label, **options):
         try:
-            gs = Station.objects.get(id=label)
+            ground_station = Station.objects.get(id=label)
         except Station.DoesNotExist:
             self.stderr.write('Station with ID {} does not exist'.format(label))
             return
 
         timestamp = now()
-        gs.last_seen = timestamp
-        gs.save()
+        ground_station.last_seen = timestamp
+        ground_station.save()
         self.stdout.write('Updated Last_Seen for Station {} to {}'.format(label, timestamp))

@@ -2,7 +2,7 @@ from django.conf.urls import url
 
 from network.users import views
 
-users_urlpatterns = (
+USERS_URLPATTERNS = (
     [
         url(r'^redirect/$', views.UserRedirectView.as_view(), name='redirect_user'),
         url(r'^update/$', views.UserUpdateView.as_view(), name='update_user'),

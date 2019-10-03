@@ -5,21 +5,18 @@ from django.conf.urls import include, url
 from django.contrib import admin
 from django.views.static import serve
 
-from network.api.urls import api_urlpatterns
-from network.base.urls import base_urlpatterns
-from network.users.urls import users_urlpatterns
-
-handler404 = 'network.base.views.custom_404'
-handler500 = 'network.base.views.custom_500'
+from network.api.urls import API_URLPATTERNS
+from network.base.urls import BASE_URLPATTERNS
+from network.users.urls import USERS_URLPATTERNS
 
 urlpatterns = [
     # Base urls
-    url(r'^', include(base_urlpatterns)),
+    url(r'^', include(BASE_URLPATTERNS)),
     url(r'^admin/', admin.site.urls),
-    url(r'^users/', include(users_urlpatterns)),
+    url(r'^users/', include(USERS_URLPATTERNS)),
     url(r'^accounts/', include(allauth_urls)),
     url(r'^avatar/', include(avatar_urls)),
-    url(r'^api/', include(api_urlpatterns))
+    url(r'^api/', include(API_URLPATTERNS))
 ]
 
 # Auth0

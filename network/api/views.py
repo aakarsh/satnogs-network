@@ -35,20 +35,20 @@ class ObservationView(mixins.ListModelMixin, mixins.RetrieveModelMixin, mixins.U
             else:
                 data = serializer.errors
                 response = Response(data, status=status.HTTP_400_BAD_REQUEST)
-        except ValidationError as e:
-            data = e.message
+        except ValidationError as error:
+            data = error.message
             response = Response(data, status=status.HTTP_400_BAD_REQUEST)
         except LatestTle.DoesNotExist:
             data = 'Scheduling failed: Satellite without TLE'
             response = Response(data, status=status.HTTP_501_NOT_IMPLEMENTED)
-        except ObservationOverlapError as e:
-            data = e.message
+        except ObservationOverlapError as error:
+            data = error.message
             response = Response(data, status=status.HTTP_409_CONFLICT)
-        except NegativeElevationError as e:
-            data = e.message
+        except NegativeElevationError as error:
+            data = error.message
             response = Response(data, status=status.HTTP_400_BAD_REQUEST)
-        except SinglePassError as e:
-            data = e.message
+        except SinglePassError as error:
+            data = error.message
             response = Response(data, status=status.HTTP_400_BAD_REQUEST)
         return response
 
@@ -104,17 +104,17 @@ class JobView(viewsets.ReadOnlyModelViewSet):
 
     def get_queryset(self):
         queryset = self.queryset.filter(start__gte=now())
-        gs_id = self.request.query_params.get('ground_station', None)
-        if gs_id and self.request.user.is_authenticated():
-            gs = get_object_or_404(Station, id=gs_id)
-            if gs.owner == self.request.user:
+        ground_station_id = self.request.query_params.get('ground_station', None)
+        if ground_station_id and self.request.user.is_authenticated():
+            ground_station = get_object_or_404(Station, id=ground_station_id)
+            if ground_station.owner == self.request.user:
                 lat = self.request.query_params.get('lat', None)
                 lon = self.request.query_params.get('lon', None)
                 alt = self.request.query_params.get('alt', None)
                 if not (lat is None or lon is None or alt is None):
-                    gs.lat = float(lat)
-                    gs.lng = float(lon)
-                    gs.alt = int(alt)
-                gs.last_seen = now()
-                gs.save()
+                    ground_station.lat = float(lat)
+                    ground_station.lng = float(lon)
+                    ground_station.alt = int(alt)
+                ground_station.last_seen = now()
+                ground_station.save()
         return queryset

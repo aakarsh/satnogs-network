@@ -16,10 +16,10 @@ from satellite_tle import fetch_tle_from_celestrak
 from network.base.models import DemodData, LatestTle, Observation, Satellite, \
     Station, Tle, Transmitter
 from network.base.utils import demod_to_db
-from network.celery import app
+from network.celery import APP
 
 
-@app.task(ignore_result=True)
+@APP.task(ignore_result=True)
 def update_all_tle():
     """Task to update all satellite TLEs"""
     latest_tle_queryset = LatestTle.objects.all()
@@ -50,7 +50,7 @@ def update_all_tle():
         print '{} - {}: new TLE found [updated]'.format(obj.name, norad_id)
 
 
-@app.task(ignore_result=True)
+@APP.task(ignore_result=True)
 def fetch_data():
     """Task to fetch all data from DB"""
     apiurl = settings.DB_API_ENDPOINT
@@ -86,7 +86,7 @@ def fetch_data():
             Transmitter.objects.create(uuid=uuid)
 
 
-@app.task(ignore_result=True)
+@APP.task(ignore_result=True)
 def archive_audio(obs_id):
     obs = Observation.objects.get(id=obs_id)
     suffix = '-{0}'.format(settings.ENVIRONMENT)
@@ -101,7 +101,7 @@ def archive_audio(obs_id):
         '<p>Audio file from SatNOGS{0} <a href="{1}/observations/{2}">'
         'Observation {3}</a>.</p>'
     ).format(suffix, site.domain, obs.id, obs.id)
-    md = dict(
+    metadata = dict(
         collection=settings.ARCHIVE_COLLECTION,
         title=identifier,
         mediatype='audio',
@@ -112,7 +112,7 @@ def archive_audio(obs_id):
         res = upload(
             identifier,
             files=[ogg],
-            metadata=md,
+            metadata=metadata,
             access_key=settings.S3_ACCESS_KEY,
             secret_key=settings.S3_SECRET_KEY
         )
@@ -126,7 +126,7 @@ def archive_audio(obs_id):
         obs.payload.delete()
 
 
-@app.task(ignore_result=True)
+@APP.task(ignore_result=True)
 def clean_observations():
     """Task to clean up old observations that lack actual data."""
     threshold = now() - timedelta(days=int(settings.OBSERVATION_OLD_RANGE))
@@ -141,13 +141,13 @@ def clean_observations():
             archive_audio.delay(obs.id)
 
 
-@app.task
+@APP.task
 def sync_to_db():
     """Task to send demod data to db / SiDS"""
-    q = now() - timedelta(days=1)
+    period = now() - timedelta(days=1)
     transmitters = Transmitter.objects.filter(sync_to_db=True).values_list('uuid', flat=True)
     frames = DemodData.objects.filter(
-        observation__end__gte=q,
+        observation__end__gte=period,
         copied_to_db=False,
         observation__transmitter_uuid__in=transmitters
     )
@@ -160,7 +160,7 @@ def sync_to_db():
             continue
 
 
-@app.task(ignore_result=True)
+@APP.task(ignore_result=True)
 def station_status_update():
     """Task to update Station status."""
     for station in Station.objects.all():
@@ -173,7 +173,7 @@ def station_status_update():
         station.save()
 
 
-@app.task(ignore_result=True)
+@APP.task(ignore_result=True)
 def notify_for_stations_without_results():
     """Task to send email for stations with observations without results."""
     email_to = settings.EMAIL_FOR_STATIONS_ISSUES
@@ -204,7 +204,7 @@ def notify_for_stations_without_results():
             )
 
 
-@app.task(ignore_result=True)
+@APP.task(ignore_result=True)
 def stations_cache_rates():
     stations = Station.objects.all()
     for station in stations:

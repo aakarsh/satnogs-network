@@ -5,7 +5,6 @@ ignored-argument-names=args|kwargs
 
 [MESSAGES CONTROL]
 disable=
-    C0103,
     C0111,
     C0412,
     E1101,

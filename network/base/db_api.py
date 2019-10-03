@@ -1,7 +1,7 @@
 import requests
 from django.conf import settings
 
-db_api_url = settings.DB_API_ENDPOINT
+DB_API_URL = settings.DB_API_ENDPOINT
 
 
 class DBConnectionError(Exception):
@@ -9,7 +9,7 @@ class DBConnectionError(Exception):
 
 
 def transmitters_api_request(url):
-    if not db_api_url:
+    if not DB_API_URL:
         raise DBConnectionError('Error in DB API connection. Blank DB API URL!')
     try:
         request = requests.get(url)
@@ -19,22 +19,22 @@ def transmitters_api_request(url):
 
 
 def get_transmitter_by_uuid(uuid):
-    transmitters_url = "{}transmitters/?uuid={}".format(db_api_url, uuid)
+    transmitters_url = "{}transmitters/?uuid={}".format(DB_API_URL, uuid)
     return transmitters_api_request(transmitters_url)
 
 
 def get_transmitters_by_norad_id(norad_id):
-    transmitters_url = "{}transmitters/?satellite__norad_cat_id={}".format(db_api_url, norad_id)
+    transmitters_url = "{}transmitters/?satellite__norad_cat_id={}".format(DB_API_URL, norad_id)
     return transmitters_api_request(transmitters_url)
 
 
 def get_transmitters_by_status(status):
-    transmitters_url = "{}transmitters/?status={}".format(db_api_url, status)
+    transmitters_url = "{}transmitters/?status={}".format(DB_API_URL, status)
     return transmitters_api_request(transmitters_url)
 
 
 def get_transmitters():
-    transmitters_url = "{}transmitters".format(db_api_url)
+    transmitters_url = "{}transmitters".format(DB_API_URL)
     return transmitters_api_request(transmitters_url)
 
 

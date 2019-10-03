@@ -13,13 +13,13 @@ RUN_HOURLY = 60 * 60
 RUN_EVERY_MINUTE = 60
 RUN_TWICE_HOURLY = 60 * 30
 
-app = Celery('network')
+APP = Celery('network')
 
-app.config_from_object('django.conf:settings', namespace='CELERY')
-app.autodiscover_tasks(lambda: settings.INSTALLED_APPS)
+APP.config_from_object('django.conf:settings', namespace='CELERY')
+APP.autodiscover_tasks(lambda: settings.INSTALLED_APPS)
 
 
-@app.on_after_finalize.connect
+@APP.on_after_finalize.connect
 def setup_periodic_tasks(sender, **kwargs):  # pylint: disable=W0613
     from network.base.tasks import (
         update_all_tle, fetch_data, clean_observations, station_status_update,

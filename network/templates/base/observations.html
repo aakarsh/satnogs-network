@@ -215,9 +215,9 @@
           {% for observation in observations %}
             <tr data-norad="{{ observation.satellite.norad_cat_id }}"
                   class="clickable-row{% if observation.id in scheduled %} bg-info{% endif %}"
-                  data-href="{% url 'base:observation_view' id=observation.id %}">
+                  data-href="{% url 'base:observation_view' observation_id=observation.id %}">
                 <td>
-                  <a href="{% url 'base:observation_view' id=observation.id %}" class="obs-link">
+                  <a href="{% url 'base:observation_view' observation_id=observation.id %}" class="obs-link">
                     {% if observation.is_vetted %}
                       <span class="label label-{{observation.vetted_status }}">{{ observation.id }}</span>
                     {% elif observation.is_future %}
@@ -273,7 +273,7 @@
                 </td>
                 <td>
                   {% if observation.ground_station %}
-                    <a href="{% url 'base:station_view' id=observation.ground_station.id %}">
+                    <a href="{% url 'base:station_view' station_id=observation.ground_station.id %}">
                       {{ observation.ground_station }}
                     </a>
                   {% endif %}
