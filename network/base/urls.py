@@ -25,7 +25,7 @@ BASE_URLPATTERNS = (
         url(r'^observations/new/$', views.observation_new, name='observation_new'),
         url(r'^prediction_windows/$', views.prediction_windows, name='prediction_windows'),
         url(
-            r'^pass_predictions/(?P<observation_id>[\w.@+-]+)/$',
+            r'^pass_predictions/(?P<station_id>[\w.@+-]+)/$',
             views.pass_predictions,
             name='pass_predictions'
         ),
