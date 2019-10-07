@@ -51,4 +51,4 @@ Docker Installation
 
 #. **Build the documentation locally**
 
-     $ docker run -it -v ${PWD}:/documents/ plaindocs/docker-sphinx make html
+     $ tox -e docs
