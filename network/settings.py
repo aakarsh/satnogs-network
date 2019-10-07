@@ -39,6 +39,12 @@ LOCAL_APPS = (
     'network.api',
 )
 
+if DEBUG:
+    DJANGO_APPS += ('debug_toolbar', )
+    DEBUG_TOOLBAR_CONFIG = {
+        'SHOW_TOOLBAR_CALLBACK':
+        lambda request: request.environ.get('SERVER_NAME', None) != 'testserver',
+    }
 if AUTH0:
     THIRD_PARTY_APPS += ('social_django', )
     LOCAL_APPS += ('auth0login', )
@@ -56,6 +62,9 @@ MIDDLEWARE = (
     'django.middleware.security.SecurityMiddleware',
     'csp.middleware.CSPMiddleware',
 )
+
+if DEBUG:
+    MIDDLEWARE = ('debug_toolbar.middleware.DebugToolbarMiddleware', ) + MIDDLEWARE
 
 # Email
 if DEBUG:

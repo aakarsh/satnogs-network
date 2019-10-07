@@ -24,6 +24,10 @@ if settings.AUTH0:
     urlpatterns += [url(r'^', include('auth0login.urls'))]
 
 if settings.DEBUG:
+    import debug_toolbar
+
+    urlpatterns = [url(r'^__debug__/', include(debug_toolbar.urls))] + urlpatterns
+
     urlpatterns += [
         url(r'^media/(?P<path>.*)$', serve, {'document_root': settings.MEDIA_ROOT}),
     ]
