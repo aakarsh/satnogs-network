@@ -395,7 +395,13 @@ $(document).ready( function(){
         initiliaze_calculation(true);
         var url = '/prediction_windows/';
         var data = {};
-        data.start = $('#datetimepicker-start input').val();
+        // Add 5min for giving time to user schedule and avoid frequent start time errors.
+        // More on issue #686: https://gitlab.com/librespacefoundation/satnogs/satnogs-network/issues/686
+        if (!obs_filter_dates){
+            data.start = moment($('#datetimepicker-start input').val()).add(5,'minute').format('YYYY-MM-DD HH:mm');
+        } else {
+            data.start = $('#datetimepicker-start input').val();
+        }
         data.end = $('#datetimepicker-end input').val();
         data.transmitter = $('#transmitter-selection').find(':selected').val();
         data.satellite = $('#satellite-selection').val();
