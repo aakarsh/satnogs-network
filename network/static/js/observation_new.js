@@ -635,6 +635,10 @@ $(document).ready( function(){
                 calculate_observation();
             }
         });
+    } else {
+        // Focus on satellite field
+        $('#satellite-selection').selectpicker('refresh');
+        $('#satellite-selection').selectpicker('toggle');
     }
 
     // Hotkeys bindings
