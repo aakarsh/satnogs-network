@@ -82,7 +82,8 @@ class TransmitterAdmin(admin.ModelAdmin):
     readonly_fields = ('uuid', )
 
 
-class DataDemodInline(admin.TabularInline):
+class DemodDataInline(admin.TabularInline):
+    """Defines DemodData inline template for use in Observation view in django admin UI"""
     model = DemodData
 
 
@@ -92,6 +93,6 @@ class ObservationAdmin(admin.ModelAdmin):
     list_filter = ('start', 'end')
     search_fields = ('satellite', 'author')
     inlines = [
-        DataDemodInline,
+        DemodDataInline,
     ]
     readonly_fields = ('tle', )
