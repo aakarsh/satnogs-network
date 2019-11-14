@@ -551,7 +551,7 @@ class DemodData(models.Model):
                 return unicode(payload)
             except UnicodeDecodeError:
                 data = payload.encode('hex').upper()
-                return ' '.join(data[i:i + 2] for i in xrange(0, len(data), 2))
+                return ' '.join(data[i:i + 2] for i in range(0, len(data), 2))
 
 
 @receiver(models.signals.post_delete, sender=DemodData)
