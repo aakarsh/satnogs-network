@@ -43,7 +43,7 @@ def max_altitude_in_window(observer, satellite, pass_tca, window_start, window_e
         # Observation window in the second half of the pass
         # Thus highest altitude right at the beginning of the window
         return get_altitude(observer, satellite, window_start)
-    elif window_end < pass_tca:
+    if window_end < pass_tca:
         # Observation window in the first half of the pass
         # Thus highest altitude right at the end of the window
         return get_altitude(observer, satellite, window_end)
@@ -128,7 +128,8 @@ def create_station_windows(scheduled_obs, overlapped, pass_params, observer, sat
         # Windows changed due to overlap, recalculate observation parameters
         if overlapped == 0:
             return []
-        elif overlapped == 1:
+
+        if overlapped == 1:
             initial_duration = (pass_params['set_time'] - pass_params['rise_time']).total_seconds()
             for window_start, window_end in windows:
                 altitude = max_altitude_in_window(

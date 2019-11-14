@@ -54,17 +54,18 @@ def get_transmitters_by_uuid_list(uuid_list):
         if not transmitter:
             raise ValueError('Invalid Transmitter UUID: {0}'.format(str(uuid_list[0])))
         return {transmitter[0]['uuid']: transmitter[0]}
-    else:
-        transmitters_list = get_transmitters()
 
-        transmitters = {t['uuid']: t for t in transmitters_list if t['uuid'] in uuid_list}
-        invalid_transmitters = [
-            str(uuid) for uuid in set(uuid_list).difference(set(transmitters.keys()))
-        ]
-        if not invalid_transmitters:
-            return transmitters
-        else:
-            if len(invalid_transmitters) == 1:
-                raise ValueError('Invalid Transmitter UUID: {0}'.format(invalid_transmitters[0]))
-            else:
-                raise ValueError('Invalid Transmitter UUIDs: {0}'.format(invalid_transmitters))
+    transmitters_list = get_transmitters()
+
+    transmitters = {t['uuid']: t for t in transmitters_list if t['uuid'] in uuid_list}
+    invalid_transmitters = [
+        str(uuid) for uuid in set(uuid_list).difference(set(transmitters.keys()))
+    ]
+
+    if not invalid_transmitters:
+        return transmitters
+
+    if len(invalid_transmitters) == 1:
+        raise ValueError('Invalid Transmitter UUID: {0}'.format(invalid_transmitters[0]))
+
+    raise ValueError('Invalid Transmitter UUIDs: {0}'.format(invalid_transmitters))

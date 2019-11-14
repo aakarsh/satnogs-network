@@ -96,11 +96,10 @@ def check_schedule_perms_per_station(user, station_list):
                     stations_without_permissions[0]
                 )
             )
-        else:
-            raise UserNoPermissionError(
-                'No permission to schedule observations on stations: {0}'.
-                format(stations_without_permissions)
-            )
+        raise UserNoPermissionError(
+            'No permission to schedule observations on stations: {0}'.
+            format(stations_without_permissions)
+        )
 
 
 def delete_perms(user, observation):

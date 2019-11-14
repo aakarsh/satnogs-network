@@ -381,8 +381,7 @@ def prediction_windows(request):
         if not transmitter:
             data = [{'error': 'You should select a valid Transmitter.'}]
             return JsonResponse(data, safe=False)
-        else:
-            downlink = transmitter[0]['downlink_low']
+        downlink = transmitter[0]['downlink_low']
     except DBConnectionError as error:
         data = [{'error': error.message}]
         return JsonResponse(data, safe=False)
@@ -666,20 +665,18 @@ def scheduling_stations(request):
     if uuid is None:
         data = [{'error': 'You should select a Transmitter.'}]
         return JsonResponse(data, safe=False)
-    else:
-        try:
-            transmitter = get_transmitter_by_uuid(uuid)
-            if not transmitter:
-                data = [{'error': 'You should select a valid Transmitter.'}]
-                return JsonResponse(data, safe=False)
-            else:
-                downlink = transmitter[0]['downlink_low']
-                if downlink is None:
-                    data = [{'error': 'You should select a valid Transmitter.'}]
-                    return JsonResponse(data, safe=False)
-        except DBConnectionError as error:
-            data = [{'error': error.message}]
+    try:
+        transmitter = get_transmitter_by_uuid(uuid)
+        if not transmitter:
+            data = [{'error': 'You should select a valid Transmitter.'}]
             return JsonResponse(data, safe=False)
+        downlink = transmitter[0]['downlink_low']
+        if downlink is None:
+            data = [{'error': 'You should select a valid Transmitter.'}]
+            return JsonResponse(data, safe=False)
+    except DBConnectionError as error:
+        data = [{'error': error.message}]
+        return JsonResponse(data, safe=False)
 
     stations = Station.objects.filter(status__gt=0).prefetch_related('antenna')
     available_stations = get_available_stations(stations, downlink, request.user)
@@ -818,23 +815,10 @@ def station_edit(request, station_id=None):
             form.save_m2m()
             messages.success(request, 'Ground Station saved successfully.')
             return redirect(reverse('base:station_view', kwargs={'station_id': station_form.id}))
-        else:
-            messages.error(
-                request, ('Your Ground Station submission has some '
-                          'errors. {0}').format(form.errors)
-            )
-            return render(
-                request, 'base/station_edit.html', {
-                    'form': form,
-                    'station': station,
-                    'antennas': antennas
-                }
-            )
-    else:
-        if station:
-            form = StationForm(instance=station)
-        else:
-            form = StationForm()
+        messages.error(
+            request, ('Your Ground Station submission has some '
+                      'errors. {0}').format(form.errors)
+        )
         return render(
             request, 'base/station_edit.html', {
                 'form': form,
@@ -842,6 +826,17 @@ def station_edit(request, station_id=None):
                 'antennas': antennas
             }
         )
+    if station:
+        form = StationForm(instance=station)
+    else:
+        form = StationForm()
+    return render(
+        request, 'base/station_edit.html', {
+            'form': form,
+            'station': station,
+            'antennas': antennas
+        }
+    )
 
 
 @login_required

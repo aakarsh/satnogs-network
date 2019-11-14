@@ -89,11 +89,10 @@ def check_transmitter_station_pairs(transmitter_station_list):
                 'Transmitter out of station frequency range.'
                 ' Transmitter-Station pair: {0}'.format(out_of_range_pairs[0])
             )
-        else:
-            raise OutOfRangeError(
-                'Transmitter out of station frequency range. '
-                'Transmitter-Station pairs: {0}'.format(out_of_range_pairs)
-            )
+        raise OutOfRangeError(
+            'Transmitter out of station frequency range. '
+            'Transmitter-Station pairs: {0}'.format(out_of_range_pairs)
+        )
 
 
 def check_overlaps(stations_dict):
