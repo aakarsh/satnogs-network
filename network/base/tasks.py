@@ -1,4 +1,6 @@
 """SatNOGS Network Celery task functions"""
+from __future__ import print_function
+
 import json
 import os
 import urllib2
@@ -28,7 +30,7 @@ def update_all_tle():
         manual_tle=True, norad_follow_id__isnull=True
     ).prefetch_related(Prefetch('tles', queryset=latest_tle_queryset, to_attr='tle'))
     norad_ids = []
-    print "==Fetching TLEs=="
+    print("==Fetching TLEs==")
 
     for obj in satellites:
         norad_id = obj.norad_cat_id
@@ -46,18 +48,18 @@ def update_all_tle():
 
         if norad_id not in list(tles.keys()):
             # No TLE available for this satellite
-            print '{} - {}: NORAD ID not found [error]'.format(obj.name, norad_id)
+            print('{} - {}: NORAD ID not found [error]'.format(obj.name, norad_id))
             continue
 
         source, tle = tles[norad_id]
 
         if obj.tle and obj.tle[0].tle1 == tle[1]:
             # Stored TLE is already the latest available for this satellite
-            print '{} - {}: TLE already exists [defer]'.format(obj.name, norad_id)
+            print('{} - {}: TLE already exists [defer]'.format(obj.name, norad_id))
             continue
 
         Tle.objects.create(tle0=tle[0], tle1=tle[1], tle2=tle[2], satellite=obj)
-        print '{} - {} - {}: new TLE found [updated]'.format(obj.name, norad_id, source)
+        print('{} - {} - {}: new TLE found [updated]'.format(obj.name, norad_id, source))
 
 
 @APP.task(ignore_result=True)
