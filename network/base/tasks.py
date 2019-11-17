@@ -1,3 +1,4 @@
+"""SatNOGS Network Celery task functions"""
 import json
 import os
 import urllib2
@@ -11,7 +12,7 @@ from django.db.models import Prefetch
 from django.utils.timezone import now
 from internetarchive import upload
 from requests.exceptions import HTTPError, ReadTimeout
-from satellite_tle import fetch_tle_from_celestrak
+from satellite_tle import fetch_tles
 
 from network.base.models import DemodData, LatestTle, Observation, Satellite, \
     Station, Tle, Transmitter
@@ -23,23 +24,32 @@ from network.celery import APP
 def update_all_tle():
     """Task to update all satellite TLEs"""
     latest_tle_queryset = LatestTle.objects.all()
-    satellites = Satellite.objects.exclude(
+    satellites = Satellite.objects.exclude(status='re-entered').exclude(
         manual_tle=True, norad_follow_id__isnull=True
     ).prefetch_related(Prefetch('tles', queryset=latest_tle_queryset, to_attr='tle'))
-
+    norad_ids = []
     print "==Fetching TLEs=="
 
     for obj in satellites:
         norad_id = obj.norad_cat_id
         if obj.manual_tle:
             norad_id = obj.norad_follow_id
+        norad_ids.append(int(norad_id))
+    # Remove duplicates in case satellites follow the same NORAD ID
+    norad_ids = set(norad_ids)
+    tles = fetch_tles(norad_ids)
 
-        try:
-            # Fetch latest satellite TLE
-            tle = fetch_tle_from_celestrak(norad_id)
-        except LookupError:
-            print '{} - {}: TLE not found [error]'.format(obj.name, norad_id)
+    for obj in satellites:
+        norad_id = obj.norad_cat_id
+        if obj.manual_tle:
+            norad_id = obj.norad_follow_id
+
+        if norad_id not in list(tles.keys()):
+            # No TLE available for this satellite
+            print '{} - {}: NORAD ID not found [error]'.format(obj.name, norad_id)
             continue
+
+        source, tle = tles[norad_id]
 
         if obj.tle and obj.tle[0].tle1 == tle[1]:
             # Stored TLE is already the latest available for this satellite
@@ -47,7 +57,7 @@ def update_all_tle():
             continue
 
         Tle.objects.create(tle0=tle[0], tle1=tle[1], tle2=tle[2], satellite=obj)
-        print '{} - {}: new TLE found [updated]'.format(obj.name, norad_id)
+        print '{} - {} - {}: new TLE found [updated]'.format(obj.name, norad_id, source)
 
 
 @APP.task(ignore_result=True)
@@ -143,7 +153,7 @@ def clean_observations():
 
 @APP.task
 def sync_to_db():
-    """Task to send demod data to db / SiDS"""
+    """Task to send demod data to SatNOGS DB / SiDS"""
     period = now() - timedelta(days=1)
     transmitters = Transmitter.objects.filter(sync_to_db=True).values_list('uuid', flat=True)
     frames = DemodData.objects.filter(
