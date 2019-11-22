@@ -1,3 +1,4 @@
+"""SatNOGS Network users test suites"""
 import datetime
 
 import factory
@@ -40,5 +41,6 @@ class UserViewTest(TestCase):
         self.client.force_login(self.user)
 
     def test_view_user(self):
+        """Test of user view"""
         response = self.client.get('/users/%s/' % self.user.username)
         self.assertContains(response, self.user.username)

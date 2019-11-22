@@ -1,3 +1,4 @@
+"""SatNOGS Network API django rest framework Views"""
 from django.core.exceptions import ObjectDoesNotExist
 from django.shortcuts import get_object_or_404
 from django.utils.timezone import now
@@ -14,17 +15,20 @@ from network.base.validators import NegativeElevationError, \
 
 class ObservationView(mixins.ListModelMixin, mixins.RetrieveModelMixin, mixins.UpdateModelMixin,
                       mixins.CreateModelMixin, viewsets.GenericViewSet):
+    """SatNOGS Network Observation API view class"""
     queryset = Observation.objects.all()
     filter_class = filters.ObservationViewFilter
     permission_classes = [StationOwnerPermission]
     pagination_class = pagination.LinkedHeaderPageNumberPagination
 
     def get_serializer_class(self):
+        """Returns the right serializer depending on http method that is used"""
         if self.request.method == 'POST':
             return serializers.NewObservationSerializer
         return serializers.ObservationSerializer
 
     def create(self, request, *args, **kwargs):
+        """Creates observations from a list of observation data"""
         serializer = self.get_serializer(data=request.data, many=True, allow_empty=False)
         try:
             if serializer.is_valid():
@@ -53,6 +57,7 @@ class ObservationView(mixins.ListModelMixin, mixins.RetrieveModelMixin, mixins.U
         return response
 
     def update(self, request, *args, **kwargs):
+        """Updates observation with audio, waterfall or demoded data"""
         instance = self.get_object()
         if request.data.get('client_version'):
             instance.ground_station.client_version = request.data.get('client_version')
@@ -83,6 +88,7 @@ class ObservationView(mixins.ListModelMixin, mixins.RetrieveModelMixin, mixins.U
 
 
 class StationView(mixins.ListModelMixin, mixins.RetrieveModelMixin, viewsets.GenericViewSet):
+    """SatNOGS Network Station API view class"""
     queryset = Station.objects.all()
     serializer_class = serializers.StationSerializer
     filter_class = filters.StationViewFilter
@@ -90,6 +96,7 @@ class StationView(mixins.ListModelMixin, mixins.RetrieveModelMixin, viewsets.Gen
 
 
 class TransmitterView(mixins.ListModelMixin, mixins.RetrieveModelMixin, viewsets.GenericViewSet):
+    """SatNOGS Network Transmitter API view class"""
     queryset = Transmitter.objects.all().order_by('uuid')
     serializer_class = serializers.TransmitterSerializer
     filter_class = filters.TransmitterViewFilter
@@ -97,12 +104,14 @@ class TransmitterView(mixins.ListModelMixin, mixins.RetrieveModelMixin, viewsets
 
 
 class JobView(viewsets.ReadOnlyModelViewSet):
+    """SatNOGS Network Job API view class"""
     queryset = Observation.objects.filter(payload='')
     serializer_class = serializers.JobSerializer
     filter_class = filters.ObservationViewFilter
     filter_fields = ('ground_station')
 
     def get_queryset(self):
+        """Returns queryset for Job API view"""
         queryset = self.queryset.filter(start__gte=now())
         ground_station_id = self.request.query_params.get('ground_station', None)
         if ground_station_id and self.request.user.is_authenticated():

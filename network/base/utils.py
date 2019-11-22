@@ -1,3 +1,4 @@
+"""Miscellaneous functions for SatNOGS Network"""
 import csv
 import urllib
 import urllib2
@@ -13,6 +14,7 @@ from network.base.models import DemodData
 
 
 def export_as_csv(modeladmin, request, queryset):
+    """Exports admin panel table in csv format"""
     if not request.user.is_staff:
         raise PermissionDenied
     opts = modeladmin.model._meta
@@ -54,6 +56,7 @@ def export_as_csv(modeladmin, request, queryset):
 
 
 def export_station_status(self, request, queryset):
+    """Exports status of selected stations in csv format"""
     meta = self.model._meta
     field_names = ["id", "status"]
 
@@ -69,7 +72,7 @@ def export_station_status(self, request, queryset):
 
 
 def demod_to_db(frame_id):
-    """Task to send a frame from SatNOGS network to SatNOGS db"""
+    """Task to send a frame from SatNOGS Network to SatNOGS DB"""
     frame = DemodData.objects.get(id=frame_id)
     obs = frame.observation
     sat = obs.satellite

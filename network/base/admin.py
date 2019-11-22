@@ -1,3 +1,4 @@
+"""Define functions and settings for the django admin base interface"""
 from django.contrib import admin
 
 from network.base.models import Antenna, DemodData, Observation, Satellite, \
@@ -7,6 +8,7 @@ from network.base.utils import export_as_csv, export_station_status
 
 @admin.register(Antenna)
 class AntennaAdmin(admin.ModelAdmin):
+    """Define Antenna view in django admin UI"""
     list_display = (
         'id',
         '__unicode__',
@@ -19,14 +21,17 @@ class AntennaAdmin(admin.ModelAdmin):
     )
 
     def antenna_count(self, obj):
+        """Return the number of antennas"""
         return obj.stations.all().count()
 
     def station_list(self, obj):
+        """Return stations that use the antenna"""
         return ",\n".join([str(s.id) for s in obj.stations.all()])
 
 
 @admin.register(Station)
 class StationAdmin(admin.ModelAdmin):
+    """Define Station view in django admin UI"""
     list_display = (
         'id', 'name', 'owner', 'get_email', 'lng', 'lat', 'qthlocator', 'client_version',
         'created_date', 'state', 'target_utilization'
@@ -39,15 +44,18 @@ class StationAdmin(admin.ModelAdmin):
     export_station_status.short_description = "Export selected status"
 
     def created_date(self, obj):
+        """Return when the station was created"""
         return obj.created.strftime('%d.%m.%Y, %H:%M')
 
     def get_email(self, obj):
+        """Return station owner email address"""
         return obj.owner.email
 
     get_email.admin_order_field = 'email'
     get_email.short_description = 'Owner Email'
 
     def get_actions(self, request):
+        """Return the list of actions for station admin view"""
         actions = super(StationAdmin, self).get_actions(request)
         if 'delete_selected' in actions:
             del actions['delete_selected']
@@ -56,6 +64,7 @@ class StationAdmin(admin.ModelAdmin):
 
 @admin.register(Satellite)
 class SatelliteAdmin(admin.ModelAdmin):
+    """Define Satellite view in django admin UI"""
     list_display = ('id', 'name', 'norad_cat_id', 'manual_tle', 'norad_follow_id', 'status')
     list_filter = (
         'status',
@@ -67,15 +76,18 @@ class SatelliteAdmin(admin.ModelAdmin):
 
 @admin.register(Tle)
 class TleAdmin(admin.ModelAdmin):
+    """Define TLE view in django admin UI"""
     list_display = ('satellite_name', 'tle0', 'tle1', 'updated')
     list_filter = ('satellite__name', )
 
     def satellite_name(self, obj):
+        """Return the satellite name"""
         return obj.satellite.name
 
 
 @admin.register(Transmitter)
 class TransmitterAdmin(admin.ModelAdmin):
+    """Define Transmitter view in django admin UI"""
     list_display = ('uuid', 'sync_to_db')
     search_fields = ('uuid', )
     list_filter = ('sync_to_db', )
@@ -83,12 +95,13 @@ class TransmitterAdmin(admin.ModelAdmin):
 
 
 class DemodDataInline(admin.TabularInline):
-    """Defines DemodData inline template for use in Observation view in django admin UI"""
+    """Define DemodData inline template for use in Observation view in django admin UI"""
     model = DemodData
 
 
 @admin.register(Observation)
 class ObservationAdmin(admin.ModelAdmin):
+    """Define Observation view in django admin UI"""
     list_display = ('id', 'author', 'satellite', 'transmitter_uuid', 'start', 'end')
     list_filter = ('start', 'end')
     search_fields = ('satellite', 'author')

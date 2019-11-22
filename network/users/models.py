@@ -1,3 +1,4 @@
+"""Django database users model for SatNOGS Network"""
 from django.contrib.auth.models import AbstractUser
 from django.core.validators import MaxLengthValidator
 from django.db import models
@@ -6,6 +7,7 @@ from rest_framework.authtoken.models import Token
 
 
 def gen_token(sender, instance, created, **kwargs):  # pylint: disable=W0613
+    """Generate token for user"""
     try:
         Token.objects.get(user=instance)
     except Token.DoesNotExist:
@@ -19,6 +21,7 @@ class User(AbstractUser):
 
     @property
     def displayname(self):
+        """Return the display name of user"""
         if self.get_full_name():
             return self.get_full_name()
         return self.username

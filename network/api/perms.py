@@ -1,3 +1,4 @@
+"""SatNOGS Network API permissions, django rest framework"""
 from rest_framework import permissions
 
 from network.base.perms import schedule_perms

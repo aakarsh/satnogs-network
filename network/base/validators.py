@@ -1,3 +1,4 @@
+"""Django base validators for SatNOGS Network"""
 from datetime import datetime, timedelta
 
 from django.conf import settings
@@ -5,22 +6,27 @@ from django.utils.timezone import make_aware, utc
 
 
 class ObservationOverlapError(Exception):
+    """Error when observation overlaps with already scheduled one"""
     pass
 
 
 class OutOfRangeError(Exception):
+    """Error when transmitter is our of station's antenna frequency range"""
     pass
 
 
 class NegativeElevationError(Exception):
+    """Error when satellite doesn't raise above station's horizon"""
     pass
 
 
 class SinglePassError(Exception):
+    """Error when between given start and end datetimes there are more than one satellite passes"""
     pass
 
 
 def check_start_datetime(start):
+    """Validate start datetime"""
     if start < make_aware(datetime.now(), utc):
         raise ValueError("Start datetime should be in the future!")
     if start < make_aware(datetime.now() + timedelta(minutes=settings.OBSERVATION_DATE_MIN_START),
@@ -33,6 +39,7 @@ def check_start_datetime(start):
 
 
 def check_end_datetime(end):
+    """Validate end datetime"""
     if end < make_aware(datetime.now(), utc):
         raise ValueError("End datetime should be in the future!")
     max_duration = settings.OBSERVATION_DATE_MIN_START + settings.OBSERVATION_DATE_MAX_RANGE
@@ -44,6 +51,7 @@ def check_end_datetime(end):
 
 
 def check_start_end_datetimes(start, end):
+    """Validate the pair of start and end datetimes"""
     if start > end:
         raise ValueError("End datetime should be after Start datetime!")
     if (end - start) < timedelta(seconds=settings.OBSERVATION_DURATION_MIN):
@@ -55,12 +63,14 @@ def check_start_end_datetimes(start, end):
 
 
 def downlink_low_is_in_range(antenna, transmitter):
+    """Return true if transmitter frequency is in station's antenna frequency range"""
     if transmitter['downlink_low'] is not None:
         return antenna.frequency <= transmitter['downlink_low'] <= antenna.frequency_max
     return False
 
 
 def is_transmitter_in_station_range(transmitter, station):
+    """Return true if transmitter frequency is in one of the station's antennas frequency ranges"""
     for gs_antenna in station.antenna.all():
         if downlink_low_is_in_range(gs_antenna, transmitter):
             return True
@@ -68,6 +78,7 @@ def is_transmitter_in_station_range(transmitter, station):
 
 
 def check_transmitter_station_pairs(transmitter_station_list):
+    """Validate the pairs of transmitter and stations"""
     out_of_range_pairs = [
         (str(pair[0]['uuid']), int(pair[1].id)) for pair in transmitter_station_list
         if not is_transmitter_in_station_range(pair[0], pair[1])
@@ -86,6 +97,7 @@ def check_transmitter_station_pairs(transmitter_station_list):
 
 
 def check_overlaps(stations_dict):
+    """Check for overlaps among requested observations"""
     for station in stations_dict.keys():
         periods = stations_dict[station]
         total_periods = len(periods)

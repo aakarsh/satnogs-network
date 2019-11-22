@@ -1,4 +1,5 @@
 #!/usr/bin/env python
+"""WSGI module for SatNOGS Network"""
 import os
 
 from django.core.wsgi import get_wsgi_application

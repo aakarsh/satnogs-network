@@ -1,3 +1,4 @@
+"""Module for calculating and keep in cache satellite and transmitter statistics"""
 import math
 
 from django.core.cache import cache
@@ -8,6 +9,7 @@ from network.base.models import Observation
 
 
 def transmitter_stats_by_uuid(uuid):
+    """Calculate and put in cache transmitter statistics"""
     stats = cache.get('tr-{0}-stats'.format(uuid))
     if stats is None:
         # Sum - Case - When should be replaced with Count and filter when we move to Django 2.*
@@ -64,6 +66,7 @@ def transmitter_stats_by_uuid(uuid):
 
 
 def satellite_stats_by_transmitter_list(transmitter_list):
+    """Calculate satellite statistics"""
     total_count = 0
     unvetted_count = 0
     future_count = 0

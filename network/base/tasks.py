@@ -98,6 +98,7 @@ def fetch_data():
 
 @APP.task(ignore_result=True)
 def archive_audio(obs_id):
+    """Upload audio of observation in archive.org"""
     obs = Observation.objects.get(id=obs_id)
     suffix = '-{0}'.format(settings.ENVIRONMENT)
     if settings.ENVIRONMENT == 'production':
@@ -216,6 +217,7 @@ def notify_for_stations_without_results():
 
 @APP.task(ignore_result=True)
 def stations_cache_rates():
+    """Cache the success rate of the stations"""
     stations = Station.objects.all()
     for station in stations:
         observations = station.observations.exclude(testing=True).exclude(vetted_status="unknown")

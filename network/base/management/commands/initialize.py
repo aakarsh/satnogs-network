@@ -1,3 +1,4 @@
+"""SatNOGS Network django management command to initialize a new database"""
 from django.core.management import call_command
 from django.core.management.base import BaseCommand
 
@@ -7,6 +8,7 @@ from network.base.tests import DemodDataFactory, ObservationFactory, \
 
 
 class Command(BaseCommand):
+    """Django management command to initialize a new database"""
     help = 'Create initial fixtures'
 
     def handle(self, *args, **options):

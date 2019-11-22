@@ -1,3 +1,4 @@
+"""Django database base model for SatNOGS Network"""
 import logging
 import os
 from datetime import timedelta
@@ -56,10 +57,12 @@ TRANSMITTER_TYPE = ['Transmitter', 'Transceiver', 'Transponder']
 
 
 def _name_obs_files(instance, filename):
+    """Return a filepath formatted by Observation ID"""
     return 'data_obs/{0}/{1}'.format(instance.id, filename)
 
 
 def _name_obs_demoddata(instance, filename):
+    """Return a filepath for DemodData formatted by Observation ID"""
     # On change of the string bellow, change it also at api/views.py
     return 'data_obs/{0}/{1}'.format(instance.observation.id, filename)
 
@@ -67,7 +70,7 @@ def _name_obs_demoddata(instance, filename):
 def _observation_post_save(sender, instance, created, **kwargs):  # pylint: disable=W0613
     """
     Post save Observation operations
-    * Auto vet as good obserfvation with Demod Data
+    * Auto vet as good observation with DemodData
     * Mark Observations from testing stations
     * Update client version for ground station
     """
@@ -116,6 +119,7 @@ def _tle_post_save(sender, instance, created, **kwargs):  # pylint: disable=W061
 
 
 def validate_image(fieldfile_obj):
+    """Validates image size"""
     filesize = fieldfile_obj.file.size
     megabyte_limit = 2.0
     if filesize > megabyte_limit * 1024 * 1024:
@@ -181,12 +185,14 @@ class Station(models.Model):
         ordering = ['-status']
 
     def get_image(self):
+        """Return the image of the station or the default image if there is a defined one"""
         if self.image and hasattr(self.image, 'url'):
             return self.image.url
         return settings.STATION_DEFAULT_IMAGE
 
     @property
     def is_online(self):
+        """Return true if station is online"""
         try:
             heartbeat = self.last_seen + timedelta(minutes=int(settings.STATION_HEARTBEAT_TIME))
             return heartbeat > now()
@@ -195,16 +201,19 @@ class Station(models.Model):
 
     @property
     def is_offline(self):
+        """Return true if station is offline"""
         return not self.is_online
 
     @property
     def is_testing(self):
+        """Return true if station is online and in testing mode"""
         if self.is_online:
             if self.status == 1:
                 return True
         return False
 
     def state(self):
+        """Return the station status in html format"""
         if not self.status:
             return format_html('<span style="color:red;">Offline</span>')
         if self.status == 1:
@@ -213,6 +222,7 @@ class Station(models.Model):
 
     @property
     def success_rate(self):
+        """Return the success rate of the station - successful observation over failed ones"""
         rate = cache.get('station-{0}-rate'.format(self.id))
         if not rate:
             observations = self.observations.exclude(testing=True).exclude(vetted_status="unknown")
@@ -228,16 +238,19 @@ class Station(models.Model):
 
     @property
     def observations_count(self):
+        """Return the number of station's observations"""
         count = self.observations.all().count()
         return count
 
     @property
     def observations_future_count(self):
+        """Return the number of future station's observations"""
         count = self.observations.is_future().count()
         return count
 
     @property
     def apikey(self):
+        """Return station owner API key"""
         try:
             token = Token.objects.get(user=self.owner)
         except Token.DoesNotExist:
@@ -252,6 +265,7 @@ post_save.connect(_station_post_save, sender=Station)
 
 
 class StationStatusLog(models.Model):
+    """Model for keeping Status log for Station."""
     station = models.ForeignKey(
         Station, related_name='station_logs', on_delete=models.CASCADE, null=True, blank=True
     )
@@ -281,6 +295,7 @@ class Satellite(models.Model):
         ordering = ['norad_cat_id']
 
     def get_image(self):
+        """Return the station image or the default if doesn't exist one"""
         if self.image:
             return self.image
         return settings.SATELLITE_DEFAULT_IMAGE
@@ -290,6 +305,7 @@ class Satellite(models.Model):
 
 
 class Tle(models.Model):
+    """Model for TLEs."""
     tle0 = models.CharField(max_length=100, blank=True)
     tle1 = models.CharField(max_length=200, blank=True)
     tle2 = models.CharField(max_length=200, blank=True)
@@ -307,6 +323,7 @@ class Tle(models.Model):
 
     @property
     def str_array(self):
+        """Return TLE in string array format"""
         # tle fields are unicode, pyephem and others expect python strings
         return [str(self.tle0), str(self.tle1), str(self.tle2)]
 
@@ -395,34 +412,41 @@ class Observation(models.Model):
 
     @property
     def is_past(self):
+        """Return true if observation is in the past (end time is in the past)"""
         return self.end < now()
 
     @property
     def is_future(self):
+        """Return true if observation is in the future (end time is in the future)"""
         return self.end > now()
 
     @property
     def is_started(self):
+        """Return true if observation has started (start time is in the past)"""
         return self.start < now()
 
     # this payload has been vetted good/bad/failed by someone
     @property
     def is_vetted(self):
+        """Return true if observation is vetted"""
         return not self.vetted_status == 'unknown'
 
     # this payload has been vetted as good by someone
     @property
     def is_good(self):
+        """Return true if observation is vetted as good"""
         return self.vetted_status == 'good'
 
     # this payload has been vetted as bad by someone
     @property
     def is_bad(self):
+        """Return true if observation is vetted as bad"""
         return self.vetted_status == 'bad'
 
     # this payload has been vetted as failed by someone
     @property
     def is_failed(self):
+        """Return true if observation is vetted as failed"""
         return self.vetted_status == 'failed'
 
     @property
@@ -458,6 +482,7 @@ class Observation(models.Model):
 
     @property
     def audio_url(self):
+        """Return url for observation's audio file"""
         if self.has_audio:
             if self.archive_url:
                 try:
@@ -479,11 +504,13 @@ class Observation(models.Model):
         return str(self.id)
 
     def get_absolute_url(self):
+        """Return absolute url of the model object"""
         return reverse('base:observation_view', kwargs={'observation_id': self.id})
 
 
 @receiver(models.signals.post_delete, sender=Observation)
 def observation_remove_files(sender, instance, **kwargs):  # pylint: disable=W0613
+    """Remove audio and waterfall files of an observation if the observation is deleted"""
     if instance.payload:
         if os.path.isfile(instance.payload.path):
             os.remove(instance.payload.path)
@@ -496,6 +523,7 @@ post_save.connect(_observation_post_save, sender=Observation)
 
 
 class DemodData(models.Model):
+    """Model for DemodData."""
     observation = models.ForeignKey(
         Observation, related_name='demoddata', on_delete=models.CASCADE
     )
@@ -503,6 +531,7 @@ class DemodData(models.Model):
     copied_to_db = models.BooleanField(default=False)
 
     def is_image(self):
+        """Return true if data file is an image"""
         with open(self.payload_demod.path) as file_path:
             try:
                 Image.open(file_path)
@@ -512,6 +541,7 @@ class DemodData(models.Model):
                 return True
 
     def display_payload(self):
+        """Return the content of the data file"""
         with open(self.payload_demod.path) as file_path:
             payload = file_path.read()
             try:
@@ -523,6 +553,7 @@ class DemodData(models.Model):
 
 @receiver(models.signals.post_delete, sender=DemodData)
 def demoddata_remove_files(sender, instance, **kwargs):  # pylint: disable=W0613
+    """Remove data file of an observation if the observation is deleted"""
     if instance.payload_demod:
         if os.path.isfile(instance.payload_demod.path):
             os.remove(instance.payload_demod.path)

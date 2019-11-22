@@ -1,3 +1,4 @@
+"""SatNOGS Network django base Forms class"""
 from django import forms
 
 from network.base.db_api import DBConnectionError, \
@@ -11,7 +12,7 @@ from network.base.validators import ObservationOverlapError, OutOfRangeError, \
 
 
 class ObservationForm(forms.ModelForm):
-
+    """Model Form class for Observation objects"""
     start = forms.DateTimeField(
         input_formats=['%Y-%m-%d %H:%M:%S.%f', '%Y-%m-%d %H:%M:%S'],
         error_messages={
@@ -41,6 +42,7 @@ class ObservationForm(forms.ModelForm):
     )
 
     def clean_start(self):
+        """Validates start datetime of a new observation"""
         start = self.cleaned_data['start']
         try:
             check_start_datetime(start)
@@ -49,6 +51,7 @@ class ObservationForm(forms.ModelForm):
         return start
 
     def clean_end(self):
+        """Validates end datetime of a new observation"""
         end = self.cleaned_data['end']
         try:
             check_end_datetime(end)
@@ -57,6 +60,7 @@ class ObservationForm(forms.ModelForm):
         return end
 
     def clean(self):
+        """Validates combination of start and end datetimes of a new observation"""
         if any(self.errors):
             # If there are errors in fields validation no need for validating the form
             return
@@ -75,11 +79,14 @@ class ObservationForm(forms.ModelForm):
 
 
 class BaseObservationFormSet(forms.BaseFormSet):
+    """Base FormSet class for Observation objects forms"""
     def __init__(self, user, *args, **kwargs):
+        """Initializes Observation FormSet"""
         self.user = user
         super(BaseObservationFormSet, self).__init__(*args, **kwargs)
 
     def clean(self):
+        """Validates Observation FormSet data"""
         if any(self.errors):
             # If there are errors in forms validation no need for validating the formset
             return
@@ -135,6 +142,7 @@ class BaseObservationFormSet(forms.BaseFormSet):
 
 
 class StationForm(forms.ModelForm):
+    """Model Form class for Station objects"""
     class Meta:
         model = Station
         fields = [
@@ -145,6 +153,7 @@ class StationForm(forms.ModelForm):
 
 
 class SatelliteFilterForm(forms.Form):
+    """Form class for Satellite objects"""
     norad = forms.IntegerField(required=False)
     start = forms.CharField(required=False)
     end = forms.CharField(required=False)

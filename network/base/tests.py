@@ -1,3 +1,4 @@
+"""SatNOGS Network base test suites"""
 import random
 from datetime import datetime, timedelta
 
@@ -20,6 +21,7 @@ OBSERVATION_STATUS_IDS = [c[0] for c in OBSERVATION_STATUSES]
 
 
 def generate_payload():
+    """Create data payloads"""
     payload = '{0:b}'.format(random.randint(500000000, 510000000))
     digits = 1824
     while digits:
@@ -30,6 +32,7 @@ def generate_payload():
 
 
 def generate_payload_name():
+    """Create payload names"""
     filename = datetime.strftime(
         fuzzy.FuzzyDateTime(now() - timedelta(days=10), now()).fuzz(), '%Y%m%dT%H%M%SZ'
     )
@@ -62,6 +65,7 @@ class StationFactory(factory.django.DjangoModelFactory):
 
     @factory.post_generation
     def antennas(self, create, extracted, **kwargs):  # pylint: disable=W0613
+        """Generate antennas"""
         if not create:
             return
 
@@ -128,6 +132,7 @@ class ObservationFactory(factory.django.DjangoModelFactory):
 
 
 class DemodDataFactory(factory.django.DjangoModelFactory):
+    """DemodData model factory."""
     observation = factory.Iterator(Observation.objects.all())
     payload_demod = factory.django.FileField()
 
@@ -141,6 +146,7 @@ class HomeViewTest(TestCase):
     Simple test to make sure the home page is working
     """
     def test_home_page(self):
+        """Test for string in home page"""
         response = self.client.get('/')
         self.assertContains(response, 'Crowd-sourced satellite operations')
 
@@ -151,6 +157,7 @@ class AboutViewTest(TestCase):
     Simple test to make sure the about page is working
     """
     def test_about_page(self):
+        """Test for string in about page"""
         response = self.client.get('/about/')
         self.assertContains(response, 'SatNOGS Network is a global management interface')
 
@@ -168,6 +175,7 @@ class StationListViewTest(TestCase):
             self.stations.append(StationFactory())
 
     def test_station_list(self):
+        """Test for owners and station names in station page"""
         response = self.client.get('/stations/')
         for station in self.stations:
             self.assertContains(response, station.owner)
@@ -213,23 +221,27 @@ class ObservationsListViewTest(TestCase):
                 self.observations.append(obs)
 
     def test_observations_list(self):
+        """Test for transmitter modes of each observation in observations page"""
         response = self.client.get('/observations/')
         for observation in self.observations:
             self.assertContains(response, observation.transmitter_mode)
 
     def test_observations_list_select_bad(self):
+        """Test for transmitter modes of each bad observation in observations page"""
         response = self.client.get('/observations/?bad=1')
 
         for observation in self.observations_bad:
             self.assertContains(response, observation.transmitter_mode)
 
     def test_observations_list_select_good(self):
+        """Test for transmitter modes of each good observation in observations page"""
         response = self.client.get('/observations/?good=1')
 
         for observation in self.observations_good:
             self.assertContains(response, observation.transmitter_mode)
 
     def test_observations_list_select_unvetted(self):
+        """Test for transmitter modes of each unvetted observation in observations page"""
         response = self.client.get('/observations/?unvetted=1')
 
         for observation in self.observations_unvetted:
@@ -243,6 +255,7 @@ class NotFoundErrorTest(TestCase):
     client = Client()
 
     def test_404_not_found(self):
+        """Test for "404" html status code in response for requesting a non-existed page"""
         response = self.client.get('/blah')
         self.assertEquals(response.status_code, 404)
 
@@ -254,6 +267,7 @@ class RobotsViewTest(TestCase):
     client = Client()
 
     def test_robots(self):
+        """Test for "Disallow" string in response for requesting robots.txt"""
         response = self.client.get('/robots.txt')
         self.assertContains(response, 'Disallow: /')
 
@@ -280,6 +294,7 @@ class ObservationViewTest(TestCase):
         self.observation = ObservationFactory()
 
     def test_observation(self):
+        """Test for observer and transmitter mode in observation page"""
         response = self.client.get('/observations/%d/' % self.observation.id)
         self.assertContains(response, self.observation.author.username)
         self.assertContains(response, self.observation.transmitter_mode)
@@ -363,6 +378,7 @@ class StationViewTest(TestCase):
         self.station = StationFactory()
 
     def test_observation(self):
+        """Test for owner, elevation and min horizon in station page"""
         response = self.client.get('/stations/%d/' % self.station.id)
         self.assertContains(response, self.station.owner.username)
         self.assertContains(response, self.station.alt)
@@ -386,6 +402,7 @@ class StationDeleteTest(TestCase):
         self.station.save()
 
     def test_station_delete(self):
+        """Test deletion of station"""
         response = self.client.get('/stations/%d/delete/' % self.station.id)
         self.assertRedirects(response, '/users/%s/' % self.user.username)
         with self.assertRaises(Station.DoesNotExist):
@@ -407,6 +424,7 @@ class SettingsSiteViewTest(TestCase):
         self.client.force_login(self.user)
 
     def test_get(self):
+        """Test for "Fetch Data" in Settings Site page"""
         response = self.client.get('/settings_site/')
         self.assertContains(response, 'Fetch Data')
 
@@ -429,4 +447,5 @@ class ObservationModelTest(TestCase):
         self.observation.save()
 
     def test_is_passed(self):
+        """Test for observation be in past"""
         self.assertTrue(self.observation.is_past)

@@ -1,3 +1,4 @@
+"""SatNOGS Network API serializers, django rest framework"""
 from rest_framework import serializers
 
 from network.base.db_api import DBConnectionError, \
@@ -14,12 +15,14 @@ from network.base.validators import ObservationOverlapError, OutOfRangeError, \
 
 
 class DemodDataSerializer(serializers.ModelSerializer):
+    """SatNOGS Network DemodData API Serializer"""
     class Meta:
         model = DemodData
         fields = ('payload_demod', )
 
 
 class ObservationSerializer(serializers.ModelSerializer):
+    """SatNOGS Network Observation API Serializer"""
     transmitter = serializers.SerializerMethodField()
     transmitter_updated = serializers.SerializerMethodField()
     norad_cat_id = serializers.SerializerMethodField()
@@ -54,44 +57,52 @@ class ObservationSerializer(serializers.ModelSerializer):
         ]
 
     def update(self, instance, validated_data):
+        """Updates observation object with validated data"""
         validated_data.pop('demoddata')
         super(ObservationSerializer, self).update(instance, validated_data)
         return instance
 
     def get_transmitter(self, obj):
+        """Returns Transmitter UUID"""
         try:
             return obj.transmitter_uuid
         except AttributeError:
             return ''
 
     def get_transmitter_updated(self, obj):
+        """Returns Transmitter last update date"""
         try:
             return obj.transmitter_created
         except AttributeError:
             return ''
 
     def get_norad_cat_id(self, obj):
+        """Returns Satellite NORAD ID"""
         return obj.satellite.norad_cat_id
 
     def get_station_name(self, obj):
+        """Returns Station name"""
         try:
             return obj.ground_station.name
         except AttributeError:
             return None
 
     def get_station_lat(self, obj):
+        """Returns Station latitude"""
         try:
             return obj.ground_station.lat
         except AttributeError:
             return None
 
     def get_station_lng(self, obj):
+        """Returns Station longitude"""
         try:
             return obj.ground_station.lng
         except AttributeError:
             return None
 
     def get_station_alt(self, obj):
+        """Returns Station elevation"""
         try:
             return obj.ground_station.alt
         except AttributeError:
@@ -99,7 +110,9 @@ class ObservationSerializer(serializers.ModelSerializer):
 
 
 class NewObservationListSerializer(serializers.ListSerializer):
+    """SatNOGS Network New Observation API List Serializer"""
     def validate(self, attrs):
+        """Validates data from a list of new observations"""
         user = self.context['request'].user
         station_list = []
         transmitter_uuid_list = []
@@ -151,6 +164,7 @@ class NewObservationListSerializer(serializers.ListSerializer):
         return attrs
 
     def create(self, validated_data):
+        """Creates new observations from a list of new observations validated data"""
         new_observations = []
         for observation_data in validated_data:
             station = observation_data['ground_station']
@@ -170,10 +184,15 @@ class NewObservationListSerializer(serializers.ListSerializer):
         return new_observations
 
     def update(self, instance, validated_data):
+        """Updates observations from a list of validated data
+
+        currently disabled and returns None
+        """
         return None
 
 
 class NewObservationSerializer(serializers.Serializer):
+    """SatNOGS Network New Observation API Serializer"""
     start = serializers.DateTimeField(
         input_formats=['%Y-%m-%d %H:%M:%S.%f', '%Y-%m-%d %H:%M:%S'],
         error_messages={
@@ -212,6 +231,7 @@ class NewObservationSerializer(serializers.Serializer):
     )
 
     def validate_start(self, value):
+        """Validates start datetime of a new observation"""
         try:
             check_start_datetime(value)
         except ValueError as error:
@@ -219,6 +239,7 @@ class NewObservationSerializer(serializers.Serializer):
         return value
 
     def validate_end(self, value):
+        """Validates end datetime of a new observation"""
         try:
             check_end_datetime(value)
         except ValueError as error:
@@ -226,6 +247,7 @@ class NewObservationSerializer(serializers.Serializer):
         return value
 
     def validate(self, attrs):
+        """Validates combination of start and end datetimes of a new observation"""
         start = attrs['start']
         end = attrs['end']
         try:
@@ -235,15 +257,23 @@ class NewObservationSerializer(serializers.Serializer):
         return attrs
 
     def create(self, validated_data):
-        # If in the future we want to implement this serializer accepting and creating observation
-        # from single object instead from a list of objects, we should remove raising the exception
-        # below and implement the validations that exist now only on NewObservationListSerializer
+        """Creates a new observation
+
+        Currently not implemented and raises exception. If in the future we want to implement this
+        serializer accepting and creating observation from single object instead from a list of
+        objects, we should remove raising the exception below and implement the validations that
+        exist now only on NewObservationListSerializer
+        """
         raise serializers.ValidationError(
             "Serializer is implemented for accepting and schedule\
                                            only lists of observations"
         )
 
     def update(self, instance, validated_data):
+        """Updates an observation from validated data
+
+        currently disabled and returns None
+        """
         return None
 
     class Meta:
@@ -251,12 +281,14 @@ class NewObservationSerializer(serializers.Serializer):
 
 
 class AntennaSerializer(serializers.ModelSerializer):
+    """SatNOGS Network Antenna API Serializer"""
     class Meta:
         model = Antenna
         fields = ('frequency', 'frequency_max', 'band', 'antenna_type')
 
 
 class StationSerializer(serializers.ModelSerializer):
+    """SatNOGS Network Station API Serializer"""
     antenna = AntennaSerializer(many=True)
     altitude = serializers.SerializerMethodField()
     min_horizon = serializers.SerializerMethodField()
@@ -272,13 +304,17 @@ class StationSerializer(serializers.ModelSerializer):
         )
 
     def get_altitude(self, obj):
+        """Returns Station elevation"""
         return obj.alt
 
     def get_min_horizon(self, obj):
+        """Returns Station minimum horizon"""
         return obj.horizon
 
     def get_antenna(self, obj):
+        """Returns Station antenna list"""
         def antenna_name(antenna):
+            """Returns Station antenna"""
             return antenna.band + " " + antenna.get_antenna_type_display()
 
         try:
@@ -287,12 +323,14 @@ class StationSerializer(serializers.ModelSerializer):
             return None
 
     def get_observations(self, obj):
+        """Returns Station observations number"""
         try:
             return obj.observations_count
         except AttributeError:
             return None
 
     def get_status(self, obj):
+        """Returns Station status"""
         try:
             return obj.get_status_display()
         except AttributeError:
@@ -300,6 +338,7 @@ class StationSerializer(serializers.ModelSerializer):
 
 
 class JobSerializer(serializers.ModelSerializer):
+    """SatNOGS Network Job API Serializer"""
     frequency = serializers.SerializerMethodField()
     tle0 = serializers.SerializerMethodField()
     tle1 = serializers.SerializerMethodField()
@@ -316,6 +355,7 @@ class JobSerializer(serializers.ModelSerializer):
         )
 
     def get_frequency(self, obj):
+        """Returns Transmitter downlink low frequency"""
         frequency = obj.transmitter_downlink_low
         frequency_drift = obj.transmitter_downlink_drift
         if frequency_drift is None:
@@ -323,28 +363,35 @@ class JobSerializer(serializers.ModelSerializer):
         return int(round(frequency + ((frequency * frequency_drift) / float(pow(10, 9)))))
 
     def get_transmitter(self, obj):
+        """Returns Transmitter UUID"""
         return obj.transmitter_uuid
 
     def get_tle0(self, obj):
+        """Returns line 0 of TLE"""
         return obj.tle.tle0
 
     def get_tle1(self, obj):
+        """Returns line 1 of TLE"""
         return obj.tle.tle1
 
     def get_tle2(self, obj):
+        """Returns line 2 of TLE"""
         return obj.tle.tle2
 
     def get_mode(self, obj):
+        """Returns Transmitter mode"""
         try:
             return obj.transmitter_mode
         except AttributeError:
             return ''
 
     def get_baud(self, obj):
+        """Returns Transmitter baudrate"""
         return obj.transmitter_baud
 
 
 class TransmitterSerializer(serializers.ModelSerializer):
+    """SatNOGS Network Transmitter API Serializer"""
     stats = serializers.SerializerMethodField()
 
     class Meta:
@@ -352,6 +399,7 @@ class TransmitterSerializer(serializers.ModelSerializer):
         fields = ('uuid', 'sync_to_db', 'stats')
 
     def get_stats(self, obj):
+        """Returns Transmitter statistics"""
         stats = transmitter_stats_by_uuid(obj.uuid)
         for statistic in stats:
             stats[statistic] = int(stats[statistic])

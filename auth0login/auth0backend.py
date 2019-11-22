@@ -1,3 +1,4 @@
+"""SatNOGS Network Auth0 login module auth backend"""
 import requests
 from social_core.backends.oauth import BaseOAuth2
 

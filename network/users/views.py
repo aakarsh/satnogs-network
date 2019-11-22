@@ -1,3 +1,4 @@
+"""Django users views for SatNOGS Network"""
 from braces.views import LoginRequiredMixin
 from django.core.urlresolvers import reverse
 from django.db.models import Count
@@ -13,6 +14,7 @@ from network.users.models import User
 
 
 class UserRedirectView(LoginRequiredMixin, RedirectView):
+    """View for user redirect"""
     permanent = False
 
     def get_redirect_url(self, *args, **kwargs):
@@ -20,7 +22,7 @@ class UserRedirectView(LoginRequiredMixin, RedirectView):
 
 
 class UserUpdateView(LoginRequiredMixin, UpdateView):
-
+    """View for user update"""
     form_class = UserForm
 
     model = User

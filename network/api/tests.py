@@ -1,3 +1,4 @@
+"""SatNOGS Network API test suites"""
 import json
 
 from django.test import TestCase
@@ -25,6 +26,7 @@ class JobViewApiTest(TestCase):
         self.observation = ObservationFactory()
 
     def test_job_view_api(self):
+        """Test the Job View API"""
         response = self.client.get('/api/jobs/')
         response_json = json.loads(response.content)
         self.assertEqual(response_json, [])
@@ -43,6 +45,7 @@ class StationViewApiTest(TestCase):
         self.station = StationFactory.create(antennas=[self.antenna])
 
     def test_station_view_api(self):
+        """Test the Station View API"""
 
         ants = self.station.antenna.all()
         ser_ants = [

@@ -1,3 +1,4 @@
+"""Django base views for SatNOGS Network"""
 import urllib2
 from collections import defaultdict
 from datetime import datetime, timedelta
@@ -38,6 +39,7 @@ from network.users.models import User
 
 
 class StationSerializer(serializers.ModelSerializer):
+    """Django model Serializer for Station model"""
     status_display = serializers.SerializerMethodField()
 
     class Meta:
@@ -45,6 +47,7 @@ class StationSerializer(serializers.ModelSerializer):
         fields = ('name', 'lat', 'lng', 'id', 'status', 'status_display')
 
     def get_status_display(self, obj):
+        """Returns the station status"""
         try:
             return obj.get_status_display()
         except AttributeError:
@@ -52,6 +55,7 @@ class StationSerializer(serializers.ModelSerializer):
 
 
 class StationAllView(viewsets.ReadOnlyModelViewSet):
+    """Station View of all non offline stations"""
     queryset = Station.objects.exclude(status=0)
     serializer_class = StationSerializer
 
@@ -67,6 +71,7 @@ def index(request):
 
 
 def robots(request):
+    """Returns response for robots.txt requests"""
     data = render(request, 'robots.txt', {'environment': settings.ENVIRONMENT})
     response = HttpResponse(data, content_type='text/plain; charset=utf-8')
     return response
@@ -221,6 +226,7 @@ class ObservationListView(ListView):
 
 
 def observation_new_post(request):
+    """Handles POST requests for creating one or more new observations."""
     ObservationFormSet = formset_factory(  # pylint: disable=C0103
         ObservationForm, formset=BaseObservationFormSet, min_num=1, validate_min=True
     )
@@ -348,6 +354,7 @@ def observation_new(request):
 
 @ajax_required
 def prediction_windows(request):
+    """Calculates and returns passes of satellites over stations"""
     sat_norad_id = request.POST['satellite']
     transmitter = request.POST['transmitter']
     start = request.POST['start']
@@ -505,6 +512,7 @@ def observation_delete(request, observation_id):
 @login_required
 @ajax_required
 def observation_vet(request, observation_id):
+    """Handles request for vetting an observation"""
     try:
         observation = Observation.objects.get(id=observation_id)
     except Observation.DoesNotExist:
@@ -828,6 +836,7 @@ def station_delete(request, station_id):
 
 
 def transmitters_with_stats(transmitters_list):
+    """Returns a list of transmitters with their statistics"""
     transmitters_with_stats_list = []
     for transmitter in transmitters_list:
         transmitter_stats = transmitter_stats_by_uuid(transmitter['uuid'])
@@ -837,6 +846,7 @@ def transmitters_with_stats(transmitters_list):
 
 
 def satellite_view(request, norad_id):
+    """Returns a satellite JSON object with information and statistics"""
     try:
         sat = Satellite.objects.get(norad_cat_id=norad_id)
     except Satellite.DoesNotExist:
@@ -867,6 +877,7 @@ def satellite_view(request, norad_id):
 
 
 def transmitters_view(request):
+    """Returns a transmitter JSON object with information and statistics"""
     norad_id = request.POST['satellite']
     station_id = request.POST.get('station_id', None)
     try:

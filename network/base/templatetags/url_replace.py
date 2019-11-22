@@ -1,3 +1,4 @@
+"""Tag to replace field in GET request"""
 from django import template
 
 register = template.Library()

@@ -1,3 +1,4 @@
+"""Django base URL routings for SatNOGS Network"""
 from django.conf.urls import url
 from django.views.generic import TemplateView
 

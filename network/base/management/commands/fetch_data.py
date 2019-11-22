@@ -1,3 +1,4 @@
+"""SatNOGS Network django management command to fetch data (Satellites and Transmitters)"""
 import requests
 from django.conf import settings
 from django.core.management.base import BaseCommand, CommandError
@@ -6,7 +7,8 @@ from network.base.models import Satellite, Transmitter
 
 
 class Command(BaseCommand):
-    help = 'Fetch Modes, Satellites and Transmitters from satnogs-db'
+    """Django management command to fetch Satellites and Transmitters from SatNOGS DB"""
+    help = 'Fetches Satellites and Transmitters from SaTNOGS DB'
 
     def handle(self, *args, **options):
         db_api_url = settings.DB_API_ENDPOINT

@@ -1,7 +1,9 @@
+"""SatNOGS Network base permissions"""
 from django.core.exceptions import ObjectDoesNotExist
 
 
 class UserNoPermissionError(Exception):
+    """Error when user has not persmission"""
     pass
 
 
@@ -56,6 +58,7 @@ def schedule_station_perms(user, station):
 
 
 def check_schedule_perms_per_station(user, station_list):
+    """Checks if user has permissions to schedule on stations"""
     stations_without_permissions = [
         int(s.id) for s in station_list if not schedule_station_perms(user, s)
     ]

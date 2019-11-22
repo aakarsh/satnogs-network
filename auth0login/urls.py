@@ -1,3 +1,4 @@
+"""SatNOGS Network Auth0 login module URL routers"""
 from django.conf.urls import include, url
 
 from . import views

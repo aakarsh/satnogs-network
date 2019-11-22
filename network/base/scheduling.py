@@ -1,3 +1,4 @@
+"""SatNOGS Network scheduling functions"""
 import math
 from datetime import timedelta
 
@@ -12,6 +13,7 @@ from network.base.validators import NegativeElevationError, \
 
 
 def get_altitude(observer, satellite, date):
+    """Returns altitude of satellite in a specific date for a specific observer"""
     observer = observer.copy()
     satellite = satellite.copy()
     observer.date = date
@@ -20,6 +22,7 @@ def get_altitude(observer, satellite, date):
 
 
 def get_azimuth(observer, satellite, date):
+    """Returns azimuth of satellite in a specific date for a specific observer"""
     observer = observer.copy()
     satellite = satellite.copy()
     observer.date = date
@@ -28,10 +31,12 @@ def get_azimuth(observer, satellite, date):
 
 
 def over_min_duration(duration):
+    """Returns if duration is bigger than the minimum one set in settings"""
     return duration > settings.OBSERVATION_DURATION_MIN
 
 
 def max_altitude_in_window(observer, satellite, pass_tca, window_start, window_end):
+    """Finds the maximum altitude of a satellite during a certain observation window"""
     # In this case this is an overlapped observation
     # re-calculate altitude and start/end azimuth
     if window_start > pass_tca:
@@ -86,6 +91,7 @@ def create_station_window(
         window_start, window_end, azr, azs, altitude, tle, valid_duration, overlapped,
         overlap_ratio=0
 ):
+    """Creates an observation window"""
     return {
         'start': window_start.strftime("%Y-%m-%d %H:%M:%S.%f"),
         'end': window_end.strftime("%Y-%m-%d %H:%M:%S.%f"),
@@ -172,6 +178,7 @@ def create_station_windows(scheduled_obs, overlapped, pass_params, observer, sat
 
 
 def next_pass(observer, satellite):
+    """Returns the next pass of the satellite above the observer"""
     rise_time, rise_az, tca_time, tca_alt, set_time, set_az = observer.next_pass(satellite, True)
     # Convert output of pyephems.next_pass into processible values
     pass_start = make_aware(ephem.Date(rise_time).datetime(), utc)
@@ -271,6 +278,7 @@ def predict_available_observation_windows(station, min_horizon, overlapped, tle,
 
 
 def create_new_observation(station, transmitter, start, end, author):
+    """Creates and returns a new Observation object"""
     scheduled_obs = Observation.objects.filter(ground_station=station).filter(end__gt=now())
     window = resolve_overlaps(scheduled_obs, start, end)
 
@@ -351,6 +359,7 @@ def create_new_observation(station, transmitter, start, end, author):
 
 
 def get_available_stations(stations, downlink, user):
+    """Returns stations for scheduling filtered by a specific downlink and user's permissions"""
     available_stations = []
     for station in stations:
         if not schedule_station_perms(user, station):

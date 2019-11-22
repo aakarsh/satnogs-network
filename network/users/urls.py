@@ -1,3 +1,4 @@
+"""Django users URL routings for SatNOGS Network"""
 from django.conf.urls import url
 
 from network.users import views

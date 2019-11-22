@@ -1,3 +1,4 @@
+"""SatNOGS Network celery task workers"""
 from __future__ import absolute_import
 
 import os
@@ -21,6 +22,7 @@ APP.autodiscover_tasks(lambda: settings.INSTALLED_APPS)
 
 @APP.on_after_finalize.connect
 def setup_periodic_tasks(sender, **kwargs):  # pylint: disable=W0613
+    """Initializes celery tasks that need to run on a scheduled basis"""
     from network.base.tasks import (
         update_all_tle, fetch_data, clean_observations, station_status_update,
         stations_cache_rates, notify_for_stations_without_results, sync_to_db

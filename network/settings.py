@@ -1,3 +1,9 @@
+"""SatNOGS Network Application django settings
+
+For local installation settings please copy .env-dist to .env and edit
+the appropriate settings in that file. You should not need to edit this
+file for local settings!
+"""
 import sentry_sdk
 from decouple import Csv, config
 from dj_database_url import parse as db_url

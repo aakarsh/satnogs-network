@@ -1,3 +1,4 @@
+"""SatNOGS Network django management command to fetch TLEs"""
 from optparse import make_option
 
 from django.core.management.base import BaseCommand, CommandError
@@ -7,6 +8,7 @@ from network.base.models import Satellite
 
 
 class Command(BaseCommand):
+    """Django management command to update/insert TLEs for certain Satellites"""
     option_list = BaseCommand.option_list + (
         make_option(
             '--delete', action='store_true', dest='delete', default=False, help='Delete Satellite'

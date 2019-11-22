@@ -1,3 +1,4 @@
+"""The core django app for SatNOGS Network"""
 from __future__ import absolute_import
 
 from ._version import get_versions

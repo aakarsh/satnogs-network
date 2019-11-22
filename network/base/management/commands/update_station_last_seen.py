@@ -1,3 +1,4 @@
+"""SatNOGS Network django management command to set last seen value on stations entries"""
 from django.core.management.base import LabelCommand
 from django.utils.timezone import now
 
@@ -5,6 +6,7 @@ from network.base.models import Station
 
 
 class Command(LabelCommand):
+    """Django management command to set last seen value on stations entries"""
     args = '<Station IDs>'
     help = 'Updates Last_Seen Timestamp for given Stations'
 

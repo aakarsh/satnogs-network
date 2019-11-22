@@ -1,3 +1,4 @@
+"""SatNOGS Network django rest framework API url routings"""
 from rest_framework import routers
 
 from network.api import views

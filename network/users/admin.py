@@ -1,3 +1,4 @@
+"""Define functions and settings for the django admin users interface"""
 from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin as AuthUserAdmin
 from django.contrib.auth.forms import UserChangeForm, UserCreationForm
@@ -7,6 +8,7 @@ from network.users.models import User
 
 
 class HasStationListFilter(admin.SimpleListFilter):
+    """Filter users by checking if the own a station or not"""
     title = 'having station'
     parameter_name = 'has_station'
 
@@ -25,6 +27,7 @@ class HasStationListFilter(admin.SimpleListFilter):
 
 
 class UserAdmin(AuthUserAdmin):
+    """Class of AuthUserAdmin"""
     create_form_class = UserCreationForm
     update_form_class = UserChangeForm
     list_filter = AuthUserAdmin.list_filter + (HasStationListFilter, )
