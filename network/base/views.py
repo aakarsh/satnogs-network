@@ -189,8 +189,8 @@ class ObservationListView(ListView):
         """
         context = super(ObservationListView, self).get_context_data(**kwargs)
         context['satellites'] = Satellite.objects.all()
-        context['authors'] = User.objects.annotate(obs_count=Count('observations')) \
-                                         .filter(obs_count__gt=0) \
+        observers_ids = list(set(Observation.objects.values_list('author_id', flat=True)))
+        context['authors'] = User.objects.filter(id__in=observers_ids) \
                                          .order_by('first_name', 'last_name', 'username')
         context['stations'] = Station.objects.all().order_by('id')
         norad_cat_id = self.request.GET.get('norad', None)
@@ -546,7 +546,11 @@ def observation_vet(request, observation_id):
 
 def stations_list(request):
     """View to render Stations page."""
-    stations = Station.objects.annotate(total_obs=Count('observations'))
+    stations = Station.objects.all()
+    stations_total_obs = {
+        x['id']: x['total_obs']
+        for x in Station.objects.values('id').annotate(total_obs=Count('observations'))
+    }
     form = StationForm()
     antennas = Antenna.objects.all()
     online = stations.filter(status=2).count()
@@ -555,6 +559,7 @@ def stations_list(request):
     return render(
         request, 'base/stations.html', {
             'stations': stations,
+            'total_obs': stations_total_obs,
             'form': form,
             'antennas': antennas,
             'online': online,

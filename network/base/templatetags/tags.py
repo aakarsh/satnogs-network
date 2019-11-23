@@ -41,6 +41,14 @@ def percentagerest(value):
 
 
 @register.filter
+def get_count_from_id(dictionary, key):
+    """Returns observations count from dictionary"""
+    if key in dictionary.keys():
+        return dictionary[key]
+    return 0
+
+
+@register.filter
 def sortdemoddata(demoddata):
     """Returns a date sorted list of DemodData"""
     try:

@@ -29,7 +29,6 @@
       </button>
     </div>
   </h2>
-
   <div class="row">
     <div class="col-md-12">
       <table class="table table-hover">
@@ -43,7 +42,7 @@
           <th>Owner</th>
         </thead>
         <tbody>
-          {% for station in stations.all %}
+          {% for station in stations %}
             <tr class="station-row clickable-row" data-href="{% url 'base:station_view' station_id=station.id %}">
               <td>
                 <a href="{% url 'base:station_view' station_id=station.id %}">
@@ -85,7 +84,7 @@
               {% endif %}
               <td>
                 <a href="{% url 'base:observations_list' %}?station={{ station.id }}" class="badge total-pill" data-toggle="tooltip" data-placement="bottom" title={% if not station.success_rate %} "No data" {%else %} "{{station.success_rate}}% Success" {% endif %}>
-                  {{ station.total_obs }}
+                  {{ total_obs|get_count_from_id:station.id }}
                 </a>
               </td>
               <td>
