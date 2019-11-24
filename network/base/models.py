@@ -182,7 +182,7 @@ class Station(models.Model):
     )
 
     class Meta:
-        ordering = ['-status']
+        ordering = ['-status', 'id']
 
     def get_image(self):
         """Return the image of the station or the default image if there is a defined one"""
