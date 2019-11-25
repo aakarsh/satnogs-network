@@ -3,12 +3,6 @@
 $(document).ready(function() {
     'use strict';
 
-    $('.stations-totals .label-offline').html($('span.station.label-offline').length);
-    $('.stations-totals .label-future').html($('span.station.label-future').length);
-
-    $('.station-row:has(\'.label-offline\')').hide();
-    $('.station-row:has(\'.label-future\')').hide();
-
     $('#stations-online').click(function() {
         $('.station-row:has(\'.label-online\')').toggle();
         $(this).toggleClass('active').blur();

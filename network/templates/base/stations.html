@@ -22,10 +22,10 @@
         <span class="label label-testing">{{ testing }}</span> Testing
       </button>
       <button type="button" id="stations-offline" class="btn btn-sm btn-default">
-        <span class="label label-offline">0</span> Offline
+        <span class="label label-offline">{{ offline }}</span> Offline
       </button>
       <button type="button" id="stations-future" class="btn btn-sm btn-default">
-        <span class="label label-future">0</span> Future
+        <span class="label label-future">{{ future }}</span> Future
       </button>
     </div>
   </h2>
@@ -43,7 +43,7 @@
         </thead>
         <tbody>
           {% for station in stations %}
-            <tr class="station-row clickable-row" data-href="{% url 'base:station_view' station_id=station.id %}">
+            <tr class="station-row clickable-row" data-href="{% url 'base:station_view' station_id=station.id %}" {% if station.status < 1 %}style="display:none;"{% endif %}>
               <td>
                 <a href="{% url 'base:station_view' station_id=station.id %}">
                   <span class="station
@@ -83,13 +83,13 @@
                 </td>
               {% endif %}
               <td>
-                <a href="{% url 'base:observations_list' %}?station={{ station.id }}" class="badge total-pill" data-toggle="tooltip" data-placement="bottom" title={% if not station.success_rate %} "No data" {%else %} "{{station.success_rate}}% Success" {% endif %}>
+                <a href="{% url 'base:observations_list' %}?station={{ station.id }}" class="badge total-pill" data-toggle="tooltip" data-placement="bottom">
                   {{ total_obs|get_count_from_id:station.id }}
                 </a>
               </td>
               <td>
                 <a href="{% url 'base:observations_list' %}?future=1&good=0&bad=0&unvetted=0&failed=0&station={{ station.id }}" class="badge badge-info">
-                  {{ station.observations_future_count }}
+                  {{ station.scheduled_obs|length }}
                 </a>
               </td>
               <td class="station-antennas">

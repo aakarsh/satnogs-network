@@ -546,24 +546,36 @@ def observation_vet(request, observation_id):
 
 def stations_list(request):
     """View to render Stations page."""
-    stations = Station.objects.all()
+    scheduled_obs_queryset = Observation.objects.filter(end__gt=now())
+    stations = Station.objects.prefetch_related(
+        'antenna', 'owner',
+        Prefetch('observations', queryset=scheduled_obs_queryset, to_attr='scheduled_obs')
+    ).order_by('-status', 'id')
     stations_total_obs = {
         x['id']: x['total_obs']
         for x in Station.objects.values('id').annotate(total_obs=Count('observations'))
     }
-    form = StationForm()
     antennas = Antenna.objects.all()
-    online = stations.filter(status=2).count()
-    testing = stations.filter(status=1).count()
+    stations_by_status = {'online': 0, 'testing': 0, 'offline': 0, 'future': 0}
+    for station in stations:
+        if station.last_seen is None:
+            stations_by_status['future'] += 1
+        elif station.status == 2:
+            stations_by_status['online'] += 1
+        elif station.status == 1:
+            stations_by_status['testing'] += 1
+        else:
+            stations_by_status['offline'] += 1
 
     return render(
         request, 'base/stations.html', {
             'stations': stations,
             'total_obs': stations_total_obs,
-            'form': form,
             'antennas': antennas,
-            'online': online,
-            'testing': testing,
+            'online': stations_by_status['online'],
+            'testing': stations_by_status['testing'],
+            'offline': stations_by_status['offline'],
+            'future': stations_by_status['future'],
             'mapbox_id': settings.MAPBOX_MAP_ID,
             'mapbox_token': settings.MAPBOX_TOKEN
         }
