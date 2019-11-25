@@ -182,7 +182,8 @@ class Station(models.Model):
     )
 
     class Meta:
-        ordering = ['-status', 'id']
+        ordering = ['-status']
+        indexes = [models.Index(fields=['-status', 'id'])]
 
     def get_image(self):
         """Return the image of the station or the default image if there is a defined one"""
@@ -274,6 +275,7 @@ class StationStatusLog(models.Model):
 
     class Meta:
         ordering = ['-changed']
+        indexes = [models.Index(fields=['-changed'])]
 
     def __unicode__(self):
         return '{0} - {1}'.format(self.station, self.status)
@@ -281,7 +283,7 @@ class StationStatusLog(models.Model):
 
 class Satellite(models.Model):
     """Model for SatNOGS satellites."""
-    norad_cat_id = models.PositiveIntegerField()
+    norad_cat_id = models.PositiveIntegerField(db_index=True)
     norad_follow_id = models.PositiveIntegerField(blank=True, null=True)
     name = models.CharField(max_length=45)
     names = models.TextField(blank=True)
@@ -306,7 +308,7 @@ class Satellite(models.Model):
 
 class Tle(models.Model):
     """Model for TLEs."""
-    tle0 = models.CharField(max_length=100, blank=True)
+    tle0 = models.CharField(max_length=100, blank=True, db_index=True)
     tle1 = models.CharField(max_length=200, blank=True)
     tle2 = models.CharField(max_length=200, blank=True)
     updated = models.DateTimeField(auto_now=True, blank=True)
@@ -369,8 +371,8 @@ class Observation(models.Model):
     author = models.ForeignKey(
         User, related_name='observations', on_delete=models.SET_NULL, null=True, blank=True
     )
-    start = models.DateTimeField()
-    end = models.DateTimeField()
+    start = models.DateTimeField(db_index=True)
+    end = models.DateTimeField(db_index=True)
     ground_station = models.ForeignKey(
         Station, related_name='observations', on_delete=models.SET_NULL, null=True, blank=True
     )
@@ -499,6 +501,7 @@ class Observation(models.Model):
 
     class Meta:
         ordering = ['-start', '-end']
+        indexes = [models.Index(fields=['-start', '-end'])]
 
     def __unicode__(self):
         return str(self.id)
