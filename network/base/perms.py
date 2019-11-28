@@ -70,7 +70,11 @@ def schedule_stations_perms(user, stations):
         # User has online station (status=2) and station is online
         try:
             if user.ground_stations.filter(status=2).exists():
-                return {station.id: station.status == 2 for station in stations}
+                return {
+                    s.id: s.status == 2 or (s.owner == user and s.status == 1)
+                    for s in stations
+                }
+
         except ObjectDoesNotExist:
             pass
         # If the station is testing (status=1) and user is its owner
