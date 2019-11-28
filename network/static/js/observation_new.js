@@ -42,7 +42,7 @@ $(document).ready( function(){
         `;
     }
 
-    function select_proper_stations(filters){
+    function select_proper_stations(filters, callback){
         var url = '/scheduling_stations/';
         var data = {'transmitter': filters.transmitter};
         if (filters.station) {
@@ -87,6 +87,9 @@ $(document).ready( function(){
                                                     No station available
                                                   </option>`).prop('disabled', true);
                 $('#station-selection').selectpicker('refresh');
+            }
+            if (callback) {
+                callback();
             }
             $('#station-field-loading').hide();
             $('#station-field').show();
@@ -195,7 +198,9 @@ $(document).ready( function(){
                 $('#transmitter-selection').selectpicker('refresh');
             }
             if (callback) {
-                callback();
+                select_proper_stations(filters,callback);
+            } else {
+                select_proper_stations(filters);
             }
             $('#transmitter-field-loading').hide();
             $('#transmitter-field').show();
