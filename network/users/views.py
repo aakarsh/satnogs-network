@@ -37,7 +37,9 @@ class UserUpdateView(LoginRequiredMixin, UpdateView):
 def view_user(request, username):
     """View for user page."""
     user = get_object_or_404(User, username=username)
-    observations = Observation.objects.filter(author=user)[0:10]
+    observations = Observation.objects.filter(
+        author=user
+    )[0:10].prefetch_related('satellite', 'ground_station')
     stations = Station.objects.filter(owner=user).annotate(total_obs=Count('observations'))
     token = ''
 

@@ -42,7 +42,7 @@
             <th>Antennas</th>
           </thead>
           <tbody>
-            {% for station in stations.all %}
+            {% for station in stations %}
               <tr class="clickable-row" data-href="{% url 'base:station_view' station_id=station.id %}">
                 <td>
                   <a href="{% url 'base:station_view' station_id=station.id %}">
@@ -145,7 +145,7 @@
             <th>Station</th>
           </thead>
           <tbody>
-            {% for observation in observations.all %}
+            {% for observation in observations %}
               <tr class="clickable-row" data-href="{% url 'base:observation_view' observation_id=observation.id %}">
                 <td>
                   <a href="{% url 'base:observation_view' observation_id=observation.id %}">
