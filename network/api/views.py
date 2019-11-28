@@ -16,7 +16,7 @@ from network.base.validators import NegativeElevationError, \
 class ObservationView(mixins.ListModelMixin, mixins.RetrieveModelMixin, mixins.UpdateModelMixin,
                       mixins.CreateModelMixin, viewsets.GenericViewSet):
     """SatNOGS Network Observation API view class"""
-    queryset = Observation.objects.all()
+    queryset = Observation.objects.prefetch_related('satellite', 'demoddata', 'ground_station')
     filter_class = filters.ObservationViewFilter
     permission_classes = [StationOwnerPermission]
     pagination_class = pagination.LinkedHeaderPageNumberPagination
@@ -89,7 +89,7 @@ class ObservationView(mixins.ListModelMixin, mixins.RetrieveModelMixin, mixins.U
 
 class StationView(mixins.ListModelMixin, mixins.RetrieveModelMixin, viewsets.GenericViewSet):
     """SatNOGS Network Station API view class"""
-    queryset = Station.objects.all()
+    queryset = Station.objects.prefetch_related('antenna', 'observations')
     serializer_class = serializers.StationSerializer
     filter_class = filters.StationViewFilter
     pagination_class = pagination.LinkedHeaderPageNumberPagination
@@ -112,7 +112,7 @@ class JobView(viewsets.ReadOnlyModelViewSet):
 
     def get_queryset(self):
         """Returns queryset for Job API view"""
-        queryset = self.queryset.filter(start__gte=now())
+        queryset = self.queryset.filter(start__gte=now()).prefetch_related('tle')
         ground_station_id = self.request.query_params.get('ground_station', None)
         if ground_station_id and self.request.user.is_authenticated():
             ground_station = get_object_or_404(Station, id=ground_station_id)
