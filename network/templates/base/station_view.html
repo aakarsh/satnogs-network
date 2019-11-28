@@ -117,20 +117,22 @@
           </span>
         </div>
       {% endif %}
-      {% if station.observations_count %}
-        <div class="front-line">
-          <span class="label label-default">Observations</span>
-          <span class="front-data">{{ station.observations_count }}
-            <div class="pull-right">
-              <a href="{% url 'base:observations_list' %}?station={{ station.id }}">
-                <button type="button" class="btn btn-xs btn-info">
-                  View all
-                </button>
-              </a>
-            </div>
-          </span>
-        </div>
-      {% endif %}
+      {% with total_obs=station.observations_count %}
+        {% if total_obs %}
+          <div class="front-line">
+            <span class="label label-default">Observations</span>
+            <span class="front-data">{{ total_obs }}
+              <div class="pull-right">
+                <a href="{% url 'base:observations_list' %}?station={{ station.id }}">
+                  <button type="button" class="btn btn-xs btn-info">
+                    View all
+                  </button>
+                </a>
+              </div>
+            </span>
+          </div>
+        {% endif %}
+      {% endwith %}
       <div class="front-line">
         <span class="label label-default">Creation Date</span>
         <span class="front-data"
