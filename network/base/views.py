@@ -141,7 +141,9 @@ class ObservationListView(ListView):
         if results:
             self.filtered = True
 
-        observations = Observation.objects.all()
+        observations = Observation.objects.prefetch_related(
+            'satellite', 'demoddata', 'author', 'ground_station'
+        )
         if not norad_cat_id == '':
             observations = observations.filter(satellite__norad_cat_id=norad_cat_id)
             self.filtered = True
