@@ -14,11 +14,12 @@ def schedule_perms(user):
     see: https://wiki.satnogs.org/Operation#Network_permissions_matrix
     """
     if user.is_authenticated():
+        stations_statuses = user.ground_stations.values_list('status', flat=True)
         # User has online station (status=2)
-        if user.ground_stations.filter(status=2).exists():
+        if 2 in stations_statuses:
             return True
         # User has testing station (status=1)
-        if user.ground_stations.filter(status=1).exists():
+        if 1 in stations_statuses:
             return True
         # User has special permissions
         if user.groups.filter(name='Moderators').exists():
@@ -40,14 +41,11 @@ def schedule_station_perms(user, station):
         try:
             if user.ground_stations.filter(status=2).exists() and station.status == 2:
                 return True
-        except (AttributeError, ObjectDoesNotExist):
+        except ObjectDoesNotExist:
             pass
         # If the station is testing (status=1) and user is its owner
-        try:
-            if station.status == 1 and station.owner == user:
-                return True
-        except (AttributeError, ObjectDoesNotExist):
-            pass
+        if station.status == 1 and station.owner == user:
+            return True
         # User has special permissions
         if user.groups.filter(name='Moderators').exists():
             return True
@@ -57,10 +55,35 @@ def schedule_station_perms(user, station):
     return False
 
 
+def schedule_stations_perms(user, stations):
+    """
+    This context flag will determine if user can schedule an observation.
+    That includes station owners, moderators, admins.
+    see: https://wiki.satnogs.org/Operation#Network_permissions_matrix
+    """
+    if user.is_authenticated():
+        # User has special permissions
+        if user.groups.filter(name='Moderators').exists():
+            return {station.id: True for station in stations}
+        if user.is_superuser:
+            return {station.id: True for station in stations}
+        # User has online station (status=2) and station is online
+        try:
+            if user.ground_stations.filter(status=2).exists():
+                return {station.id: station.status == 2 for station in stations}
+        except ObjectDoesNotExist:
+            pass
+        # If the station is testing (status=1) and user is its owner
+        return {station.id: station.owner == user and station.status == 1 for station in stations}
+
+    return {station.id: False for station in stations}
+
+
 def check_schedule_perms_per_station(user, station_list):
     """Checks if user has permissions to schedule on stations"""
+    stations_perms = schedule_stations_perms(user, station_list)
     stations_without_permissions = [
-        int(s.id) for s in station_list if not schedule_station_perms(user, s)
+        int(station_id) for station_id in stations_perms.keys() if not stations_perms[station_id]
     ]
     if stations_without_permissions:
         if len(stations_without_permissions) == 1:

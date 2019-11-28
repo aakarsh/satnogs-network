@@ -681,7 +681,7 @@ def scheduling_stations(request):
             data = [{'error': error.message}]
             return JsonResponse(data, safe=False)
 
-    stations = Station.objects.filter(status__gt=0)
+    stations = Station.objects.filter(status__gt=0).prefetch_related('antenna')
     available_stations = get_available_stations(stations, downlink, request.user)
     data = {
         'stations': StationSerializer(available_stations, many=True).data,

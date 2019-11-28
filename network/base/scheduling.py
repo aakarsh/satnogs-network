@@ -7,7 +7,7 @@ from django.conf import settings
 from django.utils.timezone import make_aware, now, utc
 
 from network.base.models import LatestTle, Observation, Satellite
-from network.base.perms import schedule_station_perms
+from network.base.perms import schedule_stations_perms
 from network.base.validators import NegativeElevationError, \
     ObservationOverlapError, SinglePassError
 
@@ -361,9 +361,9 @@ def create_new_observation(station, transmitter, start, end, author):
 def get_available_stations(stations, downlink, user):
     """Returns stations for scheduling filtered by a specific downlink and user's permissions"""
     available_stations = []
-    for station in stations:
-        if not schedule_station_perms(user, station):
-            continue
+    stations_perms = schedule_stations_perms(user, stations)
+    stations_with_permissions = [station for station in stations if stations_perms[station.id]]
+    for station in stations_with_permissions:
 
         # Skip if this station is not capable of receiving the frequency
         if not downlink:
