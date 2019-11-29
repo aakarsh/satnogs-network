@@ -128,7 +128,7 @@ $(document).ready( function(){
         `;
     }
 
-    function select_proper_transmitters(filters, callback){
+    function select_proper_transmitters(filters){
         var url = '/transmitters/';
         var data = {'satellite': filters.satellite};
         if (filters.station) {
@@ -196,11 +196,6 @@ $(document).ready( function(){
                                                     No transmitter available
                                                   </option>`).prop('disabled', true);
                 $('#transmitter-selection').selectpicker('refresh');
-            }
-            if (callback) {
-                select_proper_stations(filters,callback);
-            } else {
-                select_proper_stations(filters);
             }
             $('#transmitter-field-loading').hide();
             $('#transmitter-field').show();
@@ -379,6 +374,12 @@ $(document).ready( function(){
         select_proper_stations({
             transmitter: transmitter,
             station: station
+        }, function(){
+            if (obs_filter && obs_filter_dates && obs_filter_station && obs_filter_satellite){
+                $('#obs-selection-tools').hide();
+                $('#truncate-overlapped').click();
+                calculate_observation();
+            }
         });
         initiliaze_calculation(false);
     });
@@ -634,12 +635,6 @@ $(document).ready( function(){
             satellite: obs_filter_satellite,
             transmitter: obs_filter_transmitter,
             station: obs_filter_station
-        }, function(){
-            if (obs_filter_dates && obs_filter_station && obs_filter_satellite){
-                $('#obs-selection-tools').hide();
-                $('#truncate-overlapped').click();
-                calculate_observation();
-            }
         });
     } else {
         // Focus on satellite field
