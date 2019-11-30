@@ -7,7 +7,8 @@ from django.contrib.auth.models import Group
 from django.db import transaction
 from django.test import Client, TestCase
 from django.utils.timezone import now
-from factory import fuzzy
+# C0412 below clashes with isort
+from factory import fuzzy  # pylint: disable=C0412
 
 import pytest
 from network.base.models import ANTENNA_BANDS, ANTENNA_TYPES, \

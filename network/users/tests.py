@@ -4,7 +4,8 @@ import datetime
 import factory
 from django.test import Client, TestCase
 from django.utils.timezone import utc
-from factory import fuzzy
+# C0412 below clashes with isort
+from factory import fuzzy  # pylint: disable=C0412
 
 import pytest
 from network.users.models import User
