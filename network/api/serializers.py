@@ -1,4 +1,5 @@
 """SatNOGS Network API serializers, django rest framework"""
+#  pylint: disable=no-self-use
 from rest_framework import serializers
 
 from network.base.db_api import DBConnectionError, \

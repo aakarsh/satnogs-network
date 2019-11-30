@@ -20,11 +20,11 @@ class AntennaAdmin(admin.ModelAdmin):
         'antenna_type',
     )
 
-    def antenna_count(self, obj):
+    def antenna_count(self, obj):  # pylint: disable=no-self-use
         """Return the number of antennas"""
         return obj.stations.all().count()
 
-    def station_list(self, obj):
+    def station_list(self, obj):  # pylint: disable=no-self-use
         """Return stations that use the antenna"""
         return ",\n".join([str(s.id) for s in obj.stations.all()])
 
@@ -43,11 +43,11 @@ class StationAdmin(admin.ModelAdmin):
     export_as_csv.short_description = "Export selected as CSV"
     export_station_status.short_description = "Export selected status"
 
-    def created_date(self, obj):
+    def created_date(self, obj):  # pylint: disable=no-self-use
         """Return when the station was created"""
         return obj.created.strftime('%d.%m.%Y, %H:%M')
 
-    def get_email(self, obj):
+    def get_email(self, obj):  # pylint: disable=no-self-use
         """Return station owner email address"""
         return obj.owner.email
 
@@ -80,7 +80,7 @@ class TleAdmin(admin.ModelAdmin):
     list_display = ('satellite_name', 'tle0', 'tle1', 'updated')
     list_filter = ('satellite__name', )
 
-    def satellite_name(self, obj):
+    def satellite_name(self, obj):  # pylint: disable=no-self-use
         """Return the satellite name"""
         return obj.satellite.name
 
