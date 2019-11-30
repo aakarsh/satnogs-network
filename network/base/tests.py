@@ -257,7 +257,7 @@ class NotFoundErrorTest(TestCase):
     def test_404_not_found(self):
         """Test for "404" html status code in response for requesting a non-existed page"""
         response = self.client.get('/blah')
-        self.assertEquals(response.status_code, 404)
+        self.assertEqual(response.status_code, 404)
 
 
 class RobotsViewTest(TestCase):
