@@ -153,12 +153,10 @@ class ObservationListView(ListView):
             observations = observations.filter(end__lt=filter_params['end'])
             self.filtered = True
 
-        if not filter_params['bad']:
-            observations = observations.exclude(vetted_status='bad')
-        if not filter_params['good']:
-            observations = observations.exclude(vetted_status='good')
-        if not filter_params['failed']:
-            observations = observations.exclude(vetted_status='failed')
+        for filter_name in ['bad', 'good', 'failed']:
+            if not filter_params[filter_name]:
+                observations = observations.exclude(vetted_status=filter_name)
+
         if not filter_params['unvetted']:
             observations = observations.exclude(vetted_status='unknown', end__lte=now())
         if not filter_params['future']:
