@@ -132,7 +132,7 @@ class Antenna(models.Model):
     """Model for antennas tracked with SatNOGS."""
     frequency = models.PositiveIntegerField()
     frequency_max = models.PositiveIntegerField()
-    band = models.CharField(choices=zip(ANTENNA_BANDS, ANTENNA_BANDS), max_length=5)
+    band = models.CharField(choices=list(zip(ANTENNA_BANDS, ANTENNA_BANDS)), max_length=5)
     antenna_type = models.CharField(choices=ANTENNA_TYPES, max_length=15)
 
     def __str__(self):
@@ -295,7 +295,7 @@ class Satellite(models.Model):
     image = models.CharField(max_length=100, blank=True, null=True)
     manual_tle = models.BooleanField(default=False)
     status = models.CharField(
-        choices=zip(SATELLITE_STATUS, SATELLITE_STATUS), max_length=10, default='alive'
+        choices=list(zip(SATELLITE_STATUS, SATELLITE_STATUS)), max_length=10, default='alive'
     )
 
     class Meta:
@@ -404,7 +404,9 @@ class Observation(models.Model):
     transmitter_uuid = ShortUUIDField(auto=False, db_index=True)
     transmitter_description = models.TextField(default='')
     transmitter_type = models.CharField(
-        choices=zip(TRANSMITTER_TYPE, TRANSMITTER_TYPE), max_length=11, default='Transmitter'
+        choices=list(zip(TRANSMITTER_TYPE, TRANSMITTER_TYPE)),
+        max_length=11,
+        default='Transmitter'
     )
     transmitter_uplink_low = models.BigIntegerField(blank=True, null=True)
     transmitter_uplink_high = models.BigIntegerField(blank=True, null=True)
