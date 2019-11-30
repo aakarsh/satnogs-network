@@ -7,6 +7,7 @@ from django import template
 register = template.Library()
 
 
+@register.inclusion_tag('base/paginator.html', takes_context=True)
 def paginator(context, request, adjacent_pages=2):
     """
     Adds pagination context variables for use in displaying first, adjacent and
@@ -35,6 +36,3 @@ def paginator(context, request, adjacent_pages=2):
         'show_last': num_pages not in page_numbers,
         'request': request
     }
-
-
-register.inclusion_tag('base/paginator.html', takes_context=True)(paginator)
