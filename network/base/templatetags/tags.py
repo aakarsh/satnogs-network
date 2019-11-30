@@ -14,9 +14,9 @@ def active(request, urls):
 
 
 @register.simple_tag
-def drifted_frq(frq, drift):
+def drifted_frq(value, drift):
     """Returns drifred frequency"""
-    return int(round(frq + ((frq * drift) / float(pow(10, 9)))))
+    return int(round(value + ((value * drift) / float(pow(10, 9)))))
 
 
 @register.filter
