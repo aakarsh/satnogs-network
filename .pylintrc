@@ -12,3 +12,14 @@ disable=
     R0914,
     W0201,
     W0703,
+# py3k transition issues:
+    E1608, # old-octal-literal
+    W1612, # unicode-builtin
+    W1618, # no-absolute-import
+    W1619, # old-divison
+    W1633, # round-builtin
+    W1645, # exception-message-attribute
+    W1646, # invalid-str-codec
+    W1648, # bad-python3-import
+    W1655, # dict-keys-not-iterating
+    W1658, # deprecated-urllib-function
