@@ -180,6 +180,9 @@ class ObservationListView(ListView):  # pylint: disable=R0901
         """
         Need to add a list of satellites to the context for the template
         """
+        # NOTE: Remove the following pylint disable after Python 3 migration
+        #       (false positive due to .order_by in the following lines)
+        # pylint: disable=E1101
         context = super(ObservationListView, self).get_context_data(**kwargs)
         context['satellites'] = Satellite.objects.all()
         observers_ids = list(set(Observation.objects.values_list('author_id', flat=True)))
