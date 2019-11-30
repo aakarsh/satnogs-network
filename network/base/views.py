@@ -645,7 +645,7 @@ def station_view(request, station_id):
     )
 
 
-def station_log(request, station_id):
+def station_log_view(request, station_id):
     """View for single station status log."""
     station = get_object_or_404(Station, id=station_id)
     station_log = StationStatusLog.objects.filter(station=station)

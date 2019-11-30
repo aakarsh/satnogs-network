@@ -39,7 +39,7 @@ BASE_URLPATTERNS = (
         # Stations
         url(r'^stations/$', views.stations_list, name='stations_list'),
         url(r'^stations/(?P<station_id>[0-9]+)/$', views.station_view, name='station_view'),
-        url(r'^stations/(?P<station_id>[0-9]+)/log/$', views.station_log, name='station_log'),
+        url(r'^stations/(?P<station_id>[0-9]+)/log/$', views.station_log_view, name='station_log'),
         url(
             r'^stations/(?P<station_id>[0-9]+)/delete/$',
             views.station_delete,
