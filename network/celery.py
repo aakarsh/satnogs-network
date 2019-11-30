@@ -17,17 +17,64 @@ RUN_TWICE_HOURLY = 60 * 30
 APP = Celery('network')
 
 APP.config_from_object('django.conf:settings', namespace='CELERY')
-APP.autodiscover_tasks(lambda: settings.INSTALLED_APPS)
+APP.autodiscover_tasks()
+
+
+# Wrapper tasks as workaround for registering shared tasks to beat scheduler
+# See https://github.com/celery/celery/issues/5059
+# and https://github.com/celery/celery/issues/3797#issuecomment-422656038
+@APP.task
+def update_all_tle():
+    """Wrapper task for 'update_all_tle' shared task"""
+    from network.base.tasks import update_all_tle as periodic_task
+    periodic_task()
+
+
+@APP.task
+def fetch_data():
+    """Wrapper task for 'fetch_data' shared task"""
+    from network.base.tasks import fetch_data as periodic_task
+    periodic_task()
+
+
+@APP.task
+def clean_observations():
+    """Wrapper task for 'clean_observations' shared task"""
+    from network.base.tasks import clean_observations as periodic_task
+    periodic_task()
+
+
+@APP.task
+def station_status_update():
+    """Wrapper task for 'station_status_update' shared task"""
+    from network.base.tasks import station_status_update as periodic_task
+    periodic_task()
+
+
+@APP.task
+def stations_cache_rates():
+    """Wrapper task for 'stations_cache_rates' shared task"""
+    from network.base.tasks import stations_cache_rates as periodic_task
+    periodic_task()
+
+
+@APP.task
+def notify_for_stations_without_results():
+    """Wrapper task for 'notify_for_stations_without_results' shared task"""
+    from network.base.tasks import notify_for_stations_without_results as periodic_task
+    periodic_task()
+
+
+@APP.task
+def sync_to_db():
+    """Wrapper task for 'sync_to_db' shared task"""
+    from network.base.tasks import sync_to_db as periodic_task
+    periodic_task()
 
 
 @APP.on_after_finalize.connect
 def setup_periodic_tasks(sender, **kwargs):  # pylint: disable=W0613
     """Initializes celery tasks that need to run on a scheduled basis"""
-    from network.base.tasks import (
-        update_all_tle, fetch_data, clean_observations, station_status_update,
-        stations_cache_rates, notify_for_stations_without_results, sync_to_db
-    )
-
     sender.add_periodic_task(RUN_EVERY_TWO_HOURS, update_all_tle.s(), name='update-all-tle')
 
     sender.add_periodic_task(RUN_HOURLY, fetch_data.s(), name='fetch-data')

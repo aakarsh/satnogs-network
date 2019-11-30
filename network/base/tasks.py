@@ -6,6 +6,7 @@ import os
 import urllib2
 from datetime import timedelta
 
+from celery import shared_task
 from django.conf import settings
 from django.contrib.sites.models import Site
 from django.core.cache import cache
@@ -19,10 +20,9 @@ from satellite_tle import fetch_tles
 from network.base.models import DemodData, LatestTle, Observation, Satellite, \
     Station, Tle, Transmitter
 from network.base.utils import demod_to_db
-from network.celery import APP
 
 
-@APP.task(ignore_result=True)
+@shared_task
 def update_all_tle():
     """Task to update all satellite TLEs"""
     latest_tle_queryset = LatestTle.objects.all()
@@ -65,7 +65,7 @@ def update_all_tle():
         print('{} - {} - {}: new TLE found [updated]'.format(obj.name, norad_id, source))
 
 
-@APP.task(ignore_result=True)
+@shared_task
 def fetch_data():
     """Task to fetch all data from DB"""
     apiurl = settings.DB_API_ENDPOINT
@@ -101,7 +101,7 @@ def fetch_data():
             Transmitter.objects.create(uuid=uuid)
 
 
-@APP.task(ignore_result=True)
+@shared_task
 def archive_audio(obs_id):
     """Upload audio of observation in archive.org"""
     obs = Observation.objects.get(id=obs_id)
@@ -142,7 +142,7 @@ def archive_audio(obs_id):
         obs.payload.delete()
 
 
-@APP.task(ignore_result=True)
+@shared_task
 def clean_observations():
     """Task to clean up old observations that lack actual data."""
     threshold = now() - timedelta(days=int(settings.OBSERVATION_OLD_RANGE))
@@ -157,7 +157,7 @@ def clean_observations():
             archive_audio.delay(obs.id)
 
 
-@APP.task
+@shared_task
 def sync_to_db():
     """Task to send demod data to SatNOGS DB / SiDS"""
     period = now() - timedelta(days=1)
@@ -176,7 +176,7 @@ def sync_to_db():
             continue
 
 
-@APP.task(ignore_result=True)
+@shared_task
 def station_status_update():
     """Task to update Station status."""
     for station in Station.objects.all():
@@ -189,7 +189,7 @@ def station_status_update():
         station.save()
 
 
-@APP.task(ignore_result=True)
+@shared_task
 def notify_for_stations_without_results():
     """Task to send email for stations with observations without results."""
     email_to = settings.EMAIL_FOR_STATIONS_ISSUES
@@ -220,7 +220,7 @@ def notify_for_stations_without_results():
             )
 
 
-@APP.task(ignore_result=True)
+@shared_task
 def stations_cache_rates():
     """Cache the success rate of the stations"""
     stations = Station.objects.all()
