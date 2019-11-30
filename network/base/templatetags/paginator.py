@@ -32,7 +32,7 @@ def paginator(context, request, adjacent_pages=2):
         'paginator': context['paginator'],
         'page_numbers': page_numbers,
         'show_first': 1 not in page_numbers,
-        'show_last': paginator.num_pages not in page_numbers,
+        'show_last': num_pages not in page_numbers,
         'request': request
     }
 
