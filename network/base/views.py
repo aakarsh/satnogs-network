@@ -96,47 +96,40 @@ class ObservationListView(ListView):
     context_object_name = "observations"
     paginate_by = settings.ITEMS_PER_PAGE
     template_name = 'base/observations.html'
+    str_filters = ['norad', 'observer', 'station', 'start', 'end']
+    flag_filters = ['bad', 'good', 'unvetted', 'future', 'failed']
+
+    def get_filter_params(self):
+        """
+        Get the parsed filter parameters from the HTTP GET parameters
+
+        - str_filters vaues are str, default to ''
+        - flag_filters values are Boolean, default to False
+
+        Returns a dict, filter_name is the key, the parsed parameter is the value.
+        """
+        filter_params = {}
+        for parameter_name in self.str_filters:
+            filter_params[parameter_name] = self.request.GET.get(parameter_name, '')
+
+        for parameter_name in self.flag_filters:
+            param = self.request.GET.get(parameter_name, 1)
+            filter_params[parameter_name] = (param != '0')
+
+        return filter_params
 
     def get_queryset(self):
         """
         Optionally filter based on norad get argument
         Optionally filter based on future/good/bad/unvetted/failed
         """
-        norad_cat_id = self.request.GET.get('norad', '')
-        observer = self.request.GET.get('observer', '')
-        station = self.request.GET.get('station', '')
-        start = self.request.GET.get('start', '')
-        end = self.request.GET.get('end', '')
+        filter_params = self.get_filter_params()
         self.filtered = False
 
-        bad = self.request.GET.get('bad', '1')
-        if bad == '0':
-            bad = False
-        else:
-            bad = True
-        good = self.request.GET.get('good', '1')
-        if good == '0':
-            good = False
-        else:
-            good = True
-        unvetted = self.request.GET.get('unvetted', '1')
-        if unvetted == '0':
-            unvetted = False
-        else:
-            unvetted = True
-        future = self.request.GET.get('future', '1')
-        if future == '0':
-            future = False
-        else:
-            future = True
-        failed = self.request.GET.get('failed', '1')
-        if failed == '0':
-            failed = False
-        else:
-            failed = True
         results = self.request.GET.getlist('results')
 
-        if False in (bad, good, unvetted, future, failed):
+        if not all([filter_params['bad'], filter_params['good'], filter_params['unvetted'],
+                    filter_params['future'], filter_params['failed']]):
             self.filtered = True
         if results:
             self.filtered = True
@@ -144,31 +137,31 @@ class ObservationListView(ListView):
         observations = Observation.objects.prefetch_related(
             'satellite', 'demoddata', 'author', 'ground_station'
         )
-        if not norad_cat_id == '':
-            observations = observations.filter(satellite__norad_cat_id=norad_cat_id)
+        if not filter_params['norad'] == '':
+            observations = observations.filter(satellite__norad_cat_id=filter_params['norad'])
             self.filtered = True
-        if not observer == '':
-            observations = observations.filter(author=observer)
+        if not filter_params['observer'] == '':
+            observations = observations.filter(author=filter_params['observer'])
             self.filtered = True
-        if not station == '':
-            observations = observations.filter(ground_station_id=station)
+        if not filter_params['station'] == '':
+            observations = observations.filter(ground_station_id=filter_params['station'])
             self.filtered = True
-        if not start == '':
-            observations = observations.filter(start__gt=start)
+        if not filter_params['start'] == '':
+            observations = observations.filter(start__gt=filter_params['start'])
             self.filtered = True
-        if not end == '':
-            observations = observations.filter(end__lt=end)
+        if not filter_params['end'] == '':
+            observations = observations.filter(end__lt=filter_params['end'])
             self.filtered = True
 
-        if not bad:
+        if not filter_params['bad']:
             observations = observations.exclude(vetted_status='bad')
-        if not good:
+        if not filter_params['good']:
             observations = observations.exclude(vetted_status='good')
-        if not failed:
+        if not filter_params['failed']:
             observations = observations.exclude(vetted_status='failed')
-        if not unvetted:
+        if not filter_params['unvetted']:
             observations = observations.exclude(vetted_status='unknown', end__lte=now())
-        if not future:
+        if not filter_params['future']:
             observations = observations.exclude(vetted_status='unknown', end__gt=now())
         if results:
             if 'w0' in results:
