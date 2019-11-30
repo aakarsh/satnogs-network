@@ -13,6 +13,7 @@ from django.db.models import OuterRef, Subquery
 from django.db.models.signals import post_save
 from django.dispatch import receiver
 from django.urls import reverse
+from django.utils.encoding import python_2_unicode_compatible
 from django.utils.html import format_html
 from django.utils.timezone import now
 from PIL import Image
@@ -126,6 +127,7 @@ def validate_image(fieldfile_obj):
         raise ValidationError("Max file size is %sMB" % str(megabyte_limit))
 
 
+@python_2_unicode_compatible
 class Antenna(models.Model):
     """Model for antennas tracked with SatNOGS."""
     frequency = models.PositiveIntegerField()
@@ -133,12 +135,13 @@ class Antenna(models.Model):
     band = models.CharField(choices=zip(ANTENNA_BANDS, ANTENNA_BANDS), max_length=5)
     antenna_type = models.CharField(choices=ANTENNA_TYPES, max_length=15)
 
-    def __unicode__(self):
+    def __str__(self):
         return '{0} - {1} - {2} - {3}'.format(
             self.band, self.antenna_type, self.frequency, self.frequency_max
         )
 
 
+@python_2_unicode_compatible
 class Station(models.Model):
     """Model for SatNOGS ground stations."""
     owner = models.ForeignKey(
@@ -258,13 +261,14 @@ class Station(models.Model):
             token = Token.objects.create(user=self.owner)
         return token
 
-    def __unicode__(self):
+    def __str__(self):
         return "%d - %s" % (self.pk, self.name)
 
 
 post_save.connect(_station_post_save, sender=Station)
 
 
+@python_2_unicode_compatible
 class StationStatusLog(models.Model):
     """Model for keeping Status log for Station."""
     station = models.ForeignKey(
@@ -277,10 +281,11 @@ class StationStatusLog(models.Model):
         ordering = ['-changed']
         indexes = [models.Index(fields=['-changed'])]
 
-    def __unicode__(self):
+    def __str__(self):
         return '{0} - {1}'.format(self.station, self.status)
 
 
+@python_2_unicode_compatible
 class Satellite(models.Model):
     """Model for SatNOGS satellites."""
     norad_cat_id = models.PositiveIntegerField(db_index=True)
@@ -302,10 +307,11 @@ class Satellite(models.Model):
             return self.image
         return settings.SATELLITE_DEFAULT_IMAGE
 
-    def __unicode__(self):
+    def __str__(self):
         return self.name
 
 
+@python_2_unicode_compatible
 class Tle(models.Model):
     """Model for TLEs."""
     tle0 = models.CharField(max_length=100, blank=True, db_index=True)
@@ -319,7 +325,7 @@ class Tle(models.Model):
     class Meta:
         ordering = ['tle0']
 
-    def __unicode__(self):
+    def __str__(self):
         uni_name = "%d - %s" % (self.id, self.tle0)
         return uni_name
 
@@ -360,6 +366,7 @@ class Transmitter(models.Model):
     sync_to_db = models.BooleanField(default=False)
 
 
+@python_2_unicode_compatible
 class Observation(models.Model):
     """Model for SatNOGS observations."""
     satellite = models.ForeignKey(
@@ -503,7 +510,7 @@ class Observation(models.Model):
         ordering = ['-start', '-end']
         indexes = [models.Index(fields=['-start', '-end'])]
 
-    def __unicode__(self):
+    def __str__(self):
         return str(self.id)
 
     def get_absolute_url(self):
