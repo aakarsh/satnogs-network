@@ -1,4 +1,5 @@
 """SatNOGS Network base test suites"""
+# pylint: disable=R0903
 import random
 from datetime import datetime, timedelta
 

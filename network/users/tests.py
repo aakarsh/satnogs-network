@@ -1,4 +1,5 @@
 """SatNOGS Network users test suites"""
+# pylint: disable=R0903
 import datetime
 
 import factory

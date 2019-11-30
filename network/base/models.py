@@ -338,7 +338,7 @@ class Tle(models.Model):
 post_save.connect(_tle_post_save, sender=Tle)
 
 
-class LatestTleManager(models.Manager):
+class LatestTleManager(models.Manager):  # pylint: disable=R0903
     """Django Manager for latest Tle objects"""
     def get_queryset(self):
         """Returns query of latest Tle
