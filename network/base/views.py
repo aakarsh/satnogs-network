@@ -237,14 +237,15 @@ def observation_new_post(request):
         if formset.is_valid():
             new_observations = []
             for observation_data in formset.cleaned_data:
-                station = observation_data['ground_station']
-                start = observation_data['start']
-                end = observation_data['end']
                 transmitter_uuid = observation_data['transmitter_uuid']
                 transmitter = formset.transmitters[transmitter_uuid]
-                author = request.user
+
                 observation = create_new_observation(
-                    station=station, transmitter=transmitter, start=start, end=end, author=author
+                    station=observation_data['ground_station'],
+                    transmitter=transmitter,
+                    start=observation_data['start'],
+                    end=observation_data['end'],
+                    author=request.user
                 )
                 new_observations.append(observation)
 
