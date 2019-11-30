@@ -54,7 +54,7 @@ class StationSerializer(serializers.ModelSerializer):
             return None
 
 
-class StationAllView(viewsets.ReadOnlyModelViewSet):
+class StationAllView(viewsets.ReadOnlyModelViewSet):  # pylint: disable=R0901
     """Station View of all non offline stations"""
     queryset = Station.objects.exclude(status=0)
     serializer_class = StationSerializer
@@ -88,7 +88,7 @@ def settings_site(request):
     return render(request, 'base/settings_site.html')
 
 
-class ObservationListView(ListView):
+class ObservationListView(ListView):  # pylint: disable=R0901
     """
     Displays a list of observations with pagination
     """

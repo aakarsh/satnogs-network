@@ -13,8 +13,9 @@ from network.base.validators import NegativeElevationError, \
     ObservationOverlapError, SinglePassError
 
 
-class ObservationView(mixins.ListModelMixin, mixins.RetrieveModelMixin, mixins.UpdateModelMixin,
-                      mixins.CreateModelMixin, viewsets.GenericViewSet):
+class ObservationView(  # pylint: disable=R0901
+        mixins.ListModelMixin, mixins.RetrieveModelMixin, mixins.UpdateModelMixin,
+        mixins.CreateModelMixin, viewsets.GenericViewSet):
     """SatNOGS Network Observation API view class"""
     queryset = Observation.objects.prefetch_related('satellite', 'demoddata', 'ground_station')
     filter_class = filters.ObservationViewFilter
@@ -87,7 +88,8 @@ class ObservationView(mixins.ListModelMixin, mixins.RetrieveModelMixin, mixins.U
         return Response(status=status.HTTP_200_OK)
 
 
-class StationView(mixins.ListModelMixin, mixins.RetrieveModelMixin, viewsets.GenericViewSet):
+class StationView(  # pylint: disable=R0901
+        mixins.ListModelMixin, mixins.RetrieveModelMixin, viewsets.GenericViewSet):
     """SatNOGS Network Station API view class"""
     queryset = Station.objects.prefetch_related('antenna', 'observations')
     serializer_class = serializers.StationSerializer
@@ -95,7 +97,8 @@ class StationView(mixins.ListModelMixin, mixins.RetrieveModelMixin, viewsets.Gen
     pagination_class = pagination.LinkedHeaderPageNumberPagination
 
 
-class TransmitterView(mixins.ListModelMixin, mixins.RetrieveModelMixin, viewsets.GenericViewSet):
+class TransmitterView(  # pylint: disable=R0901
+        mixins.ListModelMixin, mixins.RetrieveModelMixin, viewsets.GenericViewSet):
     """SatNOGS Network Transmitter API view class"""
     queryset = Transmitter.objects.all().order_by('uuid')
     serializer_class = serializers.TransmitterSerializer
@@ -103,7 +106,7 @@ class TransmitterView(mixins.ListModelMixin, mixins.RetrieveModelMixin, viewsets
     pagination_class = pagination.LinkedHeaderPageNumberPagination
 
 
-class JobView(viewsets.ReadOnlyModelViewSet):
+class JobView(viewsets.ReadOnlyModelViewSet):  # pylint: disable=R0901
     """SatNOGS Network Job API view class"""
     queryset = Observation.objects.filter(payload='')
     serializer_class = serializers.JobSerializer
