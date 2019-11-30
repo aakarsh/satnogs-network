@@ -326,8 +326,7 @@ class Tle(models.Model):
         ordering = ['tle0']
 
     def __str__(self):
-        uni_name = "%d - %s" % (self.id, self.tle0)
-        return uni_name
+        return '{:d} - {:s}'.format(self.id, self.tle0)
 
     @property
     def str_array(self):
@@ -351,6 +350,7 @@ class LatestTleManager(models.Manager):
                      self).get_queryset().filter(updated=Subquery(subquery.values('updated')[:1]))
 
 
+@python_2_unicode_compatible
 class LatestTle(Tle):
     """LatestTle is the latest entry of a Satellite Tle objects
     """
@@ -359,11 +359,18 @@ class LatestTle(Tle):
     class Meta:
         proxy = True
 
+    def __str__(self):
+        return '{:d} - {:s}'.format(self.id, self.tle0)
 
+
+@python_2_unicode_compatible
 class Transmitter(models.Model):
     """Model for antennas transponders."""
     uuid = ShortUUIDField(db_index=True)
     sync_to_db = models.BooleanField(default=False)
+
+    def __str__(self):
+        return self.uuid
 
 
 @python_2_unicode_compatible
@@ -534,6 +541,7 @@ def observation_remove_files(sender, instance, **kwargs):  # pylint: disable=W06
 post_save.connect(_observation_post_save, sender=Observation)
 
 
+@python_2_unicode_compatible
 class DemodData(models.Model):
     """Model for DemodData."""
     observation = models.ForeignKey(
@@ -561,6 +569,9 @@ class DemodData(models.Model):
             except UnicodeDecodeError:
                 data = payload.encode('hex').upper()
                 return ' '.join(data[i:i + 2] for i in range(0, len(data), 2))
+
+    def __str__(self):
+        return '{} - {}'.format(self.id, self.payload_demod)
 
 
 @receiver(models.signals.post_delete, sender=DemodData)
