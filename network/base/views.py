@@ -352,10 +352,12 @@ def observation_new(request):
 @ajax_required
 def prediction_windows(request):
     """Calculates and returns passes of satellites over stations"""
+
+    # Parse HTTP parameters with defaults
     sat_norad_id = request.POST['satellite']
     transmitter = request.POST['transmitter']
-    start = request.POST['start']
-    end = request.POST['end']
+    start = make_aware(datetime.strptime(request.POST['start'], '%Y-%m-%d %H:%M'), utc)
+    end = make_aware(datetime.strptime(request.POST['end'], '%Y-%m-%d %H:%M'), utc)
     station_ids = request.POST.getlist('stations[]', [])
     min_horizon = request.POST.get('min_horizon', None)
     overlapped = int(request.POST.get('overlapped', 0))
@@ -380,9 +382,6 @@ def prediction_windows(request):
     except DBConnectionError as error:
         data = [{'error': error.message}]
         return JsonResponse(data, safe=False)
-
-    start = make_aware(datetime.strptime(start, '%Y-%m-%d %H:%M'), utc)
-    end = make_aware(datetime.strptime(end, '%Y-%m-%d %H:%M'), utc)
 
     data = []
 
