@@ -61,7 +61,7 @@ redis==3.3.8
 requests==2.22.0
 requests-oauthlib==1.2.0
 rjsmin==1.0.12
-satellitetle==0.7.0
+satellitetle==0.8.0
 scandir==1.10.0
 schema==0.7.1
 sentry-sdk==0.7.14
