@@ -123,14 +123,13 @@ class NewObservationListSerializer(serializers.ListSerializer):
         for observation in attrs:
             station = observation.get('ground_station')
             transmitter_uuid = observation.get('transmitter_uuid')
-            start = observation.get('start')
-            end = observation.get('end')
-            station_id = int(station.id)
 
             station_set.add(station)
             transmitter_uuid_set.add(transmitter_uuid)
             transmitter_uuid_station_set.add((transmitter_uuid, station))
-            start_end_per_station[station_id].append((start, end))
+            start_end_per_station[int(station.id)].append(
+                (observation.get('start'), observation.get('end'))
+            )
 
         try:
             check_overlaps(start_end_per_station)
