@@ -114,7 +114,6 @@ class NewObservationListSerializer(serializers.ListSerializer):
     """SatNOGS Network New Observation API List Serializer"""
     def validate(self, attrs):
         """Validates data from a list of new observations"""
-        user = self.context['request'].user
         station_list = []
         transmitter_uuid_list = []
         transmitter_uuid_station_list = []
@@ -141,7 +140,7 @@ class NewObservationListSerializer(serializers.ListSerializer):
 
         station_list = list(set(station_list))
         try:
-            check_schedule_perms_per_station(user, station_list)
+            check_schedule_perms_per_station(self.context['request'].user, station_list)
         except UserNoPermissionError as error:
             raise serializers.ValidationError(error, code='forbidden')
 
@@ -168,14 +167,16 @@ class NewObservationListSerializer(serializers.ListSerializer):
         """Creates new observations from a list of new observations validated data"""
         new_observations = []
         for observation_data in validated_data:
-            station = observation_data['ground_station']
-            start = observation_data['start']
-            end = observation_data['end']
+
             transmitter_uuid = observation_data['transmitter_uuid']
             transmitter = self.transmitters[transmitter_uuid]
-            author = self.context['request'].user
+
             observation = create_new_observation(
-                station=station, transmitter=transmitter, start=start, end=end, author=author
+                station=observation_data['ground_station'],
+                transmitter=transmitter,
+                start=observation_data['start'],
+                end=observation_data['end'],
+                author=self.context['request'].user
             )
             new_observations.append(observation)
 
