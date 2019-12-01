@@ -2,8 +2,7 @@
 #  pylint: disable=no-self-use
 from rest_framework import serializers
 
-from network.base.db_api import DBConnectionError, \
-    get_transmitters_by_uuid_list
+from network.base.db_api import DBConnectionError, get_transmitters_by_uuid_set
 from network.base.models import Antenna, DemodData, Observation, Station, \
     Transmitter
 from network.base.perms import UserNoPermissionError, \
@@ -114,9 +113,9 @@ class NewObservationListSerializer(serializers.ListSerializer):
     """SatNOGS Network New Observation API List Serializer"""
     def validate(self, attrs):
         """Validates data from a list of new observations"""
-        station_list = []
-        transmitter_uuid_list = []
-        transmitter_uuid_station_list = []
+        station_set = set()
+        transmitter_uuid_set = set()
+        transmitter_uuid_station_set = set()
         start_end_per_station = {}
 
         for observation in attrs:
@@ -125,9 +124,11 @@ class NewObservationListSerializer(serializers.ListSerializer):
             start = observation.get('start')
             end = observation.get('end')
             station_id = int(station.id)
-            station_list.append(station)
-            transmitter_uuid_list.append(transmitter_uuid)
-            transmitter_uuid_station_list.append((transmitter_uuid, station))
+
+            station_set.add(station)
+            transmitter_uuid_set.add(transmitter_uuid)
+            transmitter_uuid_station_set.add((transmitter_uuid, station))
+
             if station_id in start_end_per_station:
                 start_end_per_station[station_id].append((start, end))
             else:
@@ -138,22 +139,19 @@ class NewObservationListSerializer(serializers.ListSerializer):
         except ObservationOverlapError as error:
             raise serializers.ValidationError(error, code='invalid')
 
-        station_list = list(set(station_list))
         try:
-            check_schedule_perms_per_station(self.context['request'].user, station_list)
+            check_schedule_perms_per_station(self.context['request'].user, station_set)
         except UserNoPermissionError as error:
             raise serializers.ValidationError(error, code='forbidden')
 
-        transmitter_uuid_list = list(set(transmitter_uuid_list))
         try:
-            transmitters = get_transmitters_by_uuid_list(transmitter_uuid_list)
+            transmitters = get_transmitters_by_uuid_set(transmitter_uuid_set)
             self.transmitters = transmitters
         except ValueError as error:
             raise serializers.ValidationError(error, code='invalid')
         except DBConnectionError as error:
             raise serializers.ValidationError(error)
 
-        transmitter_uuid_station_set = set(transmitter_uuid_station_list)
         transmitter_station_list = [
             (transmitters[pair[0]], pair[1]) for pair in transmitter_uuid_station_set
         ]

@@ -1,8 +1,7 @@
 """SatNOGS Network django base Forms class"""
 from django import forms
 
-from network.base.db_api import DBConnectionError, \
-    get_transmitters_by_uuid_list
+from network.base.db_api import DBConnectionError, get_transmitters_by_uuid_set
 from network.base.models import Observation, Station
 from network.base.perms import UserNoPermissionError, \
     check_schedule_perms_per_station
@@ -92,7 +91,7 @@ class BaseObservationFormSet(forms.BaseFormSet):
             return
 
         station_list = []
-        transmitter_uuid_list = []
+        transmitter_uuid_set = set()
         transmitter_uuid_station_list = []
         start_end_per_station = {}
 
@@ -103,7 +102,7 @@ class BaseObservationFormSet(forms.BaseFormSet):
             end = form.cleaned_data.get('end')
             station_id = int(station.id)
             station_list.append(station)
-            transmitter_uuid_list.append(transmitter_uuid)
+            transmitter_uuid_set.add(transmitter_uuid)
             transmitter_uuid_station_list.append((transmitter_uuid, station))
             if station_id in start_end_per_station:
                 start_end_per_station[station_id].append((start, end))
@@ -122,9 +121,8 @@ class BaseObservationFormSet(forms.BaseFormSet):
         except UserNoPermissionError as error:
             raise forms.ValidationError(error, code='forbidden')
 
-        transmitter_uuid_list = list(set(transmitter_uuid_list))
         try:
-            transmitters = get_transmitters_by_uuid_list(transmitter_uuid_list)
+            transmitters = get_transmitters_by_uuid_set(transmitter_uuid_set)
             self.transmitters = transmitters
         except ValueError as error:
             raise forms.ValidationError(error, code='invalid')

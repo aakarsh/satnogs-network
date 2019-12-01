@@ -45,22 +45,21 @@ def get_transmitters():
     return transmitters_api_request(transmitters_url)
 
 
-def get_transmitters_by_uuid_list(uuid_list):
+def get_transmitters_by_uuid_set(uuid_set):
     """Returns transmitters filtered by Transmitter UUID list"""
-    if not uuid_list:
+    if not uuid_set:
         raise ValueError('Expected a non empty list of UUIDs.')
-    if len(uuid_list) == 1:
-        transmitter = get_transmitter_by_uuid(uuid_list[0])
+    if len(uuid_set) == 1:
+        transmitter_uuid = next(iter(uuid_set))
+        transmitter = get_transmitter_by_uuid(transmitter_uuid)
         if not transmitter:
-            raise ValueError('Invalid Transmitter UUID: {0}'.format(str(uuid_list[0])))
+            raise ValueError('Invalid Transmitter UUID: {0}'.format(str(transmitter_uuid)))
         return {transmitter[0]['uuid']: transmitter[0]}
 
     transmitters_list = get_transmitters()
 
-    transmitters = {t['uuid']: t for t in transmitters_list if t['uuid'] in uuid_list}
-    invalid_transmitters = [
-        str(uuid) for uuid in set(uuid_list).difference(set(transmitters.keys()))
-    ]
+    transmitters = {t['uuid']: t for t in transmitters_list if t['uuid'] in uuid_set}
+    invalid_transmitters = [str(uuid) for uuid in uuid_set.difference(set(transmitters.keys()))]
 
     if not invalid_transmitters:
         return transmitters
