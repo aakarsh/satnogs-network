@@ -383,8 +383,6 @@ def prediction_windows(request):
         data = [{'error': error.message}]
         return JsonResponse(data, safe=False)
 
-    data = []
-
     scheduled_obs_queryset = Observation.objects.filter(end__gt=now())
     stations = Station.objects.filter(status__gt=0).prefetch_related(
         Prefetch('observations', queryset=scheduled_obs_queryset, to_attr='scheduled_obs'),
@@ -399,8 +397,10 @@ def prediction_windows(request):
                 data = [{'error': 'Stations are offline or they don\'t exist.'}]
             return JsonResponse(data, safe=False)
 
-    passes_found = defaultdict(list)
     available_stations = get_available_stations(stations, downlink, request.user)
+
+    data = []
+    passes_found = defaultdict(list)
     for station in available_stations:
         station_passes, station_windows = predict_available_observation_windows(
             station, min_horizon, overlapped, tle, start, end
