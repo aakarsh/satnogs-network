@@ -1,5 +1,7 @@
 """SatNOGS Network API serializers, django rest framework"""
 #  pylint: disable=no-self-use
+from collections import defaultdict
+
 from rest_framework import serializers
 
 from network.base.db_api import DBConnectionError, get_transmitters_by_uuid_set
@@ -116,7 +118,7 @@ class NewObservationListSerializer(serializers.ListSerializer):
         station_set = set()
         transmitter_uuid_set = set()
         transmitter_uuid_station_set = set()
-        start_end_per_station = {}
+        start_end_per_station = defaultdict(list)
 
         for observation in attrs:
             station = observation.get('ground_station')
@@ -128,12 +130,8 @@ class NewObservationListSerializer(serializers.ListSerializer):
             station_set.add(station)
             transmitter_uuid_set.add(transmitter_uuid)
             transmitter_uuid_station_set.add((transmitter_uuid, station))
+            start_end_per_station[station_id].append((start, end))
 
-            if station_id in start_end_per_station:
-                start_end_per_station[station_id].append((start, end))
-            else:
-                start_end_per_station[station_id] = []
-                start_end_per_station[station_id].append((start, end))
         try:
             check_overlaps(start_end_per_station)
         except ObservationOverlapError as error:
