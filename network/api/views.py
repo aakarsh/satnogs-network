@@ -40,6 +40,9 @@ class ObservationView(  # pylint: disable=R0901
             else:
                 data = serializer.errors
                 response = Response(data, status=status.HTTP_400_BAD_REQUEST)
+        except ValueError as error:
+            data = error.message
+            response = Response(data, status=status.HTTP_400_BAD_REQUEST)
         except ValidationError as error:
             data = error.message
             response = Response(data, status=status.HTTP_400_BAD_REQUEST)

@@ -277,7 +277,7 @@ def observation_new_post(request):
             else:
                 messages.error(request, '{0}'.format(formset.non_form_errors()[0]))
             response = redirect(reverse('base:observation_new'))
-    except ValidationError as error:
+    except (ValueError, ValidationError) as error:
         messages.error(request, '{0}'.format(error.message))
         response = redirect(reverse('base:observation_new'))
     except LatestTle.DoesNotExist:

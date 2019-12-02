@@ -178,9 +178,11 @@ def create_station_windows(scheduled_obs, overlapped, pass_params, observer, sat
     return station_windows
 
 
-def next_pass(observer, satellite):
+def next_pass(observer, satellite, singlepass=True):
     """Returns the next pass of the satellite above the observer"""
-    rise_time, rise_az, tca_time, tca_alt, set_time, set_az = observer.next_pass(satellite, True)
+    rise_time, rise_az, tca_time, tca_alt, set_time, set_az = observer.next_pass(
+        satellite, singlepass
+    )
     # Convert output of pyephems.next_pass into processible values
     pass_start = make_aware(ephem.Date(rise_time).datetime(), utc)
     pass_end = make_aware(ephem.Date(set_time).datetime(), utc)
@@ -323,7 +325,7 @@ def create_new_observation(station, transmitter, start, end, author):
     # check that end datetime is before the start datetime of the next pass, in other words that
     # end time belongs to the same single pass.
     observer.date = start + timedelta(minutes=1)
-    next_satellite_pass = next_pass(observer, sat_ephem)
+    next_satellite_pass = next_pass(observer, sat_ephem, False)
     if next_satellite_pass['rise_time'] < end:
         raise SinglePassError(
             "Observation should include only one pass of the satellite with transmitter {}"
