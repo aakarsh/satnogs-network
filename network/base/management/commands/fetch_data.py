@@ -28,26 +28,43 @@ class Command(BaseCommand):
             raise CommandError('API is unreachable')
 
         # Fetch Satellites
+        satellites_added = 0
+        satellites_updated = 0
         for satellite in r_satellites.json():
             norad_cat_id = satellite['norad_cat_id']
-            name = satellite['name']
             satellite.pop('decayed', None)
             try:
+                # Update Satellite
                 existing_satellite = Satellite.objects.get(norad_cat_id=norad_cat_id)
                 existing_satellite.__dict__.update(satellite)
                 existing_satellite.save()
-                self.stdout.write('Satellite {0}-{1} updated'.format(norad_cat_id, name))
+                satellites_updated += 1
             except Satellite.DoesNotExist:
+                # Add Satellite
                 Satellite.objects.create(**satellite)
-                self.stdout.write('Satellite {0}-{1} added'.format(norad_cat_id, name))
+                satellites_added += 1
+
+        self.stdout.write(
+            'Added/Updated {}/{} satellites from db.'.format(satellites_added, satellites_updated)
+        )
 
         # Fetch Transmitters
+        transmitters_added = 0
+        transmitters_skipped = 0
         for transmitter in r_transmitters.json():
             uuid = transmitter['uuid']
 
             try:
+                # Transmitter already exists, skip
                 Transmitter.objects.get(uuid=uuid)
-                self.stdout.write('Transmitter {0} already exists'.format(uuid))
+                transmitters_skipped += 1
             except Transmitter.DoesNotExist:
+                # Create Transmitter
                 Transmitter.objects.create(uuid=uuid)
-                self.stdout.write('Transmitter {0} created'.format(uuid))
+                transmitters_added += 1
+
+        self.stdout.write(
+            'Added/Skipped {}/{} transmitters from db.'.format(
+                transmitters_added, transmitters_skipped
+            )
+        )
