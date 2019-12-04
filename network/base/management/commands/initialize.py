@@ -3,7 +3,7 @@ from django.core.management import call_command
 from django.core.management.base import BaseCommand
 
 from network.base.models import Antenna
-from network.base.tests import DemodDataFactory, ObservationFactory, \
+from network.base.tests import DemodDataFactory, RealisticObservationFactory, \
     StationFactory, generate_payload, generate_payload_name
 
 
@@ -33,7 +33,7 @@ class Command(BaseCommand):
             station_fixture_count, antennas=(Antenna.objects.all().values_list('id', flat=True))
         )
         self.stdout.write("Added {} stations.".format(station_fixture_count))
-        ObservationFactory.create_batch(observation_fixture_count)
+        RealisticObservationFactory.create_batch(observation_fixture_count)
         self.stdout.write("Added {} observations.".format(observation_fixture_count))
         for _ in range(demoddata_fixture_count):
             DemodDataFactory.create(

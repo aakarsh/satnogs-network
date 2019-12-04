@@ -133,6 +133,12 @@ class ObservationFactory(factory.django.DjangoModelFactory):
         model = Observation
 
 
+class RealisticObservationFactory(ObservationFactory):
+    """Observation model factory which uses existing satellites and tles."""
+    satellite = factory.Iterator(Satellite.objects.all())
+    tle = factory.Iterator(Tle.objects.all())
+
+
 class DemodDataFactory(factory.django.DjangoModelFactory):
     """DemodData model factory."""
     observation = factory.Iterator(Observation.objects.all())
