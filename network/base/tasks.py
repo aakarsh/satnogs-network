@@ -38,8 +38,11 @@ def update_all_tle():
             norad_id = obj.norad_follow_id
         norad_ids.add(int(norad_id))
 
+    # Filter only officially announced NORAD IDs
+    catalog_norad_ids = {norad_id for norad_id in norad_ids if norad_id < 99000}
+
     print("==Fetching TLEs==")
-    tles = fetch_tles(norad_ids)
+    tles = fetch_tles(catalog_norad_ids)
 
     for obj in satellites:
         norad_id = obj.norad_cat_id
