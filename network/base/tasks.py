@@ -29,16 +29,16 @@ def update_all_tle():
     satellites = Satellite.objects.exclude(status='re-entered').exclude(
         manual_tle=True, norad_follow_id__isnull=True
     ).prefetch_related(Prefetch('tles', queryset=latest_tle_queryset, to_attr='tle'))
-    norad_ids = []
-    print("==Fetching TLEs==")
 
+    # Collect all norad ids we are interested in
+    norad_ids = set()
     for obj in satellites:
         norad_id = obj.norad_cat_id
         if obj.manual_tle:
             norad_id = obj.norad_follow_id
-        norad_ids.append(int(norad_id))
-    # Remove duplicates in case satellites follow the same NORAD ID
-    norad_ids = set(norad_ids)
+        norad_ids.add(int(norad_id))
+
+    print("==Fetching TLEs==")
     tles = fetch_tles(norad_ids)
 
     for obj in satellites:
