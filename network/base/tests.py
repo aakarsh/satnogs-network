@@ -106,7 +106,9 @@ class ObservationFactory(factory.django.DjangoModelFactory):
     satellite = factory.SubFactory(SatelliteFactory)
     tle = factory.SubFactory(TleFactory)
     author = factory.SubFactory(UserFactory)
-    start = fuzzy.FuzzyDateTime(now() - timedelta(days=3), now() + timedelta(days=3))
+    start = fuzzy.FuzzyDateTime(
+        now() - timedelta(days=3), now() + timedelta(days=3), force_microsecond=0
+    )
     end = factory.LazyAttribute(lambda x: x.start + timedelta(hours=random.randint(1, 8)))
     ground_station = factory.Iterator(Station.objects.all())
     payload = factory.django.FileField(filename='data.ogg')
