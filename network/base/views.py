@@ -271,10 +271,8 @@ def observation_new_post(request):
 
         new_observations = create_new_observations(formset, request.user)
 
-        try:
+        if 'scheduled' in request.session:
             del request.session['scheduled']
-        except KeyError:
-            pass
         request.session['scheduled'] = list(obs.id for obs in new_observations)
 
         # If it's a single observation redirect to that one
