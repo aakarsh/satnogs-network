@@ -349,20 +349,27 @@ def observation_new(request):
     )
 
 
+def prediction_windows_parse_parameters(request):
+    """ Parse HTTP parameters with defaults"""
+    return {
+        'sat_norad_id': request.POST['satellite'],
+        'transmitter': request.POST['transmitter'],
+        'start': make_aware(datetime.strptime(request.POST['start'], '%Y-%m-%d %H:%M'), utc),
+        'end': make_aware(datetime.strptime(request.POST['end'], '%Y-%m-%d %H:%M'), utc),
+        'station_ids': request.POST.getlist('stations[]', []),
+        'min_horizon': request.POST.get('min_horizon', None),
+        'overlapped': int(request.POST.get('overlapped', 0)),
+    }
+
+
 @ajax_required
 def prediction_windows(request):
     """Calculates and returns passes of satellites over stations"""
 
-    # Parse HTTP parameters with defaults
-    sat_norad_id = request.POST['satellite']
-    transmitter = request.POST['transmitter']
-    start = make_aware(datetime.strptime(request.POST['start'], '%Y-%m-%d %H:%M'), utc)
-    end = make_aware(datetime.strptime(request.POST['end'], '%Y-%m-%d %H:%M'), utc)
-    station_ids = request.POST.getlist('stations[]', [])
-    min_horizon = request.POST.get('min_horizon', None)
-    overlapped = int(request.POST.get('overlapped', 0))
+    params = prediction_windows_parse_parameters(request)
+
     try:
-        sat = Satellite.objects.filter(status='alive').get(norad_cat_id=sat_norad_id)
+        sat = Satellite.objects.filter(status='alive').get(norad_cat_id=params['sat_norad_id'])
     except Satellite.DoesNotExist:
         data = [{'error': 'You should select a Satellite first.'}]
         return JsonResponse(data, safe=False)
@@ -374,7 +381,7 @@ def prediction_windows(request):
         return JsonResponse(data, safe=False)
 
     try:
-        transmitter = get_transmitter_by_uuid(transmitter)
+        transmitter = get_transmitter_by_uuid(params['transmitter'])
         if not transmitter:
             data = [{'error': 'You should select a valid Transmitter.'}]
             return JsonResponse(data, safe=False)
@@ -388,10 +395,10 @@ def prediction_windows(request):
         Prefetch('observations', queryset=scheduled_obs_queryset, to_attr='scheduled_obs'),
         'antenna'
     )
-    if station_ids and station_ids != ['']:
-        stations = stations.filter(id__in=station_ids)
+    if params['station_ids'] and params['station_ids'] != ['']:
+        stations = stations.filter(id__in=params['station_ids'])
         if not stations:
-            if len(station_ids) == 1:
+            if len(params['station_ids']) == 1:
                 data = [{'error': 'Station is offline or it doesn\'t exist.'}]
             else:
                 data = [{'error': 'Stations are offline or they don\'t exist.'}]
@@ -403,7 +410,8 @@ def prediction_windows(request):
     passes_found = defaultdict(list)
     for station in available_stations:
         station_passes, station_windows = predict_available_observation_windows(
-            station, min_horizon, overlapped, tle, start, end
+            station, params['min_horizon'], params['overlapped'], tle, params['start'],
+            params['end']
         )
         passes_found[station.id] = station_passes
         if station_windows:
