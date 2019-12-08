@@ -137,21 +137,28 @@ class ObservationListView(ListView):  # pylint: disable=R0901
         observations = Observation.objects.prefetch_related(
             'satellite', 'demoddata', 'author', 'ground_station'
         )
-        if not filter_params['norad'] == '':
-            observations = observations.filter(satellite__norad_cat_id=filter_params['norad'])
+
+        # Mapping between the HTTP POST parameters and the fiter keys
+        parameter_filter_mapping = {
+            'norad': 'satellite__norad_cat_id',
+            'observer': 'author',
+            'station': 'ground_station_id',
+            'start': 'start__gt',
+            'end': 'end_lt',
+        }
+
+        # Create observations filter based on the received HTTP POST parameters
+        filter_dict = {}
+        for parameter_key, filter_key in parameter_filter_mapping.items():
+            if filter_params[parameter_key] == '':
+                continue
+
+            filter_dict[filter_key] = filter_params[parameter_key]
+
+        if filter_dict:
             self.filtered = True
-        if not filter_params['observer'] == '':
-            observations = observations.filter(author=filter_params['observer'])
-            self.filtered = True
-        if not filter_params['station'] == '':
-            observations = observations.filter(ground_station_id=filter_params['station'])
-            self.filtered = True
-        if not filter_params['start'] == '':
-            observations = observations.filter(start__gt=filter_params['start'])
-            self.filtered = True
-        if not filter_params['end'] == '':
-            observations = observations.filter(end__lt=filter_params['end'])
-            self.filtered = True
+
+        observations = observations.filter(**filter_dict)
 
         for filter_name in ['bad', 'good', 'failed']:
             if not filter_params[filter_name]:
