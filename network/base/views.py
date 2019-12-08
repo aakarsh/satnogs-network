@@ -231,6 +231,28 @@ class ObservationListView(ListView):  # pylint: disable=R0901
         return context
 
 
+def create_new_observations(formset, user):
+    """Creates new observations from formset. Error handling is performed by upper layers."""
+    new_observations = []
+    for observation_data in formset.cleaned_data:
+        transmitter_uuid = observation_data['transmitter_uuid']
+        transmitter = formset.transmitters[transmitter_uuid]
+
+        observation = create_new_observation(
+            station=observation_data['ground_station'],
+            transmitter=transmitter,
+            start=observation_data['start'],
+            end=observation_data['end'],
+            author=user
+        )
+        new_observations.append(observation)
+
+    for observation in new_observations:
+        observation.save()
+
+    return new_observations
+
+
 def observation_new_post(request):
     """Handles POST requests for creating one or more new observations."""
     ObservationFormSet = formset_factory(  # pylint: disable=C0103
@@ -247,24 +269,7 @@ def observation_new_post(request):
                 messages.error(request, '{0}'.format(formset.non_form_errors()[0]))
             return redirect(reverse('base:observation_new'))
 
-        new_observations = []
-        for observation_data in formset.cleaned_data:
-            transmitter_uuid = observation_data['transmitter_uuid']
-            transmitter = formset.transmitters[transmitter_uuid]
-
-            observation = create_new_observation(
-                station=observation_data['ground_station'],
-                transmitter=transmitter,
-                start=observation_data['start'],
-                end=observation_data['end'],
-                author=request.user
-            )
-            new_observations.append(observation)
-
-        total = formset.total_form_count()
-
-        for observation in new_observations:
-            observation.save()
+        new_observations = create_new_observations(formset, request.user)
 
         try:
             del request.session['scheduled']
@@ -273,6 +278,7 @@ def observation_new_post(request):
         request.session['scheduled'] = list(obs.id for obs in new_observations)
 
         # If it's a single observation redirect to that one
+        total = formset.total_form_count()
         if total == 1:
             messages.success(request, 'Observation was scheduled successfully.')
             response = redirect(
