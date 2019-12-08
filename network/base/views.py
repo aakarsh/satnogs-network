@@ -283,21 +283,13 @@ def observation_new_post(request):
         else:
             messages.success(request, str(total) + ' Observations were scheduled successfully.')
             response = redirect(reverse('base:observations_list'))
-    except (ValueError, ValidationError) as error:
+    except (ValueError, ValidationError, ObservationOverlapError, NegativeElevationError,
+            SinglePassError) as error:
         messages.error(request, '{0}'.format(error.message))
         response = redirect(reverse('base:observation_new'))
     except LatestTle.DoesNotExist:
         message = 'Scheduling failed: Satellite without TLE'
         messages.error(request, '{0}'.format(message))
-        response = redirect(reverse('base:observation_new'))
-    except ObservationOverlapError as error:
-        messages.error(request, '{0}'.format(error.message))
-        response = redirect(reverse('base:observation_new'))
-    except NegativeElevationError as error:
-        messages.error(request, '{0}'.format(error.message))
-        response = redirect(reverse('base:observation_new'))
-    except SinglePassError as error:
-        messages.error(request, '{0}'.format(error.message))
         response = redirect(reverse('base:observation_new'))
     return response
 
