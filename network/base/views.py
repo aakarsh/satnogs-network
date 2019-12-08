@@ -238,55 +238,51 @@ def observation_new_post(request):
     )
     formset = ObservationFormSet(request.user, request.POST, prefix='obs')
     try:
-        if formset.is_valid():
-            new_observations = []
-            for observation_data in formset.cleaned_data:
-                transmitter_uuid = observation_data['transmitter_uuid']
-                transmitter = formset.transmitters[transmitter_uuid]
-
-                observation = create_new_observation(
-                    station=observation_data['ground_station'],
-                    transmitter=transmitter,
-                    start=observation_data['start'],
-                    end=observation_data['end'],
-                    author=request.user
-                )
-                new_observations.append(observation)
-
-            total = formset.total_form_count()
-
-            for observation in new_observations:
-                observation.save()
-
-            try:
-                del request.session['scheduled']
-            except KeyError:
-                pass
-            request.session['scheduled'] = list(obs.id for obs in new_observations)
-
-            # If it's a single observation redirect to that one
-            if total == 1:
-                messages.success(request, 'Observation was scheduled successfully.')
-                response = redirect(
-                    reverse(
-                        'base:observation_view', kwargs={'observation_id': new_observations[0].id}
-                    )
-                )
-            else:
-                messages.success(
-                    request,
-                    str(total) + ' Observations were scheduled successfully.'
-                )
-                response = redirect(reverse('base:observations_list'))
-
-        else:
+        if not formset.is_valid():
             errors_list = [error for error in formset.errors if error]
             if errors_list:
                 for field in errors_list[0]:
                     messages.error(request, '{0}'.format(errors_list[0][field][0]))
             else:
                 messages.error(request, '{0}'.format(formset.non_form_errors()[0]))
-            response = redirect(reverse('base:observation_new'))
+            return redirect(reverse('base:observation_new'))
+
+        new_observations = []
+        for observation_data in formset.cleaned_data:
+            transmitter_uuid = observation_data['transmitter_uuid']
+            transmitter = formset.transmitters[transmitter_uuid]
+
+            observation = create_new_observation(
+                station=observation_data['ground_station'],
+                transmitter=transmitter,
+                start=observation_data['start'],
+                end=observation_data['end'],
+                author=request.user
+            )
+            new_observations.append(observation)
+
+        total = formset.total_form_count()
+
+        for observation in new_observations:
+            observation.save()
+
+        try:
+            del request.session['scheduled']
+        except KeyError:
+            pass
+        request.session['scheduled'] = list(obs.id for obs in new_observations)
+
+        # If it's a single observation redirect to that one
+        if total == 1:
+            messages.success(request, 'Observation was scheduled successfully.')
+            response = redirect(
+                reverse(
+                    'base:observation_view', kwargs={'observation_id': new_observations[0].id}
+                )
+            )
+        else:
+            messages.success(request, str(total) + ' Observations were scheduled successfully.')
+            response = redirect(reverse('base:observations_list'))
     except (ValueError, ValidationError) as error:
         messages.error(request, '{0}'.format(error.message))
         response = redirect(reverse('base:observation_new'))
