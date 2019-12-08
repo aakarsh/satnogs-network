@@ -124,15 +124,8 @@ class ObservationListView(ListView):  # pylint: disable=R0901
         Optionally filter based on future/good/bad/unvetted/failed
         """
         filter_params = self.get_filter_params()
-        self.filtered = False
 
         results = self.request.GET.getlist('results')
-
-        if not all([filter_params['bad'], filter_params['good'], filter_params['unvetted'],
-                    filter_params['future'], filter_params['failed']]):
-            self.filtered = True
-        if results:
-            self.filtered = True
 
         observations = Observation.objects.prefetch_related(
             'satellite', 'demoddata', 'author', 'ground_station'
@@ -155,8 +148,16 @@ class ObservationListView(ListView):  # pylint: disable=R0901
 
             filter_dict[filter_key] = filter_params[parameter_key]
 
-        if filter_dict:
-            self.filtered = True
+        self.filtered = (
+            (
+                not all(
+                    [
+                        filter_params['bad'], filter_params['good'], filter_params['unvetted'],
+                        filter_params['future'], filter_params['failed']
+                    ]
+                )
+            ) or results or filter_dict
+        )
 
         observations = observations.filter(**filter_dict)
 
