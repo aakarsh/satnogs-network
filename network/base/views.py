@@ -376,18 +376,22 @@ def prediction_windows(request):
 
     params = prediction_windows_parse_parameters(request)
 
+    # Check the selected satellite exists and is alive
     try:
         sat = Satellite.objects.filter(status='alive').get(norad_cat_id=params['sat_norad_id'])
     except Satellite.DoesNotExist:
         data = [{'error': 'You should select a Satellite first.'}]
         return JsonResponse(data, safe=False)
 
+    # Check there is a TLE available for this satellite
     try:
         tle = LatestTle.objects.get(satellite_id=sat.id)
     except LatestTle.DoesNotExist:
         data = [{'error': 'No TLEs for this satellite yet.'}]
         return JsonResponse(data, safe=False)
 
+    # Check the selected transmitter exists, and if yes,
+    # store this transmitter in the downlink variable
     try:
         transmitter = get_transmitter_by_uuid(params['transmitter'])
         if not transmitter:
@@ -398,6 +402,7 @@ def prediction_windows(request):
         data = [{'error': error.message}]
         return JsonResponse(data, safe=False)
 
+    # Fetch all available ground stations
     stations = Station.objects.filter(status__gt=0).prefetch_related(
         Prefetch(
             'observations',
@@ -407,6 +412,7 @@ def prediction_windows(request):
     )
 
     if params['station_ids'] and params['station_ids'] != ['']:
+        # Filter ground stations based on the given selection
         stations = stations.filter(id__in=params['station_ids'])
         if not stations:
             if len(params['station_ids']) == 1:
