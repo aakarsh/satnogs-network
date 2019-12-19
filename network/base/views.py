@@ -398,11 +398,14 @@ def prediction_windows(request):
         data = [{'error': error.message}]
         return JsonResponse(data, safe=False)
 
-    scheduled_obs_queryset = Observation.objects.filter(end__gt=now())
     stations = Station.objects.filter(status__gt=0).prefetch_related(
-        Prefetch('observations', queryset=scheduled_obs_queryset, to_attr='scheduled_obs'),
-        'antenna'
+        Prefetch(
+            'observations',
+            queryset=Observation.objects.filter(end__gt=now()),
+            to_attr='scheduled_obs'
+        ), 'antenna'
     )
+
     if params['station_ids'] and params['station_ids'] != ['']:
         stations = stations.filter(id__in=params['station_ids'])
         if not stations:
@@ -557,10 +560,13 @@ def observation_vet(request, observation_id):
 
 def stations_list(request):
     """View to render Stations page."""
-    scheduled_obs_queryset = Observation.objects.filter(end__gt=now())
     stations = Station.objects.prefetch_related(
         'antenna', 'owner',
-        Prefetch('observations', queryset=scheduled_obs_queryset, to_attr='scheduled_obs')
+        Prefetch(
+            'observations',
+            queryset=Observation.objects.filter(end__gt=now()),
+            to_attr='scheduled_obs'
+        )
     ).order_by('-status', 'id')
     stations_total_obs = {
         x['id']: x['total_obs']
@@ -699,11 +705,13 @@ def scheduling_stations(request):
 @ajax_required
 def pass_predictions(request, station_id):
     """Endpoint for pass predictions"""
-    scheduled_obs_queryset = Observation.objects.filter(end__gt=now())
     station = get_object_or_404(
         Station.objects.prefetch_related(
-            Prefetch('observations', queryset=scheduled_obs_queryset, to_attr='scheduled_obs'),
-            'antenna'
+            Prefetch(
+                'observations',
+                queryset=Observation.objects.filter(end__gt=now()),
+                to_attr='scheduled_obs'
+            ), 'antenna'
         ),
         id=station_id
     )
