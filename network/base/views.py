@@ -137,7 +137,7 @@ class ObservationListView(ListView):  # pylint: disable=R0901
             'observer': 'author',
             'station': 'ground_station_id',
             'start': 'start__gt',
-            'end': 'end_lt',
+            'end': 'end__lt',
         }
 
         # Create observations filter based on the received HTTP POST parameters
