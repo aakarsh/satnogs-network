@@ -1,6 +1,7 @@
 user-agent: *
 {% if environment == 'production' %}
 Disallow: /admin/
+Disallow: /observations/
 {% else %}
 Disallow: /
 {% endif %}
