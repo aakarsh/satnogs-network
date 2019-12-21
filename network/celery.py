@@ -65,13 +65,6 @@ def notify_for_stations_without_results():
     periodic_task()
 
 
-@APP.task
-def sync_to_db():
-    """Wrapper task for 'sync_to_db' shared task"""
-    from network.base.tasks import sync_to_db as periodic_task
-    periodic_task()
-
-
 @APP.on_after_finalize.connect
 def setup_periodic_tasks(sender, **kwargs):  # pylint: disable=W0613
     """Initializes celery tasks that need to run on a scheduled basis"""
@@ -90,5 +83,3 @@ def setup_periodic_tasks(sender, **kwargs):  # pylint: disable=W0613
         notify_for_stations_without_results.s(),
         name='notify_for_stations_without_results'
     )
-
-    sender.add_periodic_task(RUN_TWICE_HOURLY, sync_to_db.s(), name='sync-to-db')
