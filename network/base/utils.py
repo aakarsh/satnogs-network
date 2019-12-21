@@ -71,7 +71,7 @@ def export_station_status(self, request, queryset):
     return response
 
 
-def demod_to_db(frame_id):
+def sync_demoddata_to_db(frame_id):
     """Task to send a frame from SatNOGS Network to SatNOGS DB"""
     frame = DemodData.objects.get(id=frame_id)
     obs = frame.observation

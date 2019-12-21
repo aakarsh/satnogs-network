@@ -19,7 +19,7 @@ from satellite_tle import fetch_tles
 
 from network.base.models import DemodData, LatestTle, Observation, Satellite, \
     Station, Tle, Transmitter
-from network.base.utils import demod_to_db
+from network.base.utils import sync_demoddata_to_db
 
 
 @shared_task
@@ -160,18 +160,16 @@ def clean_observations():
 @shared_task
 def sync_to_db():
     """Task to send demod data to SatNOGS DB / SiDS"""
-    period = now() - timedelta(days=1)
     transmitters = Transmitter.objects.filter(sync_to_db=True).values_list('uuid', flat=True)
+
     frames = DemodData.objects.filter(
-        observation__end__gte=period,
-        copied_to_db=False,
-        observation__transmitter_uuid__in=transmitters
+        copied_to_db=False, observation__transmitter_uuid__in=transmitters
     )
     for frame in frames:
         try:
             if not frame.is_image() and not frame.copied_to_db:
                 if os.path.isfile(frame.payload_demod.path):
-                    demod_to_db(frame.id)
+                    sync_demoddata_to_db(frame.id)
         except Exception:
             continue
 
