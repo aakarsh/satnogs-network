@@ -15,6 +15,7 @@ from django.http import HttpResponse, JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.utils.text import slugify
 from django.utils.timezone import make_aware, now, utc
+from django.views.decorators.http import require_POST
 from django.views.generic import ListView
 from rest_framework import serializers, viewsets
 
@@ -914,6 +915,7 @@ def satellite_view(request, norad_id):
     return JsonResponse(data, safe=False)
 
 
+@require_POST
 def transmitters_view(request):
     """Returns a transmitter JSON object with information and statistics"""
     norad_id = request.POST['satellite']
