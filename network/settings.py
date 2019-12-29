@@ -350,6 +350,9 @@ OBS_NO_RESULTS_IGNORE_TIME = config('OBS_NO_RESULTS_IGNORE_TIME', default=1800, 
 # Set DB_API_ENDOINT to '' to disable the data fetching from DB
 DB_API_ENDPOINT = config('DB_API_ENDPOINT', default='https://db.satnogs.org/api/')
 
+# API timeout in seconds
+DB_API_TIMEOUT = config('DB_API_TIMEOUT', default=2.0, cast=float)
+
 # Timeout in seconds for the community forum
 # (used e.g. when checking for the existance of certain threads)
 COMMUNITY_TIMEOUT = config('COMMUNITY_TIMEOUT', default=2.0, cast=float)
