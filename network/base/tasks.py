@@ -1,11 +1,10 @@
 """SatNOGS Network Celery task functions"""
 from __future__ import absolute_import, print_function
 
-import json
 import os
-import urllib2
 from datetime import timedelta
 
+import requests
 from celery import shared_task
 from django.conf import settings
 from django.contrib.sites.models import Site
@@ -67,38 +66,63 @@ def update_all_tle():
 
 @shared_task
 def fetch_data():
-    """Task to fetch all data from DB"""
-    apiurl = settings.DB_API_ENDPOINT
-    if not apiurl:
-        return
-    satellites_url = "{0}satellites".format(apiurl)
-    transmitters_url = "{0}transmitters".format(apiurl)
+    """Fetch all satellites and transmitters from SatNOGS DB
 
-    try:
-        satellites = urllib2.urlopen(satellites_url).read()
-        transmitters = urllib2.urlopen(transmitters_url).read()
-    except urllib2.URLError:
-        raise Exception('API is unreachable')
+       Throws: requests.exceptions.ConectionError"""
+
+    db_api_url = settings.DB_API_ENDPOINT
+    if not db_api_url:
+        print("Zero length api url, fetching is stopped")
+        return
+    satellites_url = "{}satellites".format(db_api_url)
+    transmitters_url = "{}transmitters".format(db_api_url)
+
+    print("Fetching Satellites from {}".format(satellites_url))
+    r_satellites = requests.get(satellites_url)
+
+    print("Fetching Transmitters from {}".format(transmitters_url))
+    r_transmitters = requests.get(transmitters_url)
 
     # Fetch Satellites
-    for sat in json.loads(satellites):
-        norad_cat_id = sat['norad_cat_id']
-        sat.pop('decayed', None)
+    satellites_added = 0
+    satellites_updated = 0
+    for satellite in r_satellites.json():
+        norad_cat_id = satellite['norad_cat_id']
+        satellite.pop('decayed', None)
         try:
+            # Update Satellite
             existing_satellite = Satellite.objects.get(norad_cat_id=norad_cat_id)
-            existing_satellite.__dict__.update(sat)
+            existing_satellite.__dict__.update(satellite)
             existing_satellite.save()
+            satellites_updated += 1
         except Satellite.DoesNotExist:
-            Satellite.objects.create(**sat)
+            # Add Satellite
+            satellite.pop('telemetries', None)
+            Satellite.objects.create(**satellite)
+            satellites_added += 1
+
+    print('Added/Updated {}/{} satellites from db.'.format(satellites_added, satellites_updated))
 
     # Fetch Transmitters
-    for transmitter in json.loads(transmitters):
+    transmitters_added = 0
+    transmitters_skipped = 0
+    for transmitter in r_transmitters.json():
         uuid = transmitter['uuid']
 
         try:
+            # Transmitter already exists, skip
             Transmitter.objects.get(uuid=uuid)
+            transmitters_skipped += 1
         except Transmitter.DoesNotExist:
+            # Create Transmitter
             Transmitter.objects.create(uuid=uuid)
+            transmitters_added += 1
+
+    print(
+        'Added/Skipped {}/{} transmitters from db.'.format(
+            transmitters_added, transmitters_skipped
+        )
+    )
 
 
 @shared_task
