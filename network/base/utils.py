@@ -4,6 +4,7 @@ import urllib
 import urllib2
 from datetime import datetime
 
+import requests
 from django.conf import settings
 from django.contrib.admin.helpers import label_for_field
 from django.core.exceptions import PermissionDenied
@@ -124,11 +125,7 @@ def community_get_discussion_details(
         .format(observation_id, slugify(satellite_name),
                 norad_cat_id)
 
-    has_comments = True
-    apiurl = '{0}.json'.format(discussion_slug)
-    try:
-        urllib2.urlopen(apiurl).read()
-    except urllib2.URLError:
-        has_comments = False
+    response = requests.get('{}.json'.format(discussion_slug))
+    has_comments = (response.status_code == 200)
 
     return {'url': discussion_url, 'slug': discussion_slug, 'has_comments': has_comments}
