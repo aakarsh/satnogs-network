@@ -8,6 +8,7 @@ from django.conf import settings
 from django.contrib.admin.helpers import label_for_field
 from django.core.exceptions import PermissionDenied
 from django.http import HttpResponse
+from django.utils.text import slugify
 from requests.exceptions import HTTPError, ReadTimeout
 
 from network.base.models import DemodData
@@ -105,3 +106,29 @@ def sync_demoddata_to_db(frame_id):
             frame.save()
     except (ReadTimeout, HTTPError):
         return
+
+
+def community_get_discussion_details(
+        observation_id, satellite_name, norad_cat_id, observation_url
+):
+    """Return the details of a discussion of the observation (if existent) in the
+       satnogs community (discourse)"""
+
+    discussion_url = ('https://community.libre.space/new-topic?title=Observation {0}: {1}'
+                      ' ({2})&body=Regarding [Observation {3}]({4}) ...'
+                      '&category=observations') \
+        .format(observation_id, satellite_name,
+                norad_cat_id, observation_id, observation_url)
+
+    discussion_slug = 'https://community.libre.space/t/observation-{0}-{1}-{2}' \
+        .format(observation_id, slugify(satellite_name),
+                norad_cat_id)
+
+    has_comments = True
+    apiurl = '{0}.json'.format(discussion_slug)
+    try:
+        urllib2.urlopen(apiurl).read()
+    except urllib2.URLError:
+        has_comments = False
+
+    return {'url': discussion_url, 'slug': discussion_slug, 'has_comments': has_comments}

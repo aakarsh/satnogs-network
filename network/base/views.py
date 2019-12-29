@@ -1,5 +1,4 @@
 """Django base views for SatNOGS Network"""
-import urllib2
 from collections import defaultdict
 from datetime import datetime, timedelta
 from operator import itemgetter
@@ -13,7 +12,6 @@ from django.db.models import Count, Prefetch
 from django.forms import ValidationError, formset_factory
 from django.http import HttpResponse, JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
-from django.utils.text import slugify
 from django.utils.timezone import make_aware, now, utc
 from django.views.decorators.http import require_POST
 from django.views.generic import ListView
@@ -33,6 +31,7 @@ from network.base.scheduling import create_new_observation, \
 from network.base.stats import satellite_stats_by_transmitter_list, \
     transmitter_stats_by_uuid
 from network.base.tasks import fetch_data, update_all_tle
+from network.base.utils import community_get_discussion_details
 from network.base.validators import NegativeElevationError, \
     ObservationOverlapError, SinglePassError, \
     is_transmitter_in_station_range
@@ -481,28 +480,17 @@ def observation_view(request, observation_id):
         )
 
     if settings.ENVIRONMENT == 'production':
-        discuss_slug = 'https://community.libre.space/t/observation-{0}-{1}-{2}' \
-            .format(observation.id, slugify(observation.satellite.name),
-                    observation.satellite.norad_cat_id)
-        discuss_url = ('https://community.libre.space/new-topic?title=Observation {0}: {1}'
-                       ' ({2})&body=Regarding [Observation {3}](http://{4}{5}) ...'
-                       '&category=observations') \
-            .format(observation.id, observation.satellite.name,
-                    observation.satellite.norad_cat_id, observation.id,
-                    request.get_host(), request.path)
-        has_comments = True
-        apiurl = '{0}.json'.format(discuss_slug)
-        try:
-            urllib2.urlopen(apiurl).read()
-        except urllib2.URLError:
-            has_comments = False
+        discussion_details = community_get_discussion_details(
+            observation.id, observation.satellite.name, observation.satellite.norad_cat_id,
+            'http://{}{}'.format(request.get_host(), request.path)
+        )
 
         return render(
             request, 'base/observation_view.html', {
                 'observation': observation,
-                'has_comments': has_comments,
-                'discuss_url': discuss_url,
-                'discuss_slug': discuss_slug,
+                'has_comments': discussion_details['has_comments'],
+                'discuss_url': discussion_details['url'],
+                'discuss_slug': discussion_details['slug'],
                 'can_vet': can_vet,
                 'can_delete': can_delete
             }
