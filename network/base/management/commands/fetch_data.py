@@ -41,6 +41,7 @@ class Command(BaseCommand):
                 satellites_updated += 1
             except Satellite.DoesNotExist:
                 # Add Satellite
+                satellite.pop('telemetries', None)
                 Satellite.objects.create(**satellite)
                 satellites_added += 1
 
