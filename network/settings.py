@@ -347,6 +347,7 @@ OBS_NO_RESULTS_MIN_COUNT = config('OBS_NO_RESULTS_MIN_COUNT', default=3, cast=in
 OBS_NO_RESULTS_IGNORE_TIME = config('OBS_NO_RESULTS_IGNORE_TIME', default=1800, cast=int)
 
 # DB API
+# Set DB_API_ENDOINT to '' to disable the data fetching from DB
 DB_API_ENDPOINT = config('DB_API_ENDPOINT', default='https://db.satnogs.org/api/')
 
 # Timeout in seconds for the community forum
