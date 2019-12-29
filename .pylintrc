@@ -21,5 +21,4 @@ disable=
     W1645, # exception-message-attribute
     W1646, # invalid-str-codec
     W1648, # bad-python3-import
-    W1655, # dict-keys-not-iterating
     W1658, # deprecated-urllib-function

@@ -450,7 +450,7 @@ def prediction_windows(request):
                         'no free observation time available on visible stations.'
         error_details = {}
         for station in available_stations:
-            if station.id not in passes_found.keys():
+            if station.id not in passes_found:
                 error_details[station.id] = 'Satellite is always above or below horizon.\n'
             else:
                 error_details[station.id] = 'No free observation time during passes available.\n'
