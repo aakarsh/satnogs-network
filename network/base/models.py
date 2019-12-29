@@ -1,4 +1,5 @@
 """Django database base model for SatNOGS Network"""
+import codecs
 import logging
 import os
 from datetime import timedelta
@@ -567,7 +568,7 @@ class DemodData(models.Model):
             try:
                 return unicode(payload)
             except UnicodeDecodeError:
-                data = payload.encode('hex').upper()
+                data = codecs.encode(payload, 'hex').encode('ascii').upper()
                 return ' '.join(data[i:i + 2] for i in range(0, len(data), 2))
 
     def __str__(self):
