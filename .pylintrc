@@ -12,5 +12,3 @@ disable=
     R0914, # too-many-locals
     W0201, # attribute-defined-outside-init
     W0703, # broad-except
-# py3k transition issues:
-    W1633, # round-builtin
