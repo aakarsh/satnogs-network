@@ -13,6 +13,5 @@ disable=
     W0201, # attribute-defined-outside-init
     W0703, # broad-except
 # py3k transition issues:
-    W1619, # old-divison
     W1633, # round-builtin
     W1645, # exception-message-attribute
