@@ -16,5 +16,3 @@ disable=
     W1619, # old-divison
     W1633, # round-builtin
     W1645, # exception-message-attribute
-    W1648, # bad-python3-import
-    W1658, # deprecated-urllib-function

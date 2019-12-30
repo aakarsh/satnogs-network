@@ -2,8 +2,6 @@
 from __future__ import absolute_import
 
 import csv
-import urllib
-import urllib2
 from builtins import str
 from datetime import datetime
 
@@ -13,7 +11,7 @@ from django.contrib.admin.helpers import label_for_field
 from django.core.exceptions import PermissionDenied
 from django.http import HttpResponse
 from django.utils.text import slugify
-from requests.exceptions import HTTPError, ReadTimeout, RequestException
+from requests.exceptions import RequestException
 
 from network.base.models import DemodData
 
@@ -89,27 +87,28 @@ def sync_demoddata_to_db(frame_id):
     submit_datetime = datetime.strftime(frame_datetime, '%Y-%m-%dT%H:%M:%S.000Z')
 
     # SiDS parameters
-    params = {}
-    params['noradID'] = sat.norad_cat_id
-    params['source'] = ground_station.name
-    params['timestamp'] = submit_datetime
-    params['locator'] = 'longLat'
-    params['longitude'] = ground_station.lng
-    params['latitude'] = ground_station.lat
-    params['frame'] = frame.display_payload_hex().replace(' ', '')
-    params['satnogs_network'] = 'True'  # NOT a part of SiDS
+    params = {
+        'noradID': sat.norad_cat_id,
+        'source': ground_station.name,
+        'timestamp': submit_datetime,
+        'locator': 'longLat',
+        'longitude': ground_station.lng,
+        'latitude': ground_station.lat,
+        'frame': frame.display_payload_hex().replace(' ', ''),
+        'satnogs_network': 'True'  # NOT a part of SiDS
+    }
 
-    apiurl = settings.DB_API_ENDPOINT
-    telemetry_url = "{0}telemetry/".format(apiurl)
+    telemetry_url = "{}telemetry/".format(settings.DB_API_ENDPOINT)
 
     try:
-        res = urllib2.urlopen(telemetry_url, urllib.urlencode(params))
-        code = str(res.getcode())
-        if code.startswith('2'):
-            frame.copied_to_db = True
-            frame.save()
-    except (ReadTimeout, HTTPError):
-        return
+        response = requests.post(telemetry_url, data=params)
+        response.raise_for_status()
+
+        frame.copied_to_db = True
+        frame.save()
+    except requests.exceptions.RequestException:
+        # Sync to db failed
+        pass
 
 
 def community_get_discussion_details(
