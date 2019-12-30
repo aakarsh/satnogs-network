@@ -13,7 +13,6 @@ disable=
     W0201, # attribute-defined-outside-init
     W0703, # broad-except
 # py3k transition issues:
-    E1608, # old-octal-literal
     W1612, # unicode-builtin
     W1619, # old-divison
     W1633, # round-builtin

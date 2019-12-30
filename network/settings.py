@@ -395,4 +395,4 @@ if ENVIRONMENT == 'dev':
         backend['APP_DIRS'] = True
 
 # needed to ensure data_obs files can be read by nginx
-FILE_UPLOAD_PERMISSIONS = 0644
+FILE_UPLOAD_PERMISSIONS = 0o0644
