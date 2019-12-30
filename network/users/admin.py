@@ -1,4 +1,6 @@
 """Define functions and settings for the django admin users interface"""
+from __future__ import absolute_import
+
 from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin as AuthUserAdmin
 from django.contrib.auth.forms import UserChangeForm, UserCreationForm

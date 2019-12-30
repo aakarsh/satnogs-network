@@ -1,5 +1,7 @@
 """SatNOGS Network API serializers, django rest framework"""
 #  pylint: disable=no-self-use
+from __future__ import absolute_import
+
 from collections import defaultdict
 
 from rest_framework import serializers

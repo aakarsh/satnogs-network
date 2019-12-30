@@ -1,4 +1,6 @@
 """Base Django URL mapping for SatNOGS Network"""
+from __future__ import absolute_import
+
 from allauth import urls as allauth_urls
 from avatar import urls as avatar_urls
 from django.conf import settings

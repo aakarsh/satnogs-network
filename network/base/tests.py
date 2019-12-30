@@ -1,5 +1,7 @@
 """SatNOGS Network base test suites"""
 # pylint: disable=R0903
+from __future__ import absolute_import
+
 import random
 from datetime import datetime, timedelta
 

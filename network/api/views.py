@@ -1,4 +1,6 @@
 """SatNOGS Network API django rest framework Views"""
+from __future__ import absolute_import
+
 from django.core.exceptions import ObjectDoesNotExist
 from django.shortcuts import get_object_or_404
 from django.utils.timezone import now

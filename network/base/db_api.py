@@ -1,4 +1,6 @@
 """SatNOGS Network functions that consume DB API"""
+from __future__ import absolute_import
+
 import requests
 from django.conf import settings
 

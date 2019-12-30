@@ -1,4 +1,6 @@
 """SatNOGS Network django context processors"""
+from __future__ import absolute_import
+
 from django.conf import settings
 from django.template.loader import render_to_string
 from django.utils.timezone import now

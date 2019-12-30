@@ -1,4 +1,6 @@
 """Define functions and settings for the django admin base interface"""
+from __future__ import absolute_import
+
 from django.conf.urls import url
 from django.contrib import admin, messages
 from django.shortcuts import redirect

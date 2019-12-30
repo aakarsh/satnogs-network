@@ -1,4 +1,6 @@
 """Django users forms for SatNOGS Network"""
+from __future__ import absolute_import
+
 from django import forms
 
 from network.users.models import User

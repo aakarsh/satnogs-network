@@ -1,4 +1,6 @@
 """SatNOGS Network django base Forms class"""
+from __future__ import absolute_import
+
 from django import forms
 
 from network.base.db_api import DBConnectionError, get_transmitters_by_uuid_set

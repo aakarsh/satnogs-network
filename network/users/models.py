@@ -1,4 +1,6 @@
 """Django database users model for SatNOGS Network"""
+from __future__ import absolute_import
+
 from django.contrib.auth.models import AbstractUser
 from django.core.validators import MaxLengthValidator
 from django.db import models

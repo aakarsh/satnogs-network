@@ -1,4 +1,6 @@
 """SatNOGS Network django rest framework Filters class"""
+from __future__ import absolute_import
+
 import django_filters
 from django_filters.rest_framework import FilterSet
 

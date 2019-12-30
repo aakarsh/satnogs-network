@@ -1,4 +1,6 @@
 """Tag to replace field in GET request"""
+from __future__ import absolute_import
+
 from django import template
 
 register = template.Library()

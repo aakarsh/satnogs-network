@@ -1,4 +1,6 @@
 """SatNOGS Network scheduling functions"""
+from __future__ import absolute_import
+
 import math
 from datetime import timedelta
 

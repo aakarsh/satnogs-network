@@ -1,4 +1,6 @@
 """Miscellaneous functions for SatNOGS Network"""
+from __future__ import absolute_import
+
 import csv
 import urllib
 import urllib2

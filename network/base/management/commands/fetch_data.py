@@ -1,4 +1,6 @@
 """SatNOGS Network django management command to fetch data (Satellites and Transmitters)"""
+from __future__ import absolute_import
+
 import requests
 from django.conf import settings
 from django.core.management.base import BaseCommand, CommandError

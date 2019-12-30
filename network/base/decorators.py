@@ -1,4 +1,6 @@
 """SatNOGS Network base decorators"""
+from __future__ import absolute_import
+
 from django.core.urlresolvers import reverse
 from django.http import HttpResponseBadRequest
 from django.shortcuts import redirect

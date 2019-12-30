@@ -1,4 +1,6 @@
 """SatNOGS Network django management command to initialize a new database"""
+from __future__ import absolute_import
+
 from django.core.management import call_command
 from django.core.management.base import BaseCommand
 
