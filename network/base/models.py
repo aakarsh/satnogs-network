@@ -60,6 +60,13 @@ TRANSMITTER_STATUS = ['active', 'inactive', 'invalid']
 TRANSMITTER_TYPE = ['Transmitter', 'Transceiver', 'Transponder']
 
 
+def _decode_pretty_hex(binary_data):
+    """Return the binary data as hex dump of the following form: `DE AD C0 DE`"""
+
+    data = codecs.encode(binary_data, 'hex').decode('ascii').upper()
+    return ' '.join(data[i:i + 2] for i in range(0, len(data), 2))
+
+
 def _name_obs_files(instance, filename):
     """Return a filepath formatted by Observation ID"""
     return 'data_obs/{0}/{1}'.format(instance.id, filename)
@@ -563,15 +570,27 @@ class DemodData(models.Model):
             else:
                 return True
 
-    def display_payload(self):
-        """Return the content of the data file"""
-        with open(self.payload_demod.path) as file_path:
-            payload = file_path.read()
-            try:
-                return unicode(payload)
-            except UnicodeDecodeError:
-                data = codecs.encode(payload, 'hex').encode('ascii').upper()
-                return ' '.join(data[i:i + 2] for i in range(0, len(data), 2))
+    def display_payload_hex(self):
+        """
+        Return the content of the data file as hex dump of the following form: `DE AD C0 DE`.
+        """
+        with open(self.payload_demod.path) as data_file:
+            payload = data_file.read()
+
+        return _decode_pretty_hex(payload)
+
+    def display_payload_utf8(self):
+        """
+        Return the content of the data file decoded as UTF-8. If this fails,
+        show as hex dump.
+        """
+        with open(self.payload_demod.path) as data_file:
+            payload = data_file.read()
+
+        try:
+            return payload.decode('utf-8')
+        except UnicodeDecodeError:
+            return _decode_pretty_hex(payload)
 
     def __str__(self):
         return '{} - {}'.format(self.id, self.payload_demod)

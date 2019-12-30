@@ -385,11 +385,11 @@
                   </div>
                 {% elif observation.transmitter_mode == 'CW' %}
                   <div class="well well-sm data-well">
-                    {{ demoddata.display_payload }}
+                    {{ demoddata.display_payload_utf8 }}
                   </div>
                 {% else %}
                   <div class="well well-sm data-well hex">
-                    {{ demoddata.display_payload }}
+                    {{ demoddata.display_payload_hex }}
                   </div>
                 {% endif %}
               {% endfor %}
