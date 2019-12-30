@@ -287,9 +287,9 @@ def observation_new_post(request):
         else:
             messages.success(request, str(total) + ' Observations were scheduled successfully.')
             response = redirect(reverse('base:observations_list'))
-    except (ValueError, ValidationError, ObservationOverlapError, NegativeElevationError,
-            SinglePassError) as error:
-        messages.error(request, '{0}'.format(error.message))
+    except (ObservationOverlapError, NegativeElevationError, SinglePassError, ValidationError,
+            ValueError) as error:
+        messages.error(request, str(error))
         response = redirect(reverse('base:observation_new'))
     except LatestTle.DoesNotExist:
         message = 'Scheduling failed: Satellite without TLE'
@@ -393,7 +393,7 @@ def prediction_windows(request):
             return JsonResponse(data, safe=False)
         downlink = transmitter[0]['downlink_low']
     except DBConnectionError as error:
-        data = [{'error': error.message}]
+        data = [{'error': str(error)}]
         return JsonResponse(data, safe=False)
 
     # Fetch all available ground stations
@@ -680,7 +680,7 @@ def scheduling_stations(request):
             data = [{'error': 'You should select a valid Transmitter.'}]
             return JsonResponse(data, safe=False)
     except DBConnectionError as error:
-        data = [{'error': error.message}]
+        data = [{'error': str(error)}]
         return JsonResponse(data, safe=False)
 
     stations = Station.objects.filter(status__gt=0).prefetch_related('antenna')
@@ -877,7 +877,7 @@ def satellite_view(request, norad_id):
     try:
         transmitters = get_transmitters_by_norad_id(norad_id=norad_id)
     except DBConnectionError as error:
-        data = [{'error': error.message}]
+        data = [{'error': str(error)}]
         return JsonResponse(data, safe=False)
     satellite_stats = satellite_stats_by_transmitter_list(transmitters)
     data = {
@@ -911,7 +911,7 @@ def transmitters_view(request):
     try:
         transmitters = get_transmitters_by_norad_id(norad_id)
     except DBConnectionError as error:
-        data = [{'error': error.message}]
+        data = [{'error': str(error)}]
         return JsonResponse(data, safe=False)
 
     transmitters = [

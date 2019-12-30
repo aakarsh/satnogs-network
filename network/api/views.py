@@ -44,24 +44,13 @@ class ObservationView(  # pylint: disable=R0901
             else:
                 data = serializer.errors
                 response = Response(data, status=status.HTTP_400_BAD_REQUEST)
-        except ValueError as error:
-            data = error.message
-            response = Response(data, status=status.HTTP_400_BAD_REQUEST)
-        except ValidationError as error:
-            data = error.message
-            response = Response(data, status=status.HTTP_400_BAD_REQUEST)
+        except (NegativeElevationError, SinglePassError, ValidationError, ValueError) as error:
+            response = Response(str(error), status=status.HTTP_400_BAD_REQUEST)
         except LatestTle.DoesNotExist:
             data = 'Scheduling failed: Satellite without TLE'
             response = Response(data, status=status.HTTP_501_NOT_IMPLEMENTED)
         except ObservationOverlapError as error:
-            data = error.message
-            response = Response(data, status=status.HTTP_409_CONFLICT)
-        except NegativeElevationError as error:
-            data = error.message
-            response = Response(data, status=status.HTTP_400_BAD_REQUEST)
-        except SinglePassError as error:
-            data = error.message
-            response = Response(data, status=status.HTTP_400_BAD_REQUEST)
+            response = Response(str(error), status=status.HTTP_409_CONFLICT)
         return response
 
     def update(self, request, *args, **kwargs):
