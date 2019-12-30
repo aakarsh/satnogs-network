@@ -4,6 +4,7 @@ from __future__ import absolute_import
 import csv
 import urllib
 import urllib2
+from builtins import str
 from datetime import datetime
 
 import requests
@@ -21,14 +22,14 @@ def export_as_csv(modeladmin, request, queryset):
     """Exports admin panel table in csv format"""
     if not request.user.is_staff:
         raise PermissionDenied
-    opts = modeladmin.model._meta
     field_names = modeladmin.list_display
     if 'action_checkbox' in field_names:
         field_names.remove('action_checkbox')
 
     response = HttpResponse(content_type="text/csv")
-    response['Content-Disposition'] = 'attachment; filename=%s.csv' % unicode(opts)\
-                                      .replace('.', '_')
+    response['Content-Disposition'] = 'attachment; filename={}.csv'.format(
+        str(modeladmin.model._meta).replace('.', '_')
+    )
 
     writer = csv.writer(response)
     headers = []
@@ -54,7 +55,7 @@ def export_as_csv(modeladmin, request, queryset):
                     value = value(row)
             if value is None:
                 value = ''
-            values.append(unicode(value).encode('utf-8'))
+            values.append(str(value))
         writer.writerow(values)
     return response
 
