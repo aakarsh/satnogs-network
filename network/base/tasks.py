@@ -190,11 +190,13 @@ def sync_to_db():
         copied_to_db=False, observation__transmitter_uuid__in=transmitters
     )
     for frame in frames:
+        if frame.is_image() or frame.copied_to_db or not os.path.isfile(frame.payload_demod.path):
+            continue
+
         try:
-            if not frame.is_image() and not frame.copied_to_db:
-                if os.path.isfile(frame.payload_demod.path):
-                    sync_demoddata_to_db(frame.id)
-        except Exception:
+            sync_demoddata_to_db(frame.id)
+        except requests.exceptions.RequestException:
+            # Sync to db failed, skip this frame for a future task instance
             continue
 
 

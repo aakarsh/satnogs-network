@@ -75,7 +75,10 @@ def export_station_status(self, request, queryset):
 
 
 def sync_demoddata_to_db(frame_id):
-    """Task to send a frame from SatNOGS Network to SatNOGS DB"""
+    """
+    Task to send a frame from SatNOGS Network to SatNOGS DB
+
+    Raises requests.exceptions.RequestException if sync fails."""
     frame = DemodData.objects.get(id=frame_id)
     obs = frame.observation
     sat = obs.satellite
@@ -100,15 +103,11 @@ def sync_demoddata_to_db(frame_id):
 
     telemetry_url = "{}telemetry/".format(settings.DB_API_ENDPOINT)
 
-    try:
-        response = requests.post(telemetry_url, data=params)
-        response.raise_for_status()
+    response = requests.post(telemetry_url, data=params, timeout=settings.DB_API_TIMEOUT)
+    response.raise_for_status()
 
-        frame.copied_to_db = True
-        frame.save()
-    except requests.exceptions.RequestException:
-        # Sync to db failed
-        pass
+    frame.copied_to_db = True
+    frame.save()
 
 
 def community_get_discussion_details(
