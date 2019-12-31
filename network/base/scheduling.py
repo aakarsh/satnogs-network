@@ -283,7 +283,19 @@ def predict_available_observation_windows(station, min_horizon, overlapped, tle,
 
 
 def create_new_observation(station, transmitter, start, end, author):
-    """Creates and returns a new Observation object"""
+    """
+    Creates and returns a new Observation object
+
+    Arguments:
+    station - network.base.models.Station
+    transmitter - network.base.models.Transmitter
+    start - datetime
+    end - datetime
+    author - network.base.models.User
+
+    Returns network.base.models.Observation
+    Raises NegativeElevationError, ObservationOverlapError, SinglePassError or more
+    """
     scheduled_obs = Observation.objects.filter(ground_station=station).filter(end__gt=now())
     window = resolve_overlaps(scheduled_obs, start, end)
 
