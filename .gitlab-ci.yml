@@ -30,6 +30,13 @@ static_python:
     - pip install "$GITLAB_CI_PYPI_TOX"
   script:
     - tox -e "py2-flake8,isort,yapf,py2-pylint"
+static_python3:
+  stage: static
+  image: ${GITLAB_CI_IMAGE_PYTHON3}
+  before_script:
+    - pip install "$GITLAB_CI_PYPI_TOX"
+  script:
+    - tox -e "py3-flake8,py3-pylint"
 docs:
   stage: build
   image: ${GITLAB_CI_IMAGE_PYTHON3}
