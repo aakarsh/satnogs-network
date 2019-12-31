@@ -5,6 +5,7 @@ from django.contrib.auth.models import AbstractUser
 from django.core.validators import MaxLengthValidator
 from django.db import models
 from django.db.models.signals import post_save
+from django.utils.encoding import python_2_unicode_compatible
 from rest_framework.authtoken.models import Token
 
 
@@ -16,6 +17,7 @@ def gen_token(sender, instance, created, **kwargs):  # pylint: disable=W0613
         Token.objects.create(user=instance)
 
 
+@python_2_unicode_compatible
 class User(AbstractUser):
     """Model for SatNOGS users."""
 
@@ -28,7 +30,7 @@ class User(AbstractUser):
             return self.get_full_name()
         return self.username
 
-    def __unicode__(self):
+    def __str__(self):
         return self.username
 
 
