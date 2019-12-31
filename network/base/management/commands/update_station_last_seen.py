@@ -14,7 +14,7 @@ class Command(BaseCommand):
     def add_arguments(self, parser):
         parser.add_argument('station_id', nargs='+', type=int)
 
-    def handle(self, *_, **options):
+    def handle(self, *args, **options):
         for station_id in options['station_id']:
             try:
                 ground_station = Station.objects.get(id=station_id)
