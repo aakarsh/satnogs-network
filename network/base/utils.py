@@ -13,7 +13,7 @@ from django.contrib.admin.helpers import label_for_field
 from django.core.exceptions import PermissionDenied
 from django.http import HttpResponse
 from django.utils.text import slugify
-from requests.exceptions import HTTPError, ReadTimeout
+from requests.exceptions import HTTPError, ReadTimeout, RequestException
 
 from network.base.models import DemodData
 
@@ -115,8 +115,10 @@ def sync_demoddata_to_db(frame_id):
 def community_get_discussion_details(
         observation_id, satellite_name, norad_cat_id, observation_url
 ):
-    """Return the details of a discussion of the observation (if existent) in the
-       satnogs community (discourse)"""
+    """
+    Return the details of a discussion of the observation (if existent) in the
+    satnogs community (discourse)
+    """
 
     discussion_url = ('https://community.libre.space/new-topic?title=Observation {0}: {1}'
                       ' ({2})&body=Regarding [Observation {3}]({4}) ...'
@@ -128,7 +130,12 @@ def community_get_discussion_details(
         .format(observation_id, slugify(satellite_name),
                 norad_cat_id)
 
-    response = requests.get('{}.json'.format(discussion_slug))
-    has_comments = (response.status_code == 200)
+    try:
+        response = requests.get('{}.json'.format(discussion_slug))
+        response.raise_for_status()
+        has_comments = (response.status_code == 200)
+    except RequestException:
+        # Community is unreachable
+        has_comments = False
 
     return {'url': discussion_url, 'slug': discussion_slug, 'has_comments': has_comments}
