@@ -15,4 +15,3 @@ disable=
     W0201, # attribute-defined-outside-init
     W0621, # redefined-outer-name
     W0703, # broad-except
-    W1308, # duplicate-string-formatting-argument

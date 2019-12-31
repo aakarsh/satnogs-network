@@ -119,10 +119,9 @@ def community_get_discussion_details(
     """
 
     discussion_url = ('https://community.libre.space/new-topic?title=Observation {0}: {1}'
-                      ' ({2})&body=Regarding [Observation {3}]({4}) ...'
+                      ' ({2})&body=Regarding [Observation {0}]({3}) ...'
                       '&category=observations') \
-        .format(observation_id, satellite_name,
-                norad_cat_id, observation_id, observation_url)
+        .format(observation_id, satellite_name, norad_cat_id, observation_url)
 
     discussion_slug = 'https://community.libre.space/t/observation-{0}-{1}-{2}' \
         .format(observation_id, slugify(satellite_name),
