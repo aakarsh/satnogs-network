@@ -359,7 +359,7 @@ class JobSerializer(serializers.ModelSerializer):
         frequency_drift = obj.transmitter_downlink_drift
         if frequency_drift is None:
             return frequency
-        return int(round(frequency + ((frequency * frequency_drift) / float(pow(10, 9)))))
+        return int(round(frequency + ((frequency * frequency_drift) / 1e9)))
 
     def get_transmitter(self, obj):
         """Returns Transmitter UUID"""
