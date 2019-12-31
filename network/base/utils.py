@@ -131,7 +131,9 @@ def community_get_discussion_details(
                 norad_cat_id)
 
     try:
-        response = requests.get('{}.json'.format(discussion_slug))
+        response = requests.get(
+            '{}.json'.format(discussion_slug), timeout=settings.COMMUNITY_TIMEOUT
+        )
         response.raise_for_status()
         has_comments = (response.status_code == 200)
     except RequestException:

@@ -349,6 +349,10 @@ OBS_NO_RESULTS_IGNORE_TIME = config('OBS_NO_RESULTS_IGNORE_TIME', default=1800, 
 # DB API
 DB_API_ENDPOINT = config('DB_API_ENDPOINT', default='https://db.satnogs.org/api/')
 
+# Timeout in seconds for the community forum
+# (used e.g. when checking for the existance of certain threads)
+COMMUNITY_TIMEOUT = config('COMMUNITY_TIMEOUT', default=2.0, cast=float)
+
 # ListView pagination
 ITEMS_PER_PAGE = config('ITEMS_PER_PAGE', default=25, cast=int)
 
