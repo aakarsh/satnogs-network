@@ -7,6 +7,7 @@ from datetime import timedelta
 import ephem
 from django.conf import settings
 from django.utils.timezone import make_aware, now, utc
+from past.utils import old_div
 
 from network.base.models import LatestTle, Observation, Satellite
 from network.base.perms import schedule_stations_perms
@@ -146,7 +147,7 @@ def create_station_windows(scheduled_obs, overlapped, pass_params, observer, sat
                     create_station_window(
                         window_start, window_end, get_azimuth(observer, satellite, window_start),
                         get_azimuth(observer, satellite, window_end), altitude, tle, True, True,
-                        min(1, 1 - (window_duration / initial_duration))
+                        min(1, 1 - (float(window_duration) / float(initial_duration)))
                     )
                 )
         elif overlapped == 2:
@@ -164,7 +165,7 @@ def create_station_windows(scheduled_obs, overlapped, pass_params, observer, sat
                 create_station_window(
                     pass_params['rise_time'], pass_params['set_time'], pass_params['rise_az'],
                     pass_params['set_az'], pass_params['tca_alt'], tle, duration_validity, True,
-                    min(1, 1 - (window_duration / initial_duration))
+                    min(1, 1 - (float(window_duration) / float(initial_duration)))
                 )
             )
     else:
@@ -301,7 +302,9 @@ def create_new_observation(station, transmitter, start, end, author):
     observer.lat = str(station.lat)
     observer.elevation = station.alt
 
-    mid_pass_time = start + (end - start) / 2
+    # Replace with the following after Python 3 migration:
+    # mid_pass_time = start + (end - start) / 2
+    mid_pass_time = start + old_div((end - start), 2)
 
     rise_azimuth = get_azimuth(observer, sat_ephem, start)
     rise_altitude = get_altitude(observer, sat_ephem, start)
