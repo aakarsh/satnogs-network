@@ -264,9 +264,9 @@ def observation_new_post(request):
             errors_list = [error for error in formset.errors if error]
             if errors_list:
                 for field in errors_list[0]:
-                    messages.error(request, '{0}'.format(errors_list[0][field][0]))
+                    messages.error(request, str(errors_list[0][field][0]))
             else:
-                messages.error(request, '{0}'.format(formset.non_form_errors()[0]))
+                messages.error(request, str(formset.non_form_errors()[0]))
             return redirect(reverse('base:observation_new'))
 
         new_observations = create_new_observations(formset, request.user)
@@ -292,8 +292,7 @@ def observation_new_post(request):
         messages.error(request, str(error))
         response = redirect(reverse('base:observation_new'))
     except LatestTle.DoesNotExist:
-        message = 'Scheduling failed: Satellite without TLE'
-        messages.error(request, '{0}'.format(message))
+        messages.error(request, 'Scheduling failed: Satellite without TLE')
         response = redirect(reverse('base:observation_new'))
     return response
 
