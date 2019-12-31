@@ -96,7 +96,7 @@ def sync_demoddata_to_db(frame_id):
     params['locator'] = 'longLat'
     params['longitude'] = ground_station.lng
     params['latitude'] = ground_station.lat
-    params['frame'] = frame.display_payload().replace(' ', '')
+    params['frame'] = frame.display_payload_hex().replace(' ', '')
     params['satnogs_network'] = 'True'  # NOT a part of SiDS
 
     apiurl = settings.DB_API_ENDPOINT
