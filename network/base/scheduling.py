@@ -1,4 +1,7 @@
 """SatNOGS Network scheduling functions"""
+# ephem is missing lon, lat, elevation and horizon attributes in Observer class slots,
+# Disable assigning-non-slot pylint error:
+# pylint: disable=E0237
 from __future__ import absolute_import, division
 
 import math
