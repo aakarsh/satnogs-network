@@ -23,7 +23,6 @@ disable=
     W0107, # unnecessary-pass
     W0201, # attribute-defined-outside-init
     W0621, # redefined-outer-name
-    W0622, # redefined-builtin
     W0703, # broad-except
     W1308, # duplicate-string-formatting-argument
     W1505, # deprecated-method

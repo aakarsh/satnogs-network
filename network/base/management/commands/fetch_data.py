@@ -2,7 +2,8 @@
 from __future__ import absolute_import
 
 from django.core.management.base import BaseCommand, CommandError
-from requests.exceptions import ConnectionError
+# Remove this import after Python 3 migration
+from requests.exceptions import ConnectionError  # pylint: disable=W0622
 
 from network.base.tasks import fetch_data
 
