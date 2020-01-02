@@ -48,7 +48,7 @@ def export_as_csv(modeladmin, request, queryset):
                 try:
                     # get value from model
                     value = value()
-                except Exception:
+                except TypeError:
                     # get value from modeladmin e.g: admin_method_1
                     value = value(row)
             if value is None:
