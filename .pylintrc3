@@ -20,7 +20,6 @@ disable=
     R0913, # too-many-arguments
     R0914, # too-many-locals
     R0915, # too-many-statements
-    W0107, # unnecessary-pass
     W0201, # attribute-defined-outside-init
     W0621, # redefined-outer-name
     W0703, # broad-except

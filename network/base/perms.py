@@ -6,7 +6,6 @@ from django.core.exceptions import ObjectDoesNotExist
 
 class UserNoPermissionError(Exception):
     """Error when user has not persmission"""
-    pass
 
 
 def schedule_perms(user):

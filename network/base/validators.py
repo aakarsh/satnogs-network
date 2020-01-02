@@ -9,22 +9,18 @@ from django.utils.timezone import make_aware, utc
 
 class ObservationOverlapError(Exception):
     """Error when observation overlaps with already scheduled one"""
-    pass
 
 
 class OutOfRangeError(Exception):
     """Error when transmitter is our of station's antenna frequency range"""
-    pass
 
 
 class NegativeElevationError(Exception):
     """Error when satellite doesn't raise above station's horizon"""
-    pass
 
 
 class SinglePassError(Exception):
     """Error when between given start and end datetimes there are more than one satellite passes"""
-    pass
 
 
 def check_start_datetime(start):

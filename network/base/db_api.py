@@ -9,7 +9,6 @@ DB_API_URL = settings.DB_API_ENDPOINT
 
 class DBConnectionError(Exception):
     """Error when there are connection issues with DB API"""
-    pass
 
 
 def transmitters_api_request(url):
