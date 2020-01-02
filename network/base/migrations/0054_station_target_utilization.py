@@ -16,6 +16,6 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name='station',
             name='target_utilization',
-            field=models.IntegerField(blank=True, help_text=b'Target utilization factor for your station', null=True, validators=[django.core.validators.MaxValueValidator(100), django.core.validators.MinValueValidator(0)]),
+            field=models.IntegerField(blank=True, help_text='Target utilization factor for your station', null=True, validators=[django.core.validators.MaxValueValidator(100), django.core.validators.MinValueValidator(0)]),
         ),
     ]

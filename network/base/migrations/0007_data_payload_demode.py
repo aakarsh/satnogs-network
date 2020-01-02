@@ -15,6 +15,6 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name='data',
             name='payload_demode',
-            field=models.FileField(blank=True, null=True, upload_to=b'data_payloads'),
+            field=models.FileField(blank=True, null=True, upload_to='data_payloads'),
         ),
     ]

@@ -17,7 +17,7 @@ class Migration(migrations.Migration):
             name='StationStatusLog',
             fields=[
                 ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('status', models.IntegerField(choices=[(2, b'Online'), (1, b'Testing'), (0, b'Offline')], default=0)),
+                ('status', models.IntegerField(choices=[(2, 'Online'), (1, 'Testing'), (0, 'Offline')], default=0)),
                 ('changed', models.DateTimeField(auto_now_add=True)),
                 ('station', models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.CASCADE, related_name='station_logs', to='base.Station')),
             ],

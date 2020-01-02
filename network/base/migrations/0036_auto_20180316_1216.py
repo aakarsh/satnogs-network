@@ -16,16 +16,16 @@ class Migration(migrations.Migration):
         migrations.AlterField(
             model_name='station',
             name='description',
-            field=models.TextField(blank=True, help_text=b'Max 500 characters', max_length=500),
+            field=models.TextField(blank=True, help_text='Max 500 characters', max_length=500),
         ),
         migrations.AlterField(
             model_name='station',
             name='lat',
-            field=models.FloatField(help_text=b'eg. 38.01697', validators=[django.core.validators.MaxValueValidator(90), django.core.validators.MinValueValidator(-90)]),
+            field=models.FloatField(help_text='eg. 38.01697', validators=[django.core.validators.MaxValueValidator(90), django.core.validators.MinValueValidator(-90)]),
         ),
         migrations.AlterField(
             model_name='station',
             name='lng',
-            field=models.FloatField(help_text=b'eg. 23.7314', validators=[django.core.validators.MaxValueValidator(180), django.core.validators.MinValueValidator(-180)]),
+            field=models.FloatField(help_text='eg. 23.7314', validators=[django.core.validators.MaxValueValidator(180), django.core.validators.MinValueValidator(-180)]),
         ),
     ]

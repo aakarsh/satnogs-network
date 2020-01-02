@@ -17,7 +17,7 @@ class Migration(migrations.Migration):
             name='Rig',
             fields=[
                 ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('name', models.CharField(choices=[(b'Radio', b'Radio'), (b'SDR', b'SDR')], max_length=10)),
+                ('name', models.CharField(choices=[('Radio', 'Radio'), ('SDR', 'SDR')], max_length=10)),
                 ('rictld_number', models.PositiveIntegerField(blank=True, null=True)),
             ],
         ),

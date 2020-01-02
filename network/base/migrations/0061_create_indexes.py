@@ -34,14 +34,14 @@ class Migration(migrations.Migration):
         ),
         migrations.AddIndex(
             model_name='observation',
-            index=models.Index(fields=[b'-start', b'-end'], name='base_observ_start_bbb297_idx'),
+            index=models.Index(fields=['-start', '-end'], name='base_observ_start_bbb297_idx'),
         ),
         migrations.AddIndex(
             model_name='stationstatuslog',
-            index=models.Index(fields=[b'-changed'], name='base_statio_changed_71df65_idx'),
+            index=models.Index(fields=['-changed'], name='base_statio_changed_71df65_idx'),
         ),
         migrations.AddIndex(
             model_name='station',
-            index=models.Index(fields=[b'-status', b'id'], name='base_statio_status_797b1c_idx'),
+            index=models.Index(fields=['-status', 'id'], name='base_statio_status_797b1c_idx'),
         ),
     ]

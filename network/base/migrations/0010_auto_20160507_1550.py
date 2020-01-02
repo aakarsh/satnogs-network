@@ -17,7 +17,7 @@ class Migration(migrations.Migration):
             name='DemodData',
             fields=[
                 ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('payload_demod', models.FileField(blank=True, null=True, upload_to=b'data_payloads')),
+                ('payload_demod', models.FileField(blank=True, null=True, upload_to='data_payloads')),
             ],
         ),
         migrations.RemoveField(

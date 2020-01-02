@@ -16,6 +16,6 @@ class Migration(migrations.Migration):
         migrations.AlterField(
             model_name='station',
             name='image',
-            field=models.ImageField(blank=True, upload_to=b'ground_stations', validators=[network.base.models.validate_image]),
+            field=models.ImageField(blank=True, upload_to='ground_stations', validators=[network.base.models.validate_image]),
         ),
     ]

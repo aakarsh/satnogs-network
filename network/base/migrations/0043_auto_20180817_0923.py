@@ -15,6 +15,6 @@ class Migration(migrations.Migration):
         migrations.AlterField(
             model_name='station',
             name='antenna',
-            field=models.ManyToManyField(blank=True, help_text=b'If you want to add a new Antenna contact <a href="https://community.satnogs.org/" target="_blank">SatNOGS Team</a>', related_name='stations', to='base.Antenna'),
+            field=models.ManyToManyField(blank=True, help_text='If you want to add a new Antenna contact <a href="https://community.satnogs.org/" target="_blank">SatNOGS Team</a>', related_name='stations', to='base.Antenna'),
         ),
     ]

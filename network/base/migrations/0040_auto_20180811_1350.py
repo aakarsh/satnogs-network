@@ -15,6 +15,6 @@ class Migration(migrations.Migration):
         migrations.AlterField(
             model_name='station',
             name='alt',
-            field=models.PositiveIntegerField(help_text=b'In meters above sea level'),
+            field=models.PositiveIntegerField(help_text='In meters above sea level'),
         ),
     ]

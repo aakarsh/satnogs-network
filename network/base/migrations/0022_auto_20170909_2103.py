@@ -43,7 +43,7 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name='observation',
             name='payload',
-            field=models.FileField(blank=True, null=True, upload_to=b'data_payloads'),
+            field=models.FileField(blank=True, null=True, upload_to='data_payloads'),
         ),
         migrations.AddField(
             model_name='observation',
@@ -63,7 +63,7 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name='observation',
             name='vetted_status',
-            field=models.CharField(choices=[(b'unknown', b'Unknown'), (b'verified', b'Verified'), (b'data_not_verified', b'Has Data, Not Verified'), (b'no_data', b'No Data')], default=b'unknown', max_length=20),
+            field=models.CharField(choices=[('unknown', 'Unknown'), ('verified', 'Verified'), ('data_not_verified', 'Has Data, Not Verified'), ('no_data', b'No Data')], default='unknown', max_length=20),
         ),
         migrations.AddField(
             model_name='observation',
@@ -73,6 +73,6 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name='observation',
             name='waterfall',
-            field=models.ImageField(blank=True, null=True, upload_to=b'data_waterfalls'),
+            field=models.ImageField(blank=True, null=True, upload_to='data_waterfalls'),
         ),
     ]

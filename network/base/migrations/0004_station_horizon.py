@@ -15,6 +15,6 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name='station',
             name='horizon',
-            field=models.PositiveIntegerField(default=10, help_text=b'In degrees above 0'),
+            field=models.PositiveIntegerField(default=10, help_text='In degrees above 0'),
         ),
     ]

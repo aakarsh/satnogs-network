@@ -15,6 +15,6 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name='satellite',
             name='status',
-            field=models.CharField(choices=[(b'alive', b'alive'), (b'dead', b'dead'), (b're-entered', b're-entered')], default=b'alive', max_length=10),
+            field=models.CharField(choices=[('alive', 'alive'), ('dead', 'dead'), ('re-entered', 're-entered')], default='alive', max_length=10),
         ),
     ]

@@ -15,6 +15,6 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name='data',
             name='waterfall',
-            field=models.ImageField(blank=True, null=True, upload_to=b'data_waterfalls'),
+            field=models.ImageField(blank=True, null=True, upload_to='data_waterfalls'),
         ),
     ]

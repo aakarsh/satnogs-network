@@ -14,6 +14,6 @@ class Migration(migrations.Migration):
         migrations.AlterField(
             model_name='antenna',
             name='antenna_type',
-            field=models.CharField(max_length=15, choices=[(b'dipole', b'Dipole'), (b'yagi', b'Yagi'), (b'helical', b'Helical'), (b'parabolic', b'Parabolic'), (b'vertical', b'Verical')]),
+            field=models.CharField(max_length=15, choices=[('dipole', 'Dipole'), ('yagi', 'Yagi'), ('helical', 'Helical'), ('parabolic', 'Parabolic'), ('vertical', 'Verical')]),
         ),
     ]

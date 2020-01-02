@@ -28,7 +28,7 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name='station',
             name='status',
-            field=models.IntegerField(choices=[(2, b'Online'), (1, b'Testing'), (0, b'Offline')], default=0),
+            field=models.IntegerField(choices=[(2, 'Online'), (1, 'Testing'), (0, 'Offline')], default=0),
         ),
         migrations.AddField(
             model_name='station',

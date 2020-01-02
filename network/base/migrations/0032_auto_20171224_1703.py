@@ -15,6 +15,6 @@ class Migration(migrations.Migration):
         migrations.AlterField(
             model_name='observation',
             name='vetted_status',
-            field=models.CharField(choices=[(b'unknown', b'Unknown'), (b'good', b'Good'), (b'bad', b'Bad'), (b'failed', b'Failed')], default=b'unknown', max_length=20),
+            field=models.CharField(choices=[('unknown', 'Unknown'), ('good', 'Good'), ('bad', 'Bad'), ('failed', 'Failed')], default='unknown', max_length=20),
         ),
     ]

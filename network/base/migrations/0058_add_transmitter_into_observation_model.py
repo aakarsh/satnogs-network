@@ -49,7 +49,7 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name='observation',
             name='transmitter_description',
-            field=models.TextField(default=b''),
+            field=models.TextField(default=''),
         ),
         migrations.AddField(
             model_name='observation',
@@ -79,7 +79,7 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name='observation',
             name='transmitter_type',
-            field=models.CharField(choices=[(b'Transmitter', b'Transmitter'), (b'Transceiver', b'Transceiver'), (b'Transponder', b'Transponder')], default=b'Transmitter', max_length=11),
+            field=models.CharField(choices=[('Transmitter', 'Transmitter'), ('Transceiver', 'Transceiver'), ('Transponder', 'Transponder')], default='Transmitter', max_length=11),
         ),
         migrations.AddField(
             model_name='observation',
