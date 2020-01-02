@@ -86,7 +86,9 @@ class ObservationView(  # pylint: disable=R0901
                     data='Audio has already been uploaded', status=status.HTTP_403_FORBIDDEN
                 )
 
-        super(ObservationView, self).update(request, *args, **kwargs)
+        # False-positive no-member (E1101) pylint error:
+        # Parent class rest_framework.mixins.UpdateModelMixin provides the 'update' method
+        super(ObservationView, self).update(request, *args, **kwargs)  # pylint: disable=E1101
         return Response(status=status.HTTP_200_OK)
 
 

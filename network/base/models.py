@@ -259,7 +259,10 @@ class Station(models.Model):
     @property
     def observations_future_count(self):
         """Return the number of future station's observations"""
-        count = self.observations.is_future().count()
+        # False-positive no-member (E1101) pylint error:
+        # Instance of 'Station' has 'observations' member due to the
+        # Observation.station ForeignKey related_name
+        count = self.observations.is_future().count()  # pylint: disable=E1101
         return count
 
     @property
