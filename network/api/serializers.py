@@ -116,6 +116,8 @@ class ObservationSerializer(serializers.ModelSerializer):
 
 class NewObservationListSerializer(serializers.ListSerializer):
     """SatNOGS Network New Observation API List Serializer"""
+    transmitters = {}
+
     def validate(self, attrs):
         """Validates data from a list of new observations"""
         station_set = set()
