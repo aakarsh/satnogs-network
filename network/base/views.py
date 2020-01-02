@@ -100,6 +100,7 @@ class ObservationListView(ListView):  # pylint: disable=R0901
     template_name = 'base/observations.html'
     str_filters = ['norad', 'observer', 'station', 'start', 'end']
     flag_filters = ['bad', 'good', 'unvetted', 'future', 'failed']
+    filtered = None
 
     def get_filter_params(self):
         """
