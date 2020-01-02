@@ -17,7 +17,7 @@ class AntennaAdmin(admin.ModelAdmin):
     """Define Antenna view in django admin UI"""
     list_display = (
         'id',
-        '__unicode__',
+        '__str__',
         'antenna_count',
         'station_list',
     )
