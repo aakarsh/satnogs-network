@@ -1,4 +1,6 @@
 """Tests for miscellaneous functions for SatNOGS Network"""
+# pylint: disable=W0621
+
 from __future__ import absolute_import
 
 import pytest
@@ -27,10 +29,12 @@ def observation_without_discussion():
     }
 
 
-def test_community_get_discussion_details_with_discussion():
-    """Test getting community discussion when it exists"""
-    parameters = observation_with_discussion()
-    details = community_get_discussion_details(**parameters)
+def test_community_get_discussion_details_with_discussion(observation_with_discussion):
+    '''
+    Test community_get_discussion_details returns details.has_comments=True and the proper urls
+    for the existing discussion in community (details.slug)
+    '''
+    details = community_get_discussion_details(**observation_with_discussion)
 
     assert details == {
         'url':
@@ -44,10 +48,12 @@ def test_community_get_discussion_details_with_discussion():
     }
 
 
-def test_community_get_discussion_details_without_discussion():
-    """Test getting community discussion when it doesn't exists"""
-    parameters = observation_without_discussion()
-    details = community_get_discussion_details(**parameters)
+def test_community_get_discussion_details_without_discussion(observation_without_discussion):
+    '''
+    Test community_get_discussion_details returns details.has_comments=False and the proper urls
+    for creating a new discussion in community (details.url)
+    '''
+    details = community_get_discussion_details(**observation_without_discussion)
 
     assert details == {
         'url':
