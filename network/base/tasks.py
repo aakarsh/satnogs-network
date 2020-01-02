@@ -14,7 +14,6 @@ from django.core.mail import send_mail
 from django.db.models import Prefetch
 from django.utils.timezone import now
 from internetarchive import upload
-from requests.exceptions import HTTPError, ReadTimeout  # pylint: disable=C0412
 from satellite_tle import fetch_tles
 
 from network.base.models import DemodData, LatestTle, Observation, Satellite, \
@@ -173,7 +172,7 @@ def archive_audio(obs_id):
             retries=settings.S3_RETRIES_ON_SLOW_DOWN,
             retries_sleep=settings.S3_RETRIES_SLEEP
         )
-    except (ReadTimeout, HTTPError):
+    except requests.exceptions.RequestException:
         return
     if res[0].status_code == 200:
         obs.archived = True
