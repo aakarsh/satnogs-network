@@ -9,7 +9,7 @@ from network.base.utils import community_get_discussion_details
 
 @pytest.fixture
 def observation_with_discussion():
-    """Return an observation with discussion"""
+    '''Parameters describing an observation for which a discussion exists in the forum'''
     return {
         'observation_id': 1445404,
         'satellite_name': 'OSCAR 7',
@@ -20,7 +20,7 @@ def observation_with_discussion():
 
 @pytest.fixture
 def observation_without_discussion():
-    """Return an observation without discussion"""
+    '''Parameters describing an observation for which no discussion exists in the forum'''
     return {
         'observation_id': 1445405,
         'satellite_name': 'CAS-4B',
