@@ -81,6 +81,8 @@ class ObservationForm(forms.ModelForm):
 
 class BaseObservationFormSet(forms.BaseFormSet):
     """Base FormSet class for Observation objects forms"""
+    transmitters = {}
+
     def __init__(self, user, *args, **kwargs):
         """Initializes Observation FormSet"""
         self.user = user

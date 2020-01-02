@@ -10,5 +10,4 @@ disable=
     R0912, # too-many-branches
     R0913, # too-many-arguments
     R0914, # too-many-locals
-    W0201, # attribute-defined-outside-init
     W0703, # broad-except
