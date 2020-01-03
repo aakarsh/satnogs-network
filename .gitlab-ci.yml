@@ -81,6 +81,15 @@ test:
     - apt-get install -y ruby-sass
   script:
     - tox -e deps,py2-pytest
+test3:
+  stage: test
+  image: ${GITLAB_CI_IMAGE_PYTHON3}
+  before_script:
+    - pip install "$GITLAB_CI_PYPI_TOX"
+    - apt-get update
+    - apt-get install -y ruby-sass
+  script:
+    - tox -e deps,py3-pytest
 docker:
   stage: deploy
   image: ${GITLAB_CI_IMAGE_DOCKER}
