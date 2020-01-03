@@ -13,7 +13,7 @@ from django.core.mail import send_mail
 from django.db.models import Prefetch
 from django.utils.timezone import now
 from internetarchive import upload
-from requests.exceptions import HTTPError, ReadTimeout
+from requests.exceptions import HTTPError, ReadTimeout  # pylint: disable=C0412
 from satellite_tle import fetch_tles
 
 from network.base.models import DemodData, LatestTle, Observation, Satellite, \

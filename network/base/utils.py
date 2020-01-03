@@ -7,7 +7,7 @@ import urllib2
 from builtins import str
 from datetime import datetime
 
-import requests
+import requests  # pylint: disable=C0412
 from django.conf import settings
 from django.contrib.admin.helpers import label_for_field
 from django.core.exceptions import PermissionDenied

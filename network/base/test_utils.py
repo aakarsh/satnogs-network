@@ -1,3 +1,4 @@
+"""Tests for miscellaneous functions for SatNOGS Network"""
 from __future__ import absolute_import
 
 import pytest
@@ -6,6 +7,7 @@ from network.base.utils import community_get_discussion_details
 
 @pytest.fixture
 def observation_with_discussion():
+    """Return an observation with discussion"""
     return {
         'observation_id': 1445404,
         'satellite_name': 'OSCAR 7',
@@ -16,6 +18,7 @@ def observation_with_discussion():
 
 @pytest.fixture
 def observation_without_discussion():
+    """Return an observation without discussion"""
     return {
         'observation_id': 1445405,
         'satellite_name': 'CAS-4B',
@@ -24,8 +27,10 @@ def observation_without_discussion():
     }
 
 
-def test_community_get_discussion_details_with_discussion(observation_with_discussion):
-    details = community_get_discussion_details(**observation_with_discussion)
+def test_community_get_discussion_details_with_discussion():
+    """Test getting community discussion when it exists"""
+    parameters = observation_with_discussion()
+    details = community_get_discussion_details(**parameters)
 
     assert details == {
         'url':
@@ -39,8 +44,10 @@ def test_community_get_discussion_details_with_discussion(observation_with_discu
     }
 
 
-def test_community_get_discussion_details_without_discussion(observation_without_discussion):
-    details = community_get_discussion_details(**observation_without_discussion)
+def test_community_get_discussion_details_without_discussion():
+    """Test getting community discussion when it doesn't exists"""
+    parameters = observation_without_discussion()
+    details = community_get_discussion_details(**parameters)
 
     assert details == {
         'url':
