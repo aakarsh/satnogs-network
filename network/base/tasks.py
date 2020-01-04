@@ -178,7 +178,7 @@ def clean_observations():
         if settings.ENVIRONMENT == 'stage':
             if not obs.is_good:
                 obs.delete()
-                return
+                continue
         if os.path.isfile(obs.payload.path):
             archive_audio.delay(obs.id)
 
