@@ -366,6 +366,8 @@ AVATAR_GRAVATAR_DEFAULT = config('AVATAR_GRAVATAR_DEFAULT', default='mm')
 # Archive.org
 S3_ACCESS_KEY = config('S3_ACCESS_KEY', default='')
 S3_SECRET_KEY = config('S3_SECRET_KEY', default='')
+S3_RETRIES_ON_SLOW_DOWN = config('S3_RETRIES_ON_SLOW_DOWN', default=1, cast=int)
+S3_RETRIES_SLEEP = config('S3_RETRIES_SLEEP', default=30, cast=int)
 ARCHIVE_COLLECTION = config('ARCHIVE_COLLECTION', default='test_collection')
 ARCHIVE_URL = 'https://archive.org/download/'
 

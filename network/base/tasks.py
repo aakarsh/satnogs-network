@@ -154,7 +154,9 @@ def archive_audio(obs_id):
             files=[ogg],
             metadata=metadata,
             access_key=settings.S3_ACCESS_KEY,
-            secret_key=settings.S3_SECRET_KEY
+            secret_key=settings.S3_SECRET_KEY,
+            retries=settings.S3_RETRIES_ON_SLOW_DOWN,
+            retries_sleep=settings.S3_RETRIES_SLEEP
         )
     except (ReadTimeout, HTTPError):
         return
