@@ -2,8 +2,7 @@ variables:
   GITLAB_CI_IMAGE_ALPINE: 'alpine:3.9'
   GITLAB_CI_IMAGE_DOCKER: 'docker:18.09'
   GITLAB_CI_IMAGE_NODE: 'node:12.13.1'
-  GITLAB_CI_IMAGE_PYTHON2: 'python:2'
-  GITLAB_CI_IMAGE_PYTHON3: 'python:3'
+  GITLAB_CI_IMAGE_PYTHON: 'python:3'
   GITLAB_CI_PYPI_DOCKER_COMPOSE: 'docker-compose~=1.23.0'
   GITLAB_CI_PYPI_TOX: 'tox~=3.8.0'
 stages:
@@ -25,21 +24,14 @@ static_js_css:
       - network/static/lib
 static_python:
   stage: static
-  image: ${GITLAB_CI_IMAGE_PYTHON2}
+  image: ${GITLAB_CI_IMAGE_PYTHON}
   before_script:
     - pip install "$GITLAB_CI_PYPI_TOX"
   script:
-    - tox -e "py2-flake8,isort,yapf,py2-pylint"
-static_python3:
-  stage: static
-  image: ${GITLAB_CI_IMAGE_PYTHON3}
-  before_script:
-    - pip install "$GITLAB_CI_PYPI_TOX"
-  script:
-    - tox -e "py3-flake8,py3-pylint"
+    - tox -e "flake8,isort,yapf,pylint"
 docs:
   stage: build
-  image: ${GITLAB_CI_IMAGE_PYTHON3}
+  image: ${GITLAB_CI_IMAGE_PYTHON}
   before_script:
     - pip install "$GITLAB_CI_PYPI_TOX"
   script:
@@ -52,18 +44,7 @@ docs:
       - docs/_build/html
 build:
   stage: build
-  image: ${GITLAB_CI_IMAGE_PYTHON2}
-  script:
-    - rm -rf dist
-    - python setup.py sdist bdist_wheel
-  artifacts:
-    expire_in: 1 week
-    when: always
-    paths:
-      - dist
-build3:
-  stage: build
-  image: ${GITLAB_CI_IMAGE_PYTHON3}
+  image: ${GITLAB_CI_IMAGE_PYTHON}
   script:
     - rm -rf dist
     - python setup.py sdist bdist_wheel
@@ -74,22 +55,13 @@ build3:
       - dist
 test:
   stage: test
-  image: ${GITLAB_CI_IMAGE_PYTHON2}
+  image: ${GITLAB_CI_IMAGE_PYTHON}
   before_script:
     - pip install "$GITLAB_CI_PYPI_TOX"
     - apt-get update
     - apt-get install -y ruby-sass
   script:
-    - tox -e deps,py2-pytest
-test3:
-  stage: test
-  image: ${GITLAB_CI_IMAGE_PYTHON3}
-  before_script:
-    - pip install "$GITLAB_CI_PYPI_TOX"
-    - apt-get update
-    - apt-get install -y ruby-sass
-  script:
-    - tox -e deps,py3-pytest
+    - tox -e deps,pytest
 docker:
   stage: deploy
   image: ${GITLAB_CI_IMAGE_DOCKER}
