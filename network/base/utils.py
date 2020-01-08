@@ -53,7 +53,7 @@ def export_as_csv(modeladmin, request, queryset):
                     value = value(row)
             if value is None:
                 value = ''
-            values.append(str(value))
+            values.append(str(value).encode('utf-8'))
         writer.writerow(values)
     return response
 
