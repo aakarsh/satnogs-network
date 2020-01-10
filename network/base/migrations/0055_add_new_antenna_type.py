@@ -15,6 +15,6 @@ class Migration(migrations.Migration):
         migrations.AlterField(
             model_name='antenna',
             name='antenna_type',
-            field=models.CharField(choices=[('dipole', 'Dipole'), ('v-dipole', 'V-Dipole'), ('discone', 'Discone'), ('ground', 'Ground Plane'), ('yagi', 'Yagi'), ('cross-yagi', b'Cross Yagi'), ('helical', 'Helical'), ('parabolic', 'Parabolic'), ('vertical', 'Vertical'), ('turnstile', 'Turnstile'), ('quadrafilar', 'Quadrafilar'), ('eggbeater', 'Eggbeater'), ('lindenblad', 'Lindenblad'), ('paralindy', b'Parasitic Lindenblad'), ('patch', 'Patch')], max_length=15),
+            field=models.CharField(choices=[('dipole', 'Dipole'), ('v-dipole', 'V-Dipole'), ('discone', 'Discone'), ('ground', 'Ground Plane'), ('yagi', 'Yagi'), ('cross-yagi', 'Cross Yagi'), ('helical', 'Helical'), ('parabolic', 'Parabolic'), ('vertical', 'Vertical'), ('turnstile', 'Turnstile'), ('quadrafilar', 'Quadrafilar'), ('eggbeater', 'Eggbeater'), ('lindenblad', 'Lindenblad'), ('paralindy', 'Parasitic Lindenblad'), ('patch', 'Patch')], max_length=15),
         ),
     ]

@@ -63,7 +63,7 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name='observation',
             name='vetted_status',
-            field=models.CharField(choices=[('unknown', 'Unknown'), ('verified', 'Verified'), ('data_not_verified', 'Has Data, Not Verified'), ('no_data', b'No Data')], default='unknown', max_length=20),
+            field=models.CharField(choices=[('unknown', 'Unknown'), ('verified', 'Verified'), ('data_not_verified', 'Has Data, Not Verified'), ('no_data', 'No Data')], default='unknown', max_length=20),
         ),
         migrations.AddField(
             model_name='observation',
