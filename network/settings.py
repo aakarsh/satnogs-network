@@ -161,6 +161,7 @@ STATICFILES_FINDERS = (
     'compressor.finders.CompressorFinder',
 )
 MEDIA_ROOT = config('MEDIA_ROOT', default=Path('media').resolve())
+FILE_UPLOAD_TEMP_DIR = config('FILE_UPLOAD_TEMP_DIR', default=Path('/tmp').resolve())
 MEDIA_URL = '/media/'
 CRISPY_TEMPLATE_PACK = 'bootstrap3'
 STATION_DEFAULT_IMAGE = '/static/img/ground_station_no_image.png'
