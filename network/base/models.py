@@ -567,7 +567,7 @@ class DemodData(models.Model):
 
     def is_image(self):
         """Return true if data file is an image"""
-        with open(self.payload_demod.path) as file_path:
+        with open(self.payload_demod.path, 'rb') as file_path:
             try:
                 Image.open(file_path)
             except (IOError, TypeError):
@@ -579,7 +579,7 @@ class DemodData(models.Model):
         """
         Return the content of the data file as hex dump of the following form: `DE AD C0 DE`.
         """
-        with open(self.payload_demod.path) as data_file:
+        with open(self.payload_demod.path, 'rb') as data_file:
             payload = data_file.read()
 
         return _decode_pretty_hex(payload)
@@ -589,7 +589,7 @@ class DemodData(models.Model):
         Return the content of the data file decoded as UTF-8. If this fails,
         show as hex dump.
         """
-        with open(self.payload_demod.path) as data_file:
+        with open(self.payload_demod.path, 'rb') as data_file:
             payload = data_file.read()
 
         try:
