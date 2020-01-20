@@ -6,7 +6,7 @@
 
 apipkg==1.5
 attrs==19.3.0
-coverage==5.0.2
+coverage==5.0.3
 execnet==1.7.1
 factory-boy==2.11.1
 Faker==0.8.18
@@ -18,7 +18,7 @@ pluggy==0.13.1
 pur==5.2.2
 py==1.8.1
 pyparsing==2.4.6
-pytest==5.3.2
+pytest==5.3.3
 pytest-cov==2.6.1
 pytest-django==3.4.8
 pytest-forked==0.2
