@@ -83,8 +83,8 @@ class SatelliteAdmin(admin.ModelAdmin):
 @admin.register(Tle)
 class TleAdmin(admin.ModelAdmin):
     """Define TLE view in django admin UI"""
-    list_display = ('satellite_name', 'tle0', 'tle1', 'updated')
-    list_filter = ('satellite__name', )
+    list_display = ('satellite_name', 'tle0', 'tle1', 'updated', 'tle_source')
+    list_filter = ('tle_source', 'satellite__name')
 
     def satellite_name(self, obj):  # pylint: disable=no-self-use
         """Return the satellite name"""

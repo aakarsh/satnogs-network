@@ -60,7 +60,7 @@ def update_all_tle():
             print('{} - {}: TLE already exists [defer]'.format(obj.name, norad_id))
             continue
 
-        Tle.objects.create(tle0=tle[0], tle1=tle[1], tle2=tle[2], satellite=obj)
+        Tle.objects.create(tle0=tle[0], tle1=tle[1], tle2=tle[2], satellite=obj, tle_source=source)
         print('{} - {} - {}: new TLE found [updated]'.format(obj.name, norad_id, source))
 
 

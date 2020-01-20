@@ -330,6 +330,7 @@ class Tle(models.Model):
     tle0 = models.CharField(max_length=100, blank=True, db_index=True)
     tle1 = models.CharField(max_length=200, blank=True)
     tle2 = models.CharField(max_length=200, blank=True)
+    tle_source = models.CharField(max_length=300, blank=True)
     updated = models.DateTimeField(auto_now=True, blank=True)
     satellite = models.ForeignKey(
         Satellite, related_name='tles', on_delete=models.CASCADE, null=True, blank=True
