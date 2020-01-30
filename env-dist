@@ -14,3 +14,11 @@
 # Sentry
 # SENTRY_ENABLED=False
 # SENTRY_DSN='sentry_dsn'
+
+# TLE Sources
+# It should be string in JSON format for example:
+# TLE_SOURCES_JSON='{"CalPoly": "http://mstl.atl.calpoly.edu/~ops/keps/kepler.txt", "Celestrak (satnogs)": "https://www.celestrak.com/NORAD/elements/satnogs.txt}'
+
+# SpaceTrack.org Credentials
+# SPACE_TRACK_USERNAME=your_spacetrack.org_username
+# SPACE_TRACK_PASSWORD=your_spacetrack.org_password

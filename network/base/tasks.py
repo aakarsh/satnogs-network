@@ -1,6 +1,7 @@
 """SatNOGS Network Celery task functions"""
 from __future__ import absolute_import, division, print_function
 
+import json
 import os
 from datetime import timedelta
 
@@ -40,8 +41,22 @@ def update_all_tle():
     # Filter only officially announced NORAD IDs
     catalog_norad_ids = {norad_id for norad_id in norad_ids if norad_id < 99000}
 
+    # Check for TLE custom sources
+    other_sources = {}
+    if settings.TLE_SOURCES_JSON:
+        try:
+            sources_json = json.loads(settings.TLE_SOURCES_JSON)
+            other_sources['sources'] = list(sources_json.items())
+        except json.JSONDecodeError as error:
+            print('TLE Sources JSON ignored as it is invalid: {}'.format(error))
+    if settings.SPACE_TRACK_USERNAME and settings.SPACE_TRACK_PASSWORD:
+        other_sources['spacetrack_config'] = {
+            'identity': settings.SPACE_TRACK_USERNAME,
+            'password': settings.SPACE_TRACK_PASSWORD
+        }
+
     print("==Fetching TLEs==")
-    tles = fetch_tles(catalog_norad_ids)
+    tles = fetch_tles(catalog_norad_ids, **other_sources)
 
     for obj in satellites:
         norad_id = obj.norad_cat_id

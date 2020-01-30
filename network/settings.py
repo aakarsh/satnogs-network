@@ -326,6 +326,13 @@ MAPBOX_GEOCODE_URL = 'https://api.tiles.mapbox.com/v4/geocode/mapbox.places/'
 MAPBOX_MAP_ID = config('MAPBOX_MAP_ID', default='pierros.jbf6la1j')
 MAPBOX_TOKEN = config('MAPBOX_TOKEN', default='')
 
+# TLE Sources
+TLE_SOURCES_JSON = config('TLE_SOURCES_JSON', default='')
+
+# SpaceTrack.org Credentials
+SPACE_TRACK_USERNAME = config('SPACE_TRACK_USERNAME', default='')
+SPACE_TRACK_PASSWORD = config('SPACE_TRACK_PASSWORD', default='')
+
 # Observations settings
 # Datetimes in minutes for scheduling OPTIONS
 OBSERVATION_DATE_MIN_START = config('OBSERVATION_DATE_MIN_START', default=10, cast=int)
