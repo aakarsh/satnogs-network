@@ -42,4 +42,11 @@ $(document).ready(function() {
             window.open($(this).attr('href'));
         });
     });
+
+    // Open all observations in new tabs with "shift + o" or "shift + O"
+    $(document).bind('keyup', function(event){
+        if (event.shiftKey && (event.which == 111 || event.which == 79)) {
+            $('#open-all').click();
+        }
+    });
 });
