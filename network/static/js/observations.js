@@ -43,9 +43,9 @@ $(document).ready(function() {
         });
     });
 
-    // Open all observations in new tabs with "shift + o" or "shift + O"
+    // Open all observations in new tabs with "Shift + A"
     $(document).bind('keyup', function(event){
-        if (event.shiftKey && (event.which == 111 || event.which == 79)) {
+        if (event.shiftKey && (event.which == 97 || event.which == 65)) {
             $('#open-all').click();
         }
     });
