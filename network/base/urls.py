@@ -47,6 +47,11 @@ BASE_URLPATTERNS = (
             views.station_delete,
             name='station_delete'
         ),
+        url(
+            r'^stations/(?P<station_id>[0-9]+)/delete_future_observations/$',
+            views.station_delete_future_observations,
+            name='station_delete_future_observations'
+        ),
         url(r'^stations/edit/$', views.station_edit, name='station_edit'),
         url(r'^stations/edit/(?P<station_id>[0-9]+)/$', views.station_edit, name='station_edit'),
         url(

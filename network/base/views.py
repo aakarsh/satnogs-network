@@ -29,8 +29,8 @@ from network.base.forms import BaseObservationFormSet, ObservationForm, \
     SatelliteFilterForm, StationForm
 from network.base.models import Antenna, LatestTle, Observation, Satellite, \
     Station, StationStatusLog
-from network.base.perms import delete_perms, schedule_perms, \
-    schedule_station_perms, vet_perms
+from network.base.perms import delete_perms, modify_delete_station_perms, \
+    schedule_perms, schedule_station_perms, vet_perms
 from network.base.scheduling import create_new_observation, \
     get_available_stations, predict_available_observation_windows
 from network.base.stats import satellite_stats_by_transmitter_list, \
@@ -857,6 +857,32 @@ def station_delete(request, station_id):
     station.delete()
     messages.success(request, 'Ground Station deleted successfully.')
     return redirect(reverse('users:view_user', kwargs={'username': username}))
+
+
+@login_required
+def station_delete_future_observations(request, station_id):
+    """View for deleting all future observations of a given station."""
+    station = get_object_or_404(Station, id=station_id)
+
+    if not modify_delete_station_perms(request.user, station):
+        messages.error(
+            request,
+            'You are not allowed to bulk-delete future observations on ground station {}!'.
+            format(station_id)
+        )
+        return redirect(reverse('base:station_view', kwargs={'station_id': station_id}))
+
+    count, _ = station.observations.filter(start__gte=now()).delete()
+    if count:
+        messages.success(
+            request,
+            'Deleted {} future observations on ground station {}.'.format(count, station_id)
+        )
+    else:
+        messages.success(
+            request, 'No future observations on ground station {}.'.format(station_id)
+        )
+    return redirect(reverse('base:station_view', kwargs={'station_id': station_id}))
 
 
 def transmitters_with_stats(transmitters_list):

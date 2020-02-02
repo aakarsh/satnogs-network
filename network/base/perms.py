@@ -158,3 +158,16 @@ def vet_perms(user, observation):
         if user.is_superuser:
             return True
     return False
+
+
+def modify_delete_station_perms(user, station):
+    """
+    This context flag will determine if the user can modify or delete a station
+    or bulk-delete future observations on a station.
+    That includes station owners, moderators and admins.
+    """
+
+    return (
+        user.groups.filter(name='Moderators').exists() or user is station.owner
+        or user.is_superuser
+    )
