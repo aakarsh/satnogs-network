@@ -18,7 +18,7 @@ When you want to start developing for SatNOGS, you should :doc:`follow the insta
 
 #. Code!
 
-#. Test the changes and fix any errors by running `tox <https://tox.readthedocs.io/en/latest/>`_.
+#. Test the changes by `Running the tests locally`_ and fix any errors.
 
 #. Commit changes to the code!
 
@@ -118,6 +118,32 @@ The following procedure can be used to manually run celery tasks in the local de
    .. code-block:: bash
 
       docker-compose logs celery
+
+
+.. tests-guide:
+
+Running the tests locally
+-------------------------
+
+To test your changes to the code locally with `tox <https://tox.readthedocs.io/en/latest/>`_ in the same way the CI does you can follow these steps:
+
+#. Setup a new virtual environment (this shouldn't be the same virtual environment you might have created for the :doc:`VirtualEnv Installation <installation-virtualenv>`):
+
+   .. code-block:: bash
+   
+       mkvirtualenv network-test -a .
+
+#. Install tox in the same version defined by ``GITLAB_CI_PYPI_TOX`` in `.gitlab-ci.yml <https://gitlab.com/librespacefoundation/satnogs/satnogs-network/-/blob/master/.gitlab-ci.yml>`_:
+
+   .. code-block:: bash
+   
+       pip install tox~=3.8.0
+
+#. Run the tests:
+
+   .. code-block:: bash
+   
+      tox -e "flake8,isort,yapf,pylint"
 
 
 Coding Style
