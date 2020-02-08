@@ -60,8 +60,8 @@ class StationSerializer(serializers.ModelSerializer):
 
 
 class StationAllView(viewsets.ReadOnlyModelViewSet):  # pylint: disable=R0901
-    """Station View of all non offline stations"""
-    queryset = Station.objects.exclude(status=0)
+    """Station View of all stations"""
+    queryset = Station.objects.all()
     serializer_class = StationSerializer
 
 
