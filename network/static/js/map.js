@@ -96,7 +96,6 @@ $(document).ready(function() {
         $.ajax({
             url: stations
         }).done(function(data) {
-            console.log(data);
             data.forEach(function(m) {
                 if (m.status == 1){
                     testing_points.source.data.features.push({
