@@ -42,6 +42,10 @@ $(document).ready(function() {
             map.addImage('offline', image);
         });
 
+        map.loadImage('/static/img/future.png', function(error, image) {
+            map.addImage('future', image);
+        });
+
         var online_points = {
             'id': 'online-points',
             'type': 'symbol',
@@ -93,6 +97,23 @@ $(document).ready(function() {
             }
         };
 
+        var future_points = {
+            'id': 'future-points',
+            'type': 'symbol',
+            'source': {
+                'type': 'geojson',
+                'data': {
+                    'type': 'FeatureCollection',
+                    'features': []
+                }
+            },
+            'layout': {
+                'icon-image': 'future',
+                'icon-size': 0.25,
+                'icon-allow-overlap': true
+            }
+        };
+
         $.ajax({
             url: stations
         }).done(function(data) {
@@ -136,6 +157,19 @@ $(document).ready(function() {
                             'description': '<a href="/stations/' + m.id + '">' + m.id + ' - ' + m.name + '</a>',
                         }
                     });
+                } else if (m.status == 3) {
+                    future_points.source.data.features.push({
+                        'type': 'Feature',
+                        'geometry': {
+                            'type': 'Point',
+                            'coordinates': [
+                                parseFloat(m.lng),
+                                parseFloat(m.lat)]
+                        },
+                        'properties': {
+                            'description': '<a href="/stations/' + m.id + '">' + m.id + ' - ' + m.name + '</a>',
+                        }
+                    });
                 }
             });
 
@@ -143,32 +177,40 @@ $(document).ready(function() {
             map.addLayer(testing_points);
             map.addLayer(online_points);
             map.addLayer(offline_points);
+            map.addLayer(future_points);
 
-            // Set offline layer to invisble
+            // Set offline and future layers to invisble
             map.setLayoutProperty(offline_points.id, 'visibility', 'none');
+            map.setLayoutProperty(future_points.id, 'visibility', 'none');
             map.repaint = false;
 
-            // Register "a" key for toggling visibility of offline layer
+            // Register keys for toggling visibility of layers
             $(document).bind('keyup', function(event){
-                if (event.which == 65) {
-                    toggle_offline(map, offline_points);
+                if (event.which == 79) {
+                    toggle_layer(map, offline_points);
+                } else if (event.which == 78 ) {
+                    toggle_layer(map, online_points);
+                } else if (event.which == 84 ) {
+                    toggle_layer(map, testing_points);
+                } else if (event.which == 70 ) {
+                    toggle_layer(map, future_points);
                 }
             });
 
         });
     });
 
-    // Toggle offline map layer
-    function toggle_offline(map, offline_points) {
-        var visibility = map.getLayoutProperty(offline_points.id, 'visibility');
+    // Toggle map layer
+    function toggle_layer(map, layer) {
+        var visibility = map.getLayoutProperty(layer.id, 'visibility');
 
         //Check if layer is already visible
         if (visibility === 'visible') {
-            map.setLayoutProperty(offline_points.id, 'visibility', 'none');
-            offline_points.className = '';
+            map.setLayoutProperty(layer.id, 'visibility', 'none');
+            layer.className = '';
         } else {
-            offline_points.className = 'active';
-            map.setLayoutProperty(offline_points.id, 'visibility', 'visible');
+            layer.className = 'active';
+            map.setLayoutProperty(layer.id, 'visibility', 'visible');
         }
     }
 
@@ -190,6 +232,28 @@ $(document).ready(function() {
     });
 
     map.on('mouseenter','testing-points', function(e) {
+        // Change the cursor style as a UI indicator.
+        map.getCanvas().style.cursor = 'pointer';
+
+        // Populate the popup and set its coordinates
+        // based on the feature found.
+        popup.setLngLat(e.features[0].geometry.coordinates)
+            .setHTML(e.features[0].properties.description)
+            .addTo(map);
+    });
+
+    map.on('mouseenter','offline-points', function(e) {
+        // Change the cursor style as a UI indicator.
+        map.getCanvas().style.cursor = 'pointer';
+
+        // Populate the popup and set its coordinates
+        // based on the feature found.
+        popup.setLngLat(e.features[0].geometry.coordinates)
+            .setHTML(e.features[0].properties.description)
+            .addTo(map);
+    });
+
+    map.on('mouseenter', 'future-points', function(e) {
         // Change the cursor style as a UI indicator.
         map.getCanvas().style.cursor = 'pointer';
 
