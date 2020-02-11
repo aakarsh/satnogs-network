@@ -26,7 +26,7 @@
     <div class="col-md-6 text-right">
       <h2>
         {% if request.user == station.owner %}
-          <a class="btn btn-danger" href="{% url 'base:station_delete_future_observations' station_id=station.id %}">
+          <a class="btn btn-danger delete-future-modal-reveal" data-toggle="modal" data-target="#delete-future-modal">
             <span class="glyphicon glyphicon-trash" aria-hidden="true"></span>
             Delete future observations
           </a>
@@ -326,6 +326,26 @@
     </div>
   </div>
 
+  <!-- Delete future Observations Modal -->
+  <div class="modal" id="delete-future-modal" tabindex="-1" role="dialog" aria-labelledby="delete-future-modal">
+    <div class="modal-dialog modal-lg" role="document">
+      <div class="modal-content">
+        <div class="modal-header">
+          <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+          <h4 class="modal-title" id="myModalLabel">Do you really want to delete all future observations on this ground station?</h4>
+        </div>
+        <div class="modal-body">
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>
+          <a class="btn btn-danger" id="station-future-delete" href="{% url 'base:station_delete_future_observations' station_id=station.id %}">
+            <span class="glyphicon glyphicon-remove" aria-hidden="true"></span>
+            Delete {{ station.observations_future_count }} observations
+          </a>
+        </div>
+      </div>
+    </div>
+  </div>
   {% include 'includes/satellite.html' %}
   {% include 'includes/legend.html' %}
 {% endblock content %}
