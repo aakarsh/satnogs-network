@@ -599,6 +599,7 @@ def station_view(request, station_id):
     unsupported_frequencies = request.GET.get('unsupported_frequencies', '0')
 
     can_schedule = schedule_station_perms(request.user, station)
+    can_modify_delete_station = modify_delete_station_perms(request.user, station)
 
     # Calculate uptime
     uptime = '-'
@@ -647,6 +648,7 @@ def station_view(request, station_id):
             'mapbox_id': settings.MAPBOX_MAP_ID,
             'mapbox_token': settings.MAPBOX_TOKEN,
             'can_schedule': can_schedule,
+            'can_modify_delete_station': can_modify_delete_station,
             'unsupported_frequencies': unsupported_frequencies,
             'uptime': uptime
         }
