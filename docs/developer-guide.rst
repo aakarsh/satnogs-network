@@ -48,36 +48,48 @@ Development tasks like the copying of assets, code linting and tests are managed
 
 To download third-party static assets:
 
-#. Install dependencies with ``npm``::
+#. Install dependencies with ``npm``:
 
-     $ npm install
+   .. code-block:: bash
 
-#. Test and copy the newly downlodaded static assets::
+     npm install
 
-     $ ./node_modules/.bin/gulp
+#. Test and copy the newly downlodaded static assets:
+
+   .. code-block:: bash
+
+     ./node_modules/.bin/gulp
 
 To add new or remove existing third-party static assets:
 
-#. Install a new dependency::
+#. Install a new dependency:
 
-     $ npm install <package>
+   .. code-block:: bash
 
-#. Uninstall an existing dependency::
+     npm install <package>
 
-     $ npm uninstall <package>
+#. Uninstall an existing dependency:
 
-#. Copy the newly downlodaded static assets::
+   .. code-block:: bash
 
-     $ ./node_modules/.bin/gulp assets
+     npm uninstall <package>
+
+#. Copy the newly downlodaded static assets:
+
+   .. code-block:: bash
+
+     ./node_modules/.bin/gulp assets
 
 
 Simulating station heartbeats
 -----------------------------
 
 Only stations which have been seen by the server in the last hour (by default, can be customized by `STATION_HEARTBEAT_TIME`) are taken into consideration when scheduling observations.
-In order to simulate an heartbeat of the stations 7, 23 and 42, the following command can be used::
+In order to simulate an heartbeat of the stations 7, 23 and 42, the following command can be used:
 
-  $ docker-compose exec web django-admin update_station_last_seen 7 23 42
+.. code-block:: bash
+
+  docker-compose exec web django-admin update_station_last_seen 7 23 42
 
 
 Manually run a celery tasks
