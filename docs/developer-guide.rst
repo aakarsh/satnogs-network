@@ -83,23 +83,30 @@ In order to simulate an heartbeat of the stations 7, 23 and 42, the following co
 Manually run a celery tasks
 ---------------------------
 
-The following procedure can be used to manually run celery tasks in the local (docker-based) development environment:
+The following procedure can be used to manually run celery tasks in the local development environment:
 
-- Setup local dev env (docker).
-- Start django shell
-  ```
-  docker-compose exec web django-admin shell
-  ```
-- Run an asnyc task and check if it succeeded.
-  ```
-  > from network.base.tasks import update_all_tle
-  > task = update_all_tle.delay()
-  > assert(task.ready())
-  ```
-- (optional) Check the celery log for the task output:
-  ```
-  docker-compose logs celery
-  ```
+#. :doc:`Install the docker-based development environment <installation-docker>`.
+
+#. Start a django-admin shell:
+
+   .. code-block:: bash
+
+    docker-compose exec web django-admin shell
+
+#. Run an asnyc task and check if it succeeded:
+
+   .. code-block:: python
+
+    from network.base.tasks import update_all_tle
+    task = update_all_tle.delay()
+    assert(task.ready())
+
+#. (optional) Check the celery log for the task output:
+
+   .. code-block:: bash
+
+      docker-compose logs celery
+
 
 Coding Style
 ------------
