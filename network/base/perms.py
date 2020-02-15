@@ -166,8 +166,16 @@ def modify_delete_station_perms(user, station):
     or bulk-delete future observations on a station.
     That includes station owners, moderators and admins.
     """
-
-    return (
-        user.groups.filter(name='Moderators').exists() or user is station.owner
-        or user.is_superuser
-    )
+    if user.is_authenticated():
+        # User owns the station
+        try:
+            if user == station.owner:
+                return True
+        except AttributeError:
+            pass
+        # User has special permissions
+        if user.groups.filter(name='Moderators').exists():
+            return True
+        if user.is_superuser:
+            return True
+    return False
