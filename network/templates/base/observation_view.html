@@ -169,6 +169,12 @@
         </span>
       </div>
       <div class="front-line">
+        <span class="label label-default">Baud Rate</span>
+        <span class="front-data">
+          {{ observation.transmitter_baud|default:"-" }}
+        </span>
+      </div>
+      <div class="front-line">
         <span class="label label-default">Timeframe</span>
         <span class="front-data datetime-data">
           <span data-toggle="tooltip" data-placement="bottom" title="{{ observation.start|naturaltime }}">

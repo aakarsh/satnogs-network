@@ -206,6 +206,7 @@
           <th>Satellite</th>
           <th>Frequency</th>
           <th>Encoding</th>
+          <th>Baud Rate</th>
           <th>Timeframe</th>
           <th>Results</th>
           <th>Observer</th>
@@ -238,6 +239,7 @@
                     {{ observation.transmitter_mode|default:"-" }}
                   </span>
                 </td>
+                <td>{{ observation.transmitter_baud|default:"-" }}</td>
                 <td>
                   <span data-toggle="tooltip" data-placement="bottom" title="{{ observation.start|naturaltime }}">
                     <span class="datetime-date">{{ observation.start|date:"Y-m-d" }}</span>
