@@ -864,27 +864,28 @@ def station_delete(request, station_id):
 @login_required
 def station_delete_future_observations(request, station_id):
     """View for deleting all future observations of a given station."""
-    station = get_object_or_404(Station, id=station_id)
-
-    if not modify_delete_station_perms(request.user, station):
-        messages.error(
-            request,
-            'You are not allowed to bulk-delete future observations on ground station {}!'.
-            format(station_id)
-        )
-        return redirect(reverse('base:station_view', kwargs={'station_id': station_id}))
-
-    count, _ = station.observations.filter(start__gte=now()).delete()
-    if count:
-        messages.success(
-            request,
-            'Deleted {} future observations on ground station {}.'.format(count, station_id)
-        )
-    else:
-        messages.success(
-            request, 'No future observations on ground station {}.'.format(station_id)
-        )
     return redirect(reverse('base:station_view', kwargs={'station_id': station_id}))
+    # station = get_object_or_404(Station, id=station_id)
+
+    # if not modify_delete_station_perms(request.user, station):
+    #     messages.error(
+    #         request,
+    #         'You are not allowed to bulk-delete future observations on ground station {}!'.
+    #         format(station_id)
+    #     )
+    #     return redirect(reverse('base:station_view', kwargs={'station_id': station_id}))
+
+    # count, _ = station.observations.filter(start__gte=now()).delete()
+    # if count:
+    #     messages.success(
+    #         request,
+    #         'Deleted {} future observations on ground station {}.'.format(count, station_id)
+    #     )
+    # else:
+    #     messages.success(
+    #         request, 'No future observations on ground station {}.'.format(station_id)
+    #     )
+    # return redirect(reverse('base:station_view', kwargs={'station_id': station_id}))
 
 
 def transmitters_with_stats(transmitters_list):
