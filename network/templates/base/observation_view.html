@@ -165,13 +165,8 @@
       <div class="front-line">
         <span class="label label-default">Encoding</span>
         <span class="front-data">
-          {{ observation.transmitter_mode|default:"-" }}
-        </span>
-      </div>
-      <div class="front-line">
-        <span class="label label-default">Baud Rate</span>
-        <span class="front-data">
-          {{ observation.transmitter_baud|default:"-" }}
+          <span>{{ observation.transmitter_mode|default:"-" }}</span>
+          <span>{{ observation.transmitter_baud|floatformat|default:"-" }}</span>
         </span>
       </div>
       <div class="front-line">
