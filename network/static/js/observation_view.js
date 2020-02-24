@@ -178,7 +178,7 @@ $(document).ready(function() {
 
     //JSON pretty renderer
     var metadata = $('#json-renderer').data('json');
-    $('#json-renderer').jsonViewer(metadata, {collapsed: true});
+    $('#json-renderer').jsonViewer(metadata, {collapsed: true, withLinks: false});
 
     // Draw orbit in polar plot
     var tleLine1 = $('svg#polar').data('tle1');
