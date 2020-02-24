@@ -14,6 +14,7 @@ from django.core.mail import send_mail
 from django.db.models import Prefetch
 from django.utils.timezone import now
 from internetarchive import upload
+from internetarchive.exceptions import AuthenticationError
 from satellite_tle import fetch_tles
 
 from network.base.models import DemodData, LatestTle, Observation, Satellite, \
@@ -172,7 +173,8 @@ def archive_audio(obs_id):
             retries=settings.S3_RETRIES_ON_SLOW_DOWN,
             retries_sleep=settings.S3_RETRIES_SLEEP
         )
-    except requests.exceptions.RequestException:
+    except (requests.exceptions.RequestException, AuthenticationError) as error:
+        print('Upload of audio for observation {} failed, reason:\n{}'.format(obs_id, repr(error)))
         return
     if res[0].status_code == 200:
         obs.archived = True
