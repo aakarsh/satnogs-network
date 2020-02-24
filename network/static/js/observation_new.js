@@ -67,12 +67,20 @@ $(document).ready( function(){
                 $('#station-selection').selectpicker('refresh');
             } else if (data.stations.length > 0) {
                 var stations_options = '';
-                if (filters.station && data.stations.findIndex(st => st.id == filters.station) > -1) {
-                    var station = data.stations.find(st => st.id == filters.station);
-                    stations_options = create_station_option(station);
-                    $('#station-selection').html(stations_options);
-                    $('#station-selection').selectpicker('val', filters.station);
-                    $('#station-selection').selectpicker('refresh');
+                if (filters.station) {
+                    if (data.stations.findIndex(st => st.id == filters.station) > -1) {
+                        var station = data.stations.find(st => st.id == filters.station);
+                        stations_options = create_station_option(station);
+                        $('#station-selection').html(stations_options);
+                        $('#station-selection').selectpicker('val', filters.station);
+                        $('#station-selection').selectpicker('refresh');
+                    } else {
+                        $('#station-selection').html(`<option id="no-station"
+                                                                  value="" selected>
+                                                            Selected station not available
+                                                          </option>`).prop('disabled', true);
+                        $('#station-selection').selectpicker('refresh');
+                    }
                 } else {
                     $.each(data.stations, function (i, station) {
                         stations_options += create_station_option(station);
