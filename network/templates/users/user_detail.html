@@ -2,6 +2,7 @@
 {% load avatar_tags %}
 {% load static %}
 {% load tags %}
+{% load humanize %}
 
 {% block title %}
   {% if user == request.user %} - Dashboard{% else %} - User: {{ user.username }}{% endif %}
@@ -166,10 +167,14 @@
                 <td>{{ observation.transmitter_downlink_low|frq }}</td>
                 <td>{{ observation.transmitter_mode }}</td>
                 <td>
-                  <span class="datetime-date">{{ observation.start|date:"Y-m-d" }}</span>
-                  <span class="datetime-time">{{ observation.start|date:"H:i:s" }}</span><br>
-                  <span class="datetime-date">{{ observation.end|date:"Y-m-d" }}</span>
-                  <span class="datetime-time">{{ observation.end|date:"H:i:s" }}</span>
+                  <span data-toggle="tooltip" data-placement="bottom" title="{{ observation.start|naturaltime }}">
+                    <span class="datetime-date">{{ observation.start|date:"Y-m-d" }}</span>
+                    <span class="datetime-time">{{ observation.start|date:"H:i:s" }}</span><br>
+                  </span>
+                  <span data-toggle="tooltip" data-placement="bottom" title="{{ observation.end|naturaltime }}">
+                    <span class="datetime-date">{{ observation.end|date:"Y-m-d" }}</span>
+                    <span class="datetime-time">{{ observation.end|date:"H:i:s" }}</span>
+                  </span>
                 </td>
                 <td>
                   {% if observation.ground_station %}
