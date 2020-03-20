@@ -503,6 +503,8 @@ class Observation(models.Model):
         """Run some checks on the payload for existence of data."""
         if self.archive_url:
             return True
+        if not self.payload:
+            return False
         if self.payload is None:
             return False
         if not os.path.isfile(os.path.join(settings.MEDIA_ROOT, self.payload.name)):
