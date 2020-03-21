@@ -87,7 +87,7 @@ def _observation_post_save(sender, instance, created, **kwargs):  # pylint: disa
     * Update client version for ground station
     """
     post_save.disconnect(_observation_post_save, sender=Observation)
-    if instance.has_audio:
+    if instance.has_audio and not instance.archived:
         audio_metadata = TinyTag.get(instance.payload.path)
         # Remove audio if it is less than 1 sec
         if audio_metadata.duration is None or audio_metadata.duration < 1:
