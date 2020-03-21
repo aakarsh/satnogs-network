@@ -4,6 +4,7 @@ from __future__ import absolute_import, division
 import codecs
 import logging
 import os
+import struct
 from datetime import timedelta
 
 import requests
@@ -22,7 +23,7 @@ from django.utils.timezone import now
 from PIL import Image
 from rest_framework.authtoken.models import Token
 from shortuuidfield import ShortUUIDField
-from tinytag import TinyTag
+from tinytag import TinyTag, TinyTagException
 
 from network.base.managers import ObservationManager
 from network.users.models import User
@@ -88,7 +89,14 @@ def _observation_post_save(sender, instance, created, **kwargs):  # pylint: disa
     """
     post_save.disconnect(_observation_post_save, sender=Observation)
     if instance.has_audio and not instance.archived:
-        audio_metadata = TinyTag.get(instance.payload.path)
+        try:
+            audio_metadata = TinyTag.get(instance.payload.path)
+        except TinyTagException:
+            # Remove invalid audio file
+            instance.payload.delete()
+        except struct.error:
+            # Remove audio file with wrong structure
+            instance.payload.delete()
         # Remove audio if it is less than 1 sec
         if audio_metadata.duration is None or audio_metadata.duration < 1:
             instance.payload.delete()
