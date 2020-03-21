@@ -91,14 +91,14 @@ def _observation_post_save(sender, instance, created, **kwargs):  # pylint: disa
     if instance.has_audio and not instance.archived:
         try:
             audio_metadata = TinyTag.get(instance.payload.path)
+            # Remove audio if it is less than 1 sec
+            if audio_metadata.duration is None or audio_metadata.duration < 1:
+                instance.payload.delete()
         except TinyTagException:
             # Remove invalid audio file
             instance.payload.delete()
         except struct.error:
             # Remove audio file with wrong structure
-            instance.payload.delete()
-        # Remove audio if it is less than 1 sec
-        if audio_metadata.duration is None or audio_metadata.duration < 1:
             instance.payload.delete()
     if created and instance.ground_station.testing:
         instance.testing = True
