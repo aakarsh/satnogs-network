@@ -449,7 +449,7 @@ class Observation(models.Model):
     transmitter_downlink_low = models.BigIntegerField(blank=True, null=True)
     transmitter_downlink_high = models.BigIntegerField(blank=True, null=True)
     transmitter_downlink_drift = models.IntegerField(blank=True, null=True)
-    transmitter_mode = models.CharField(max_length=10, blank=True, null=True)
+    transmitter_mode = models.CharField(max_length=12, blank=True, null=True)
     transmitter_invert = models.BooleanField(default=False)
     transmitter_baud = models.FloatField(validators=[MinValueValidator(0)], blank=True, null=True)
     transmitter_created = models.DateTimeField(default=now)
