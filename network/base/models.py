@@ -97,7 +97,7 @@ def _observation_post_save(sender, instance, created, **kwargs):  # pylint: disa
         except TinyTagException:
             # Remove invalid audio file
             instance.payload.delete()
-        except struct.error:
+        except (struct.error, TypeError):
             # Remove audio file with wrong structure
             instance.payload.delete()
     if created and instance.ground_station.testing:
