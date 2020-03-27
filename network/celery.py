@@ -26,42 +26,43 @@ APP.autodiscover_tasks()
 @APP.task
 def update_all_tle():
     """Wrapper task for 'update_all_tle' shared task"""
-    from network.base.tasks import update_all_tle as periodic_task
+    from network.base.tasks import update_all_tle as periodic_task  # pylint: disable=C0415
     periodic_task()
 
 
 @APP.task
 def fetch_data():
     """Wrapper task for 'fetch_data' shared task"""
-    from network.base.tasks import fetch_data as periodic_task
+    from network.base.tasks import fetch_data as periodic_task  # pylint: disable=C0415
     periodic_task()
 
 
 @APP.task
 def clean_observations():
     """Wrapper task for 'clean_observations' shared task"""
-    from network.base.tasks import clean_observations as periodic_task
+    from network.base.tasks import clean_observations as periodic_task  # pylint: disable=C0415
     periodic_task()
 
 
 @APP.task
 def station_status_update():
     """Wrapper task for 'station_status_update' shared task"""
-    from network.base.tasks import station_status_update as periodic_task
+    from network.base.tasks import station_status_update as periodic_task  # pylint: disable=C0415
     periodic_task()
 
 
 @APP.task
 def stations_cache_rates():
     """Wrapper task for 'stations_cache_rates' shared task"""
-    from network.base.tasks import stations_cache_rates as periodic_task
+    from network.base.tasks import stations_cache_rates as periodic_task  # pylint: disable=C0415
     periodic_task()
 
 
 @APP.task
 def notify_for_stations_without_results():
     """Wrapper task for 'notify_for_stations_without_results' shared task"""
-    from network.base.tasks import notify_for_stations_without_results as periodic_task
+    from network.base.tasks import notify_for_stations_without_results as \
+        periodic_task  # pylint: disable=C0415
     periodic_task()
 
 
