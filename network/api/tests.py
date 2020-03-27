@@ -3,10 +3,10 @@ from __future__ import absolute_import
 
 import json
 
+import pytest
 from django.test import TestCase
 from rest_framework.utils.encoders import JSONEncoder
 
-import pytest
 from network.base.tests import AntennaFactory, ObservationFactory, \
     SatelliteFactory, StationFactory
 

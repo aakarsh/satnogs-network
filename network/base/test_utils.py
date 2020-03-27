@@ -4,6 +4,7 @@
 from __future__ import absolute_import
 
 import pytest
+
 from network.base.utils import community_get_discussion_details
 
 
