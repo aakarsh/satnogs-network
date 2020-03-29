@@ -45,9 +45,11 @@ docs:
 build:
   stage: build
   image: ${GITLAB_CI_IMAGE_PYTHON}
+  before_script:
+    - pip install "$GITLAB_CI_PYPI_TOX"
   script:
     - rm -rf dist
-    - python setup.py sdist bdist_wheel
+    - tox -e build
   artifacts:
     expire_in: 1 week
     when: always
