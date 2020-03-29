@@ -131,6 +131,22 @@ docker:
     refs:
       - master
       - tags
+deploy:
+  stage: deploy
+  image: ${GITLAB_CI_IMAGE_PYTHON}
+  before_script:
+    - pip install "$GITLAB_CI_PYPI_TOX"
+  script:
+    - rm -rf dist
+    - tox -e "upload"
+  only:
+    refs:
+      - tags
+    variables:
+      - $PYPI_USERNAME
+      - $PYPI_PASSWORD
+  except:
+    - triggers
 trigger_master:
   stage: trigger
   image: ${GITLAB_CI_IMAGE_ALPINE}
