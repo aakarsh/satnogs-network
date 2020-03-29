@@ -11,6 +11,33 @@ stages:
   - test
   - deploy
   - trigger
+  - security
+include:
+  - template: Container-Scanning.gitlab-ci.yml
+  - template: Dependency-Scanning.gitlab-ci.yml
+  - template: SAST.gitlab-ci.yml
+container_scanning:
+  stage: security
+  variables:
+    CI_APPLICATION_REPOSITORY: ${CI_REGISTRY_IMAGE}/satnogs-network
+    CI_APPLICATION_TAG: ${CI_COMMIT_REF_NAME}
+  only:
+    refs:
+      - master
+      - tags
+    variables:
+      - $CI_REGISTRY_IMAGE
+dependency_scanning:
+  stage: security
+  variables:
+    DS_DISABLE_DIND: 'true'
+    DS_DEFAULT_ANALYZERS: 'gemnasium,gemnasium-python,retire.js'
+gemnasium-python-dependency_scanning:
+  before_script:
+    - apt-get -q update
+    - apt-get -qy install libmariadb-dev python3-pil libjpeg-dev
+sast:
+  stage: security
 static_js_css:
   stage: static
   image: ${GITLAB_CI_IMAGE_NODE}
