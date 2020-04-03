@@ -6,8 +6,9 @@ from django.contrib import admin, messages
 from django.shortcuts import redirect
 from django.urls import reverse
 
-from network.base.models import Antenna, DemodData, Observation, Satellite, \
-    Station, Tle, Transmitter
+from network.base.models import Antenna, AntennaType, DemodData, \
+    FrequencyRange, Observation, Satellite, Station, StationAntenna, Tle, \
+    Transmitter
 from network.base.tasks import sync_to_db
 from network.base.utils import export_as_csv, export_station_status
 
@@ -15,16 +16,8 @@ from network.base.utils import export_as_csv, export_station_status
 @admin.register(Antenna)
 class AntennaAdmin(admin.ModelAdmin):
     """Define Antenna view in django admin UI"""
-    list_display = (
-        'id',
-        '__str__',
-        'antenna_count',
-        'station_list',
-    )
-    list_filter = (
-        'band',
-        'antenna_type',
-    )
+    list_display = ('id', '__str__', 'antenna_count', 'station_list')
+    list_filter = ('band', 'antenna_type')
 
     def antenna_count(self, obj):  # pylint: disable=no-self-use
         """Return the number of antennas"""
@@ -33,6 +26,67 @@ class AntennaAdmin(admin.ModelAdmin):
     def station_list(self, obj):  # pylint: disable=no-self-use
         """Return stations that use the antenna"""
         return ",\n".join([str(s.id) for s in obj.stations.all()])
+
+
+@admin.register(FrequencyRange)
+class FrequenyRangeAdmin(admin.ModelAdmin):
+    """Define Frequency Range view in django admin UI"""
+    list_display = ('id', 'min_frequency', 'max_frequency', 'antenna', 'antenna_type', 'station')
+
+    def antenna_type(self, obj):  # pylint: disable=no-self-use
+        """Return the antenna type that use this frequency range"""
+        return obj.antenna.antenna_type
+
+    def station(self, obj):  # pylint: disable=no-self-use
+        """Return the antenna station that use this frequency range"""
+        return str(obj.antenna.station.id) + ' - ' + obj.antenna.station.name
+
+    def formfield_for_foreignkey(self, db_field, request, **kwargs):
+        if db_field.name == "antenna":
+            kwargs["queryset"] = StationAntenna.objects.order_by('station_id')
+        return super(FrequenyRangeAdmin,
+                     self).formfield_for_foreignkey(db_field, request, **kwargs)
+
+
+@admin.register(AntennaType)
+class AntennaTypeAdmin(admin.ModelAdmin):
+    """Define Antenna Type view in django admin UI"""
+    list_display = ('id', '__str__', 'antenna_count', 'antenna_list', 'station_list')
+
+    def antenna_count(self, obj):  # pylint: disable=no-self-use
+        """Return the number of antennas use this antenna type"""
+        return obj.station_antennas.all().count()
+
+    def antenna_list(self, obj):  # pylint: disable=no-self-use
+        """Return antennas that use the antenna type"""
+        return ",\n".join([str(s.id) for s in obj.station_antennas.all().order_by('id')])
+
+    def station_list(self, obj):  # pylint: disable=no-self-use
+        """Return antennas that use the antenna type"""
+        return ",\n".join([str(s.station.id) for s in obj.station_antennas.all().order_by('id')])
+
+
+@admin.register(StationAntenna)
+class StationAntennaAdmin(admin.ModelAdmin):
+    """Define Antenna Type view in django admin UI"""
+    list_display = ('id', 'antenna_type', 'station', 'ranges_list')
+
+    list_filter = ('antenna_type', 'station')
+
+    def ranges_list(self, obj):  # pylint: disable=no-self-use
+        """Return frequeny ranges for this antenna"""
+        return ",\n".join(
+            [
+                str(s.min_frequency) + ' - ' + str(s.max_frequency)
+                for s in obj.frequency_ranges.all()
+            ]
+        )
+
+    def formfield_for_foreignkey(self, db_field, request, **kwargs):
+        if db_field.name == "station":
+            kwargs["queryset"] = Station.objects.order_by('id')
+        return super(StationAntennaAdmin,
+                     self).formfield_for_foreignkey(db_field, request, **kwargs)
 
 
 @admin.register(Station)

@@ -322,7 +322,11 @@ class StationAntenna(models.Model):
         return ', '.join(list(set(bands)))
 
     def __str__(self):
-        return self.antenna_type.name + ' (#' + str(self.station.id) + ')'
+        if self.pk:
+            return "%d - %s (#%s)" % (self.pk, self.antenna_type.name, self.station.id)
+        if self.station.id:
+            return "%s (#%s)" % (self.antenna_type.name, self.station.id)
+        return "%s" % (self.antenna_type.name)
 
 
 @python_2_unicode_compatible
