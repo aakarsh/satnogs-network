@@ -296,6 +296,37 @@ post_save.connect(_station_post_save, sender=Station)
 
 
 @python_2_unicode_compatible
+class AntennaType(models.Model):
+    """Model for antenna types."""
+    name = models.CharField(max_length=25, unique=True)
+
+    def __str__(self):
+        return self.name
+
+
+@python_2_unicode_compatible
+class StationAntenna(models.Model):
+    """Model for antennas of SatNOGS ground stations."""
+    antenna_type = models.ForeignKey(
+        AntennaType, on_delete=models.PROTECT, related_name='station_antennas'
+    )
+    station = models.ForeignKey(Station, on_delete=models.CASCADE, related_name='antennas')
+
+    def __str__(self):
+        return self.antenna_type.name + ' (#' + str(self.station.id) + ')'
+
+
+@python_2_unicode_compatible
+class FrequencyRange(models.Model):
+    """Model for frequency ranges of antennas."""
+    antenna = models.ForeignKey(
+        StationAntenna, on_delete=models.CASCADE, related_name='frequency_ranges'
+    )
+    min_frequency = models.PositiveIntegerField()
+    max_frequency = models.PositiveIntegerField()
+
+
+@python_2_unicode_compatible
 class StationStatusLog(models.Model):
     """Model for keeping Status log for Station."""
     station = models.ForeignKey(
