@@ -14,6 +14,47 @@ from django.utils.text import slugify
 from requests.exceptions import RequestException
 
 
+def bands_from_range(min_frequency, max_frequency):
+    """Returns band names of the given frequency range based on
+    https://www.itu.int/rec/R-REC-V.431-8-201508-I/en recommendation from ITU
+    """
+    if max_frequency < min_frequency:
+        return []
+
+    frequency_bands = [
+        ('ULF', 300, 3000),
+        ('VLF', 3000, 30000),
+        ('LF', 30000, 300000),
+        ('MF', 300000, 3000000),
+        ('HF', 3000000, 30000000),
+        ('VHF', 30000000, 300000000),
+        ('UHF', 300000000, 1000000000),
+        ('L', 1000000000, 2000000000),
+        ('S', 2000000000, 4000000000),
+        ('C', 4000000000, 8000000000),
+        ('X', 8000000000, 12000000000),
+        ('Ku', 12000000000, 18000000000),
+        ('K', 18000000000, 27000000000),
+        ('Ka', 27000000000, 40000000000),
+    ]
+
+    bands = []
+    found_min = False
+    for name, min_freq, max_freq in frequency_bands:
+        if not found_min:
+            if min_freq <= min_frequency <= max_freq:
+                bands.append(name)
+                if min_freq <= max_frequency <= max_freq:
+                    return bands
+                found_min = True
+                continue
+            continue
+        bands.append(name)
+        if min_freq < max_frequency <= max_freq:
+            return bands
+    return []
+
+
 def export_as_csv(modeladmin, request, queryset):
     """Exports admin panel table in csv format"""
     if not request.user.is_staff:

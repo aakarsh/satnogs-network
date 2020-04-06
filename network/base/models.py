@@ -26,6 +26,7 @@ from shortuuidfield import ShortUUIDField
 from tinytag import TinyTag, TinyTagException
 
 from network.base.managers import ObservationManager
+from network.base.utils import bands_from_range
 from network.users.models import User
 
 ANTENNA_BANDS = ['HF', 'VHF', 'UHF', 'L', 'S', 'C', 'X', 'KU']
@@ -312,6 +313,14 @@ class StationAntenna(models.Model):
     )
     station = models.ForeignKey(Station, on_delete=models.CASCADE, related_name='antennas')
 
+    @property
+    def bands(self):
+        """Return comma separated string of the bands that the antenna works on"""
+        bands = []
+        for frequency_range in self.frequency_ranges.all():
+            bands += bands_from_range(frequency_range.min_frequency, frequency_range.max_frequency)
+        return ', '.join(list(set(bands)))
+
     def __str__(self):
         return self.antenna_type.name + ' (#' + str(self.station.id) + ')'
 
@@ -324,6 +333,12 @@ class FrequencyRange(models.Model):
     )
     min_frequency = models.PositiveIntegerField()
     max_frequency = models.PositiveIntegerField()
+
+    @property
+    def bands(self):
+        """Return comma separated string of the bands that of the frequeny range"""
+        bands = bands_from_range(self.min_frequency, self.max_frequency)
+        return ', '.join(bands)
 
 
 @python_2_unicode_compatible
