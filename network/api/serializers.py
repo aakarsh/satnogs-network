@@ -313,16 +313,6 @@ class StationSerializer(serializers.ModelSerializer):
         """Returns Station minimum horizon"""
         return obj.horizon
 
-    def get_antenna(self, obj):
-        """Returns Station antenna list"""
-        def antenna_name(antenna):
-            """Returns Station antenna"""
-            return antenna.band + " " + antenna.get_antenna_type_display()
-
-        try:
-            return [antenna_name(ant) for ant in obj.antenna.all()]
-        except AttributeError:
-            return None
 
     def get_observations(self, obj):
         """Returns Station observations number"""
