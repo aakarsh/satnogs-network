@@ -8,8 +8,8 @@ from future.builtins import round
 from rest_framework import serializers
 
 from network.base.db_api import DBConnectionError, get_transmitters_by_uuid_set
-from network.base.models import Antenna, DemodData, Observation, Station, \
-    Transmitter
+from network.base.models import DemodData, FrequencyRange, Observation, \
+    Station, StationAntenna, Transmitter
 from network.base.perms import UserNoPermissionError, \
     check_schedule_perms_per_station
 from network.base.scheduling import create_new_observation
@@ -282,16 +282,28 @@ class NewObservationSerializer(serializers.Serializer):
         list_serializer_class = NewObservationListSerializer
 
 
-class AntennaSerializer(serializers.ModelSerializer):
-    """SatNOGS Network Antenna API Serializer"""
+class FrequencyRangeSerializer(serializers.ModelSerializer):
+    """SatNOGS Network FrequencyRange API Serializer"""
     class Meta:
-        model = Antenna
-        fields = ('frequency', 'frequency_max', 'band', 'antenna_type')
+        model = FrequencyRange
+        fields = ('min_frequency', 'max_frequency', 'bands')
+
+
+class StationAntennaSerializer(serializers.ModelSerializer):
+    """SatNOGS Network Antenna API Serializer"""
+    antenna_type = serializers.StringRelatedField()
+    frequency_ranges = FrequencyRangeSerializer(many=True)
+
+    class Meta:
+        model = StationAntenna
+        fields = ('antenna_type', 'frequency_ranges')
 
 
 class StationSerializer(serializers.ModelSerializer):
     """SatNOGS Network Station API Serializer"""
-    antenna = AntennaSerializer(many=True)
+    # Using SerializerMethodField instead of directly the reverse relation (antennas) with the
+    # StationAntennaSerializer for not to breaking the API, it should change in next API version
+    antenna = serializers.SerializerMethodField()
     altitude = serializers.SerializerMethodField()
     min_horizon = serializers.SerializerMethodField()
     observations = serializers.SerializerMethodField()
@@ -313,6 +325,42 @@ class StationSerializer(serializers.ModelSerializer):
         """Returns Station minimum horizon"""
         return obj.horizon
 
+    def get_antenna(self, obj):
+        """Returns Station antenna list"""
+
+        antenna_types = {
+            'Dipole': 'dipole',
+            'V-Dipole': 'v-dipole',
+            'Discone': 'discone',
+            'Ground Plane': 'ground',
+            'Yagi': 'yagi',
+            'Cross Yagi': 'cross-yagi',
+            'Helical': 'helical',
+            'Parabolic': 'parabolic',
+            'Vertical': 'vertical',
+            'Turnstile': 'turnstile',
+            'Quadrafilar': 'quadrafilar',
+            'Eggbeater': 'eggbeater',
+            'Lindenblad': 'lindenblad',
+            'Parasitic Lindenblad': 'paralindy',
+            'Patch': 'patch',
+            'Other Directional': 'other direct',
+            'Other Omni-Directional': 'other omni',
+        }
+        serializer = StationAntennaSerializer(obj.antennas, many=True)
+        antennas = []
+        for antenna in serializer.data:
+            for frequency_range in antenna['frequency_ranges']:
+                antennas.append(
+                    {
+                        'frequency': frequency_range['min_frequency'],
+                        'frequency_max': frequency_range['max_frequency'],
+                        'band': frequency_range['bands'],
+                        'antenna_type': antenna_types[antenna['antenna_type']],
+                        'antenna_type_name': antenna['antenna_type'],
+                    }
+                )
+        return antennas
 
     def get_observations(self, obj):
         """Returns Station observations number"""

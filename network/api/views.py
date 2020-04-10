@@ -95,7 +95,9 @@ class ObservationView(  # pylint: disable=R0901
 class StationView(  # pylint: disable=R0901
         mixins.ListModelMixin, mixins.RetrieveModelMixin, viewsets.GenericViewSet):
     """SatNOGS Network Station API view class"""
-    queryset = Station.objects.prefetch_related('antenna', 'observations')
+    queryset = Station.objects.prefetch_related(
+        'antennas', 'antennas__antenna_type', 'antennas__frequency_ranges', 'observations'
+    )
     serializer_class = serializers.StationSerializer
     filter_class = filters.StationViewFilter
     pagination_class = pagination.LinkedHeaderPageNumberPagination

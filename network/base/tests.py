@@ -14,13 +14,10 @@ from django.utils.timezone import now
 # C0412 below clashes with isort
 from factory import fuzzy  # pylint: disable=C0412
 
-from network.base.models import ANTENNA_BANDS, ANTENNA_TYPES, \
-    OBSERVATION_STATUSES, Antenna, DemodData, Observation, Satellite, \
-    Station, Tle
+from network.base.models import OBSERVATION_STATUSES, AntennaType, DemodData, \
+    FrequencyRange, Observation, Satellite, Station, StationAntenna, Tle
 from network.users.tests import UserFactory
 
-ANTENNA_BAND_IDS = [c[0] for c in ANTENNA_BANDS]
-ANTENNA_TYPE_IDS = [c[0] for c in ANTENNA_TYPES]
 OBSERVATION_STATUS_IDS = [c[0] for c in OBSERVATION_STATUSES]
 
 
@@ -43,17 +40,6 @@ def generate_payload_name():
     return filename
 
 
-class AntennaFactory(factory.django.DjangoModelFactory):
-    """Antenna model factory."""
-    frequency = fuzzy.FuzzyFloat(200, 500)
-    frequency_max = fuzzy.FuzzyFloat(500, 800)
-    band = fuzzy.FuzzyChoice(choices=ANTENNA_BAND_IDS)
-    antenna_type = fuzzy.FuzzyChoice(choices=ANTENNA_TYPE_IDS)
-
-    class Meta:
-        model = Antenna
-
-
 class StationFactory(factory.django.DjangoModelFactory):
     """Station model factory."""
     owner = factory.SubFactory(UserFactory)
@@ -67,23 +53,31 @@ class StationFactory(factory.django.DjangoModelFactory):
     last_seen = fuzzy.FuzzyDateTime(now() - timedelta(days=3), now())
     horizon = fuzzy.FuzzyInteger(10, 20)
 
-    @factory.post_generation
-    def antennas(self, create, extracted, **kwargs):  # pylint: disable=W0613
-        """Generate antennas"""
-        if not create:
-            return
-
-        if extracted:
-            for antenna in extracted:
-                if random.randint(0, 1):
-                    self.antenna.add(antenna)
-
     class Meta:
         model = Station
 
 
+class StationAntennaFactory(factory.django.DjangoModelFactory):
+    """Antenna model factory."""
+    antenna_type = factory.Iterator(AntennaType.objects.all())
+    station = factory.Iterator(Station.objects.all())
+
+    class Meta:
+        model = StationAntenna
+
+
+class FrequencyRangeFactory(factory.django.DjangoModelFactory):
+    """FrequencyRange model factory."""
+    min_frequency = fuzzy.FuzzyInteger(200000000, 500000000)
+    max_frequency = fuzzy.FuzzyInteger(500000000, 800000000)
+    antenna = factory.Iterator(StationAntenna.objects.all())
+
+    class Meta:
+        model = FrequencyRange
+
+
 class SatelliteFactory(factory.django.DjangoModelFactory):
-    """Sattelite model factory."""
+    """Satellite model factory."""
     norad_cat_id = fuzzy.FuzzyInteger(2000, 4000)
     name = fuzzy.FuzzyText()
 
