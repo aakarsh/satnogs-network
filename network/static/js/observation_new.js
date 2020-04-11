@@ -203,7 +203,7 @@ $(document).ready( function(){
     }
 
     var suggested_data = [];
-    var elevation_slider = new Slider('#elevation-filter', { id: 'elevation-filter', min: 0, max: 90, step: 1, range: true, value: [0, 90] });
+    var elevation_slider = new Slider('#scheduling-elevation-filter', { id: 'scheduling-elevation-filter', min: 0, max: 90, step: 1, range: true, value: [0, 90] });
 
     function update_schedule_button_status(){
         if($('#timeline rect').not('.unselected-obs').length != 0){
