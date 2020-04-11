@@ -226,29 +226,17 @@
       </div>
     </div>
     <div id="collapseFilters" class="row collapse">
-      <div class="col-md-3">
+      <div class="col-md-4">
         <label for="success-filter">Success Rate</label>
         <input id="success-filter" type="text"/>
       </div>
-      <div class="col-md-3">
+      <div class="col-md-4">
         <label for="elevation-filter">Max Elevation</label>
         <input id="elevation-filter" type="text"/>
       </div>
-      <div class="col-md-3">
+      <div class="col-md-4">
         <label for="overlap-filter">Overlap</label>
         <input id="overlap-filter" type="text"/>
-      </div>
-      <div class="col-md-3 pull-right">
-        <form id="antenna-filter" class="form-inline pull-right" method="get" action="{% url 'base:station_view' station_id=station.id %}#satellites">
-          <div class="form-group">
-            <div class="btn-group" data-toggle="buttons">
-              <label class="btn btn-default btn-sm {% if unsupported_frequencies == '1' %}active{% endif %}"  aria-expanded="true" aria-controls="unsupported_frequencies">
-                <input type="checkbox" name="unsupported_frequencies" {% if unsupported_frequencies == '1' %}checked{% endif %} autocomplete="off">
-                Include unsupported satellites
-              </label>
-            </div>
-          </div>
-        </form>
       </div>
     </div>
 

@@ -8,8 +8,7 @@ from django.shortcuts import get_object_or_404, render
 from django.views.generic import RedirectView, UpdateView
 from rest_framework.authtoken.models import Token
 
-from network.base.forms import StationForm
-from network.base.models import Antenna, Observation, Station
+from network.base.models import Observation, Station
 from network.base.perms import schedule_perms
 from network.users.forms import UserForm
 from network.users.models import User
@@ -54,8 +53,6 @@ def view_user(request, username):
                 token = Token.objects.get(user=user)
             except Token.DoesNotExist:
                 token = Token.objects.create(user=user)
-    form = StationForm()
-    antennas = Antenna.objects.all()
 
     return render(
         request, 'users/user_detail.html', {
@@ -63,8 +60,6 @@ def view_user(request, username):
             'observations': observations,
             'stations': stations,
             'token': token,
-            'form': form,
-            'antennas': antennas,
             'can_schedule': can_schedule
         }
     )

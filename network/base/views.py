@@ -594,9 +594,6 @@ def stations_list(request):
 def station_view(request, station_id):
     """View for single station page."""
     station = get_object_or_404(Station, id=station_id)
-    form = StationForm(instance=station)
-    antennas = Antenna.objects.all()
-    unsupported_frequencies = request.GET.get('unsupported_frequencies', '0')
 
     can_schedule = schedule_station_perms(request.user, station)
     can_modify_delete_station = modify_delete_station_perms(request.user, station)
@@ -643,13 +640,10 @@ def station_view(request, station_id):
     return render(
         request, 'base/station_view.html', {
             'station': station,
-            'form': form,
-            'antennas': antennas,
             'mapbox_id': settings.MAPBOX_MAP_ID,
             'mapbox_token': settings.MAPBOX_TOKEN,
             'can_schedule': can_schedule,
             'can_modify_delete_station': can_modify_delete_station,
-            'unsupported_frequencies': unsupported_frequencies,
             'uptime': uptime
         }
     )
@@ -709,7 +703,6 @@ def pass_predictions(request, station_id):
         ),
         id=station_id
     )
-    unsupported_frequencies = request.GET.get('unsupported_frequencies', '0')
 
     try:
         latest_tle_queryset = LatestTle.objects.all()
@@ -743,14 +736,13 @@ def pass_predictions(request, station_id):
         for satellite in satellites:
             # look for a match between transmitters from the satellite and
             # ground station antenna frequency capabilities
-            if int(unsupported_frequencies) == 0:
-                norad_id = satellite.norad_cat_id
-                transmitters = [
-                    t for t in all_transmitters if t['norad_cat_id'] == norad_id
-                    and is_transmitter_in_station_range(t, station)  # noqa: W503
-                ]
-                if not transmitters:
-                    continue
+            norad_id = satellite.norad_cat_id
+            transmitters = [
+                t for t in all_transmitters if t['norad_cat_id'] == norad_id
+                and is_transmitter_in_station_range(t, station)  # noqa: W503
+            ]
+            if not transmitters:
+                continue
 
             if satellite.tle:
                 tle = satellite.tle[0]
