@@ -13,7 +13,7 @@ from django.conf import settings
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.core.urlresolvers import reverse
-from django.db.models import Count, Prefetch
+from django.db.models import Case, Count, IntegerField, Prefetch, Sum, When
 from django.forms import ValidationError, formset_factory
 from django.http import HttpResponse, JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
@@ -552,19 +552,19 @@ def observation_vet(request, observation_id):
 
 def stations_list(request):
     """View to render Stations page."""
-    stations = Station.objects.prefetch_related(
-        'antenna', 'owner',
-        Prefetch(
-            'observations',
-            queryset=Observation.objects.filter(end__gt=now()),
-            to_attr='scheduled_obs'
-        )
+    # Sum - Case - When should be replaced with Count and filter when we move to Django 2.*
+    # more at https://docs.djangoproject.com/en/2.2/ref/models/conditional-expressions in
+    # "Conditional aggregation" section.
+    stations = Station.objects.annotate(
+        total_obs=Count('observations'),
+        future_obs=Sum(
+            Case(
+                When(observations__end__gt=now(), then=1), default=0, output_field=IntegerField()
+            )
+        ),
+    ).prefetch_related(
+        'owner', 'antennas', 'antennas__antenna_type', 'antennas__frequency_ranges'
     ).order_by('-status', 'id')
-    stations_total_obs = {
-        x['id']: x['total_obs']
-        for x in Station.objects.values('id').annotate(total_obs=Count('observations'))
-    }
-    antennas = Antenna.objects.all()
     stations_by_status = {'online': 0, 'testing': 0, 'offline': 0, 'future': 0}
     for station in stations:
         if station.last_seen is None:
@@ -579,8 +579,6 @@ def stations_list(request):
     return render(
         request, 'base/stations.html', {
             'stations': stations,
-            'total_obs': stations_total_obs,
-            'antennas': antennas,
             'online': stations_by_status['online'],
             'testing': stations_by_status['testing'],
             'offline': stations_by_status['offline'],

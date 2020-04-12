@@ -83,20 +83,20 @@
                 </td>
               {% endif %}
               <td>
-                <a href="{% url 'base:observations_list' %}?station={{ station.id }}" class="badge total-pill" data-toggle="tooltip" data-placement="bottom">
-                  {{ total_obs|get_count_from_id:station.id }}
+                <a href="{% url 'base:observations_list' %}?station={{ station.id }}" class="badge total-pill" data-placement="bottom">
+                  {{ station.total_obs }}
                 </a>
               </td>
               <td>
                 <a href="{% url 'base:observations_list' %}?future=1&good=0&bad=0&unvetted=0&failed=0&station={{ station.id }}" class="badge badge-info">
-                  {{ station.scheduled_obs|length }}
+                  {{ station.future_obs }}
                 </a>
               </td>
               <td class="station-antennas">
-                {% for antenna in station.antenna.all %}
+                {% for antenna in station.antennas.all %}
                   <span class="antenna-pill" data-toggle="tooltip" data-placement="bottom"
-                        title="{{ antenna.frequency|frq }} - {{ antenna.frequency_max|frq }}">
-                    {{ antenna.band}} {{ antenna.get_antenna_type_display }}
+                        title="{% for range in antenna.frequency_ranges.all %} {{ range.min_frequency|frq }} - {{ range.max_frequency|frq }}&#xA{% endfor %}">
+                    {{ antenna.antenna_type }} ({{ antenna.bands}})
                   </span>
                 {% endfor %}
               </td>
