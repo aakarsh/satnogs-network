@@ -96,10 +96,10 @@
                   </a>
                 </td>
                 <td class="station-antennas">
-                  {% for antenna in station.antenna.all %}
+                  {% for antenna in station.antennas.all %}
                     <span class="antenna-pill" data-toggle="tooltip" data-placement="bottom"
-                          title="{{ antenna.frequency|frq }} - {{ antenna.frequency_max|frq }}">
-                      {{ antenna.band}} {{ antenna.get_antenna_type_display }}
+                          title="{% for range in antenna.frequency_ranges.all %} {{ range.min_frequency|frq }} - {{ range.max_frequency|frq }}&#xA{% endfor %}">
+                      {{ antenna.antenna_type }} ({{ antenna.bands}}) 
                     </span>
                   {% endfor %}
                 </td>

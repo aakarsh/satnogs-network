@@ -49,9 +49,11 @@ def view_user(request, username):
     stations = Station.objects.filter(owner=user).annotate(
         total_obs=Count('observations'),
         future_obs=Sum(
-            Case(When(observations__end__gt=now(), then=1), output_field=IntegerField())
+            Case(
+                When(observations__end__gt=now(), then=1), default=0, output_field=IntegerField()
+            )
         ),
-    ).prefetch_related('antenna', )
+    ).prefetch_related('antennas', 'antennas__antenna_type', 'antennas__frequency_ranges')
     token = ''
     can_schedule = False
     if request.user.is_authenticated():

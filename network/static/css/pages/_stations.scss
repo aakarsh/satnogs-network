@@ -50,8 +50,19 @@
     margin-top: 10px;
 }
 
-.station-antennas .label-info {
-    margin: 2px;
+.station-antennas {
+
+    .label-info {
+        margin: 2px;
+    }
+
+    .tooltip {
+        white-space: pre-line;
+
+        .tooltip-inner {
+            padding: 6px 8px 3px;
+        }
+    }
 }
 
 .antenna-pill {
