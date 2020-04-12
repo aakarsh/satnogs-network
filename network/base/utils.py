@@ -13,8 +13,6 @@ from django.http import HttpResponse
 from django.utils.text import slugify
 from requests.exceptions import RequestException
 
-from network.base.models import DemodData
-
 
 def export_as_csv(modeladmin, request, queryset):
     """Exports admin panel table in csv format"""
@@ -74,12 +72,11 @@ def export_station_status(self, request, queryset):
     return response
 
 
-def sync_demoddata_to_db(frame_id):
+def sync_demoddata_to_db(frame):
     """
     Task to send a frame from SatNOGS Network to SatNOGS DB
 
     Raises requests.exceptions.RequestException if sync fails."""
-    frame = DemodData.objects.get(id=frame_id)
     obs = frame.observation
     sat = obs.satellite
     ground_station = obs.ground_station

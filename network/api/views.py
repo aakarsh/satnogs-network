@@ -71,7 +71,7 @@ class ObservationView(  # pylint: disable=R0901
                 demoddata = instance.demoddata.create(payload_demod=request.data.get('demoddata'))
                 if Transmitter.objects.get(uuid=instance.transmitter_uuid).sync_to_db:
                     try:
-                        sync_demoddata_to_db(demoddata.id)
+                        sync_demoddata_to_db(demoddata)
                     except RequestException:
                         # Sync to db failed, let the periodic task handle the sync to db later
                         pass

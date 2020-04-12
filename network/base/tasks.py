@@ -212,7 +212,7 @@ def sync_to_db():
             continue
 
         try:
-            sync_demoddata_to_db(frame.id)
+            sync_demoddata_to_db(frame)
         except requests.exceptions.RequestException:
             # Sync to db failed, skip this frame for a future task instance
             continue
