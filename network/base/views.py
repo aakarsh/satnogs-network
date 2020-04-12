@@ -591,7 +591,24 @@ def stations_list(request):
 
 def station_view(request, station_id):
     """View for single station page."""
-    station = get_object_or_404(Station, id=station_id)
+    # Sum - Case - When should be replaced with Count and filter when we move to Django 2.*
+    # more at https://docs.djangoproject.com/en/2.2/ref/models/conditional-expressions in
+    # "Conditional aggregation" section.
+    station = get_object_or_404(
+        Station.objects.annotate(
+            total_obs=Count('observations'),
+            future_obs=Sum(
+                Case(
+                    When(observations__end__gt=now(), then=1),
+                    default=0,
+                    output_field=IntegerField()
+                )
+            ),
+        ).prefetch_related(
+            'owner', 'antennas', 'antennas__antenna_type', 'antennas__frequency_ranges'
+        ),
+        id=station_id
+    )
 
     can_schedule = schedule_station_perms(request.user, station)
     can_modify_delete_station = modify_delete_station_perms(request.user, station)

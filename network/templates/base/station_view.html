@@ -26,7 +26,7 @@
     <div class="col-md-6 text-right">
       <h2>
         {% if can_modify_delete_station %}
-          {% if station.observations_future_count %}
+          {% if station.future_obs %}
             <a class="btn btn-danger delete-future-modal-reveal" data-toggle="modal" data-target="#delete-future-modal">
               <span class="glyphicon glyphicon-trash" aria-hidden="true"></span>
               Delete future observations
@@ -97,14 +97,14 @@
           </span>
         </div>
       {% endif %}
-      {% if station.antenna %}
+      {% if station.antennas.all %}
         <div class="font-line station-antennas">
           <span class="label label-default">Antennas</span>
           <span class="front-data">
-            {% for antenna in station.antenna.all %}
+            {% for antenna in station.antennas.all %}
               <span class="antenna-pill" data-toggle="tooltip" data-placement="bottom"
-                    title="{{ antenna.frequency|frq }} - {{ antenna.frequency_max|frq }}">
-                {{ antenna.band}} {{ antenna.get_antenna_type_display }}
+                    title="{% for range in antenna.frequency_ranges.all %} {{ range.min_frequency|frq }} - {{ range.max_frequency|frq }}&#xA{% endfor %}">
+                {{ antenna.antenna_type }} ({{ antenna.bands}})
               </span>
             {% endfor %}
           </span>
@@ -125,22 +125,20 @@
           </span>
         </div>
       {% endif %}
-      {% with total_obs=station.observations_count %}
-        {% if total_obs %}
-          <div class="front-line">
-            <span class="label label-default">Observations</span>
-            <span class="front-data">{{ total_obs }}
-              <div class="pull-right">
-                <a href="{% url 'base:observations_list' %}?station={{ station.id }}">
-                  <button type="button" class="btn btn-xs btn-info">
-                    View all
-                  </button>
-                </a>
-              </div>
-            </span>
-          </div>
-        {% endif %}
-      {% endwith %}
+      {% if station.total_obs %}
+        <div class="front-line">
+          <span class="label label-default">Observations</span>
+          <span class="front-data">{{ station.total_obs }}
+            <div class="pull-right">
+              <a href="{% url 'base:observations_list' %}?station={{ station.id }}">
+                <button type="button" class="btn btn-xs btn-info">
+                  View all
+                </button>
+              </a>
+            </div>
+          </span>
+        </div>
+      {% endif %}
       <div class="front-line">
         <span class="label label-default">Creation Date</span>
         <span class="front-data"
@@ -332,7 +330,7 @@
           <button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>
           <a class="btn btn-danger" id="station-future-delete" href="{% url 'base:station_delete_future_observations' station_id=station.id %}">
             <span class="glyphicon glyphicon-remove" aria-hidden="true"></span>
-            Delete {{ station.observations_future_count }} observations
+            Delete {{ station.future_obs }} observations
           </a>
         </div>
       </div>

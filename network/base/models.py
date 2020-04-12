@@ -266,21 +266,6 @@ class Station(models.Model):
         return rate
 
     @property
-    def observations_count(self):
-        """Return the number of station's observations"""
-        count = self.observations.all().count()
-        return count
-
-    @property
-    def observations_future_count(self):
-        """Return the number of future station's observations"""
-        # False-positive no-member (E1101) pylint error:
-        # Instance of 'Station' has 'observations' member due to the
-        # Observation.station ForeignKey related_name
-        count = self.observations.is_future().count()  # pylint: disable=E1101
-        return count
-
-    @property
     def apikey(self):
         """Return station owner API key"""
         try:
