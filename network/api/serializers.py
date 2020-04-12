@@ -364,10 +364,7 @@ class StationSerializer(serializers.ModelSerializer):
 
     def get_observations(self, obj):
         """Returns Station observations number"""
-        try:
-            return obj.observations_count
-        except AttributeError:
-            return None
+        return obj.total_obs
 
     def get_status(self, obj):
         """Returns Station status"""

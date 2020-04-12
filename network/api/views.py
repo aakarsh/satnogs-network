@@ -2,6 +2,7 @@
 from __future__ import absolute_import
 
 from django.core.exceptions import ObjectDoesNotExist
+from django.db.models import Count
 from django.shortcuts import get_object_or_404
 from django.utils.timezone import now
 from requests.exceptions import RequestException
@@ -95,9 +96,9 @@ class ObservationView(  # pylint: disable=R0901
 class StationView(  # pylint: disable=R0901
         mixins.ListModelMixin, mixins.RetrieveModelMixin, viewsets.GenericViewSet):
     """SatNOGS Network Station API view class"""
-    queryset = Station.objects.prefetch_related(
-        'antennas', 'antennas__antenna_type', 'antennas__frequency_ranges', 'observations'
-    )
+    queryset = Station.objects.annotate(
+        total_obs=Count('observations'),
+    ).prefetch_related('antennas', 'antennas__antenna_type', 'antennas__frequency_ranges')
     serializer_class = serializers.StationSerializer
     filter_class = filters.StationViewFilter
     pagination_class = pagination.LinkedHeaderPageNumberPagination
