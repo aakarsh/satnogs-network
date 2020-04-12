@@ -92,7 +92,7 @@
                 </td>
                 <td>
                   <a href="{% url 'base:observations_list' %}?future=1&good=0&bad=0&unvetted=0&failed=0&station={{ station.id }}" class="badge badge-info">
-                      {{ station.observations_future_count }}
+                      {{ station.future_obs }}
                   </a>
                 </td>
                 <td class="station-antennas">

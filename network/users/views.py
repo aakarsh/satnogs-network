@@ -3,8 +3,9 @@ from __future__ import absolute_import
 
 from braces.views import LoginRequiredMixin
 from django.core.urlresolvers import reverse
-from django.db.models import Count
+from django.db.models import Case, Count, IntegerField, Sum, When
 from django.shortcuts import get_object_or_404, render
+from django.utils.timezone import now
 from django.views.generic import RedirectView, UpdateView
 from rest_framework.authtoken.models import Token
 
@@ -41,9 +42,17 @@ def view_user(request, username):
     observations = Observation.objects.filter(
         author=user
     )[0:10].prefetch_related('satellite', 'ground_station')
-    stations = Station.objects.filter(owner=user).annotate(total_obs=Count('observations'))
-    token = ''
 
+    # Sum - Case - When should be replaced with Count and filter when we move to Django 2.*
+    # more at https://docs.djangoproject.com/en/2.2/ref/models/conditional-expressions in
+    # "Conditional aggregation" section.
+    stations = Station.objects.filter(owner=user).annotate(
+        total_obs=Count('observations'),
+        future_obs=Sum(
+            Case(When(observations__end__gt=now(), then=1), output_field=IntegerField())
+        ),
+    ).prefetch_related('antenna', )
+    token = ''
     can_schedule = False
     if request.user.is_authenticated():
         can_schedule = schedule_perms(request.user)
