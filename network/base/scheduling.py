@@ -386,16 +386,16 @@ def get_available_stations(stations, downlink, user):
     stations_perms = schedule_stations_perms(user, stations)
     stations_with_permissions = [station for station in stations if stations_perms[station.id]]
     for station in stations_with_permissions:
-
         # Skip if this station is not capable of receiving the frequency
         if not downlink:
             continue
-        frequency_supported = False
-        for gs_antenna in station.antenna.all():
-            if gs_antenna.frequency <= downlink <= gs_antenna.frequency_max:
-                frequency_supported = True
-        if not frequency_supported:
-            continue
+        for gs_antenna in station.antennas.all():
+            for frequency_range in gs_antenna.frequency_ranges.all():
+                if frequency_range.min_frequency <= downlink <= frequency_range.max_frequency:
+                    available_stations.append(station)
+                    break
+            else:
+                continue  # to the next antenna of the station
+            break  # station added to the available stations
 
-        available_stations.append(station)
     return available_stations

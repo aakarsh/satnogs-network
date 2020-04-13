@@ -405,7 +405,7 @@ def prediction_windows(request):
             'observations',
             queryset=Observation.objects.filter(end__gt=now()),
             to_attr='scheduled_obs'
-        ), 'antenna'
+        ), 'antennas', 'antennas__frequency_ranges'
     )
 
     if params['station_ids'] and params['station_ids'] != ['']:
@@ -697,7 +697,8 @@ def scheduling_stations(request):
         data = [{'error': str(error)}]
         return JsonResponse(data, safe=False)
 
-    stations = Station.objects.filter(status__gt=0).prefetch_related('antenna')
+    stations = Station.objects.filter(status__gt=0
+                                      ).prefetch_related('antennas', 'antennas__frequency_ranges')
     available_stations = get_available_stations(stations, downlink, request.user)
     data = {
         'stations': StationSerializer(available_stations, many=True).data,
@@ -714,7 +715,7 @@ def pass_predictions(request, station_id):
                 'observations',
                 queryset=Observation.objects.filter(end__gt=now()),
                 to_attr='scheduled_obs'
-            ), 'antenna'
+            ), 'antennas', 'antennas__frequency_ranges'
         ),
         id=station_id
     )
@@ -958,7 +959,9 @@ def transmitters_view(request):
     ]
     if station_id:
         supported_transmitters = []
-        station = Station.objects.get(id=station_id)
+        station = Station.objects.prefetch_related('antennas', 'antennas__frequency_ranges').get(
+            id=station_id
+        )
         for transmitter in transmitters:
             transmitter_supported = is_transmitter_in_station_range(transmitter, station)
             if transmitter_supported:
