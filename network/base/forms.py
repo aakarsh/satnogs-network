@@ -1,7 +1,9 @@
 """SatNOGS Network django base Forms class"""
 from __future__ import absolute_import
 
-from django import forms
+from django.forms import BaseFormSet, CharField, DateTimeField, Form, \
+    ImageField, IntegerField, ModelChoiceField, ModelForm, ValidationError, \
+    formset_factory
 
 from network.base.db_api import DBConnectionError, get_transmitters_by_uuid_set
 from network.base.models import Observation, Station
@@ -12,9 +14,9 @@ from network.base.validators import ObservationOverlapError, OutOfRangeError, \
     check_start_end_datetimes, check_transmitter_station_pairs
 
 
-class ObservationForm(forms.ModelForm):
+class ObservationForm(ModelForm):
     """Model Form class for Observation objects"""
-    start = forms.DateTimeField(
+    start = DateTimeField(
         input_formats=['%Y-%m-%d %H:%M:%S.%f', '%Y-%m-%d %H:%M:%S'],
         error_messages={
             'invalid':
@@ -24,7 +26,7 @@ class ObservationForm(forms.ModelForm):
             'Start datetime is required.'
         }
     )
-    end = forms.DateTimeField(
+    end = DateTimeField(
         input_formats=['%Y-%m-%d %H:%M:%S.%f', '%Y-%m-%d %H:%M:%S'],
         error_messages={
             'invalid':
@@ -34,7 +36,7 @@ class ObservationForm(forms.ModelForm):
             'End datetime is required.'
         }
     )
-    ground_station = forms.ModelChoiceField(
+    ground_station = ModelChoiceField(
         queryset=Station.objects.filter(status__gt=0),
         error_messages={
             'invalid_choice': 'Station(s) should exist and be online.',
@@ -48,7 +50,7 @@ class ObservationForm(forms.ModelForm):
         try:
             check_start_datetime(start)
         except ValueError as error:
-            raise forms.ValidationError(error, code='invalid')
+            raise ValidationError(error, code='invalid')
         return start
 
     def clean_end(self):
@@ -57,7 +59,7 @@ class ObservationForm(forms.ModelForm):
         try:
             check_end_datetime(end)
         except ValueError as error:
-            raise forms.ValidationError(error, code='invalid')
+            raise ValidationError(error, code='invalid')
         return end
 
     def clean(self):
@@ -71,7 +73,7 @@ class ObservationForm(forms.ModelForm):
         try:
             check_start_end_datetimes(start, end)
         except ValueError as error:
-            raise forms.ValidationError(error, code='invalid')
+            raise ValidationError(error, code='invalid')
 
     class Meta:
         model = Observation
@@ -79,7 +81,7 @@ class ObservationForm(forms.ModelForm):
         error_messages = {'transmitter_uuid': {'required': "Transmitter is required"}}
 
 
-class BaseObservationFormSet(forms.BaseFormSet):
+class BaseObservationFormSet(BaseFormSet):
     """Base FormSet class for Observation objects forms"""
     transmitters = {}
 
@@ -117,21 +119,21 @@ class BaseObservationFormSet(forms.BaseFormSet):
         try:
             check_overlaps(start_end_per_station)
         except ObservationOverlapError as error:
-            raise forms.ValidationError(error, code='invalid')
+            raise ValidationError(error, code='invalid')
 
         station_list = list(set(station_list))
         try:
             check_schedule_perms_per_station(self.user, station_list)
         except UserNoPermissionError as error:
-            raise forms.ValidationError(error, code='forbidden')
+            raise ValidationError(error, code='forbidden')
 
         try:
             transmitters = get_transmitters_by_uuid_set(transmitter_uuid_set)
             self.transmitters = transmitters
         except ValueError as error:
-            raise forms.ValidationError(error, code='invalid')
+            raise ValidationError(error, code='invalid')
         except DBConnectionError as error:
-            raise forms.ValidationError(error)
+            raise ValidationError(error)
 
         transmitter_uuid_station_set = set(transmitter_uuid_station_list)
         transmitter_station_list = [
@@ -140,10 +142,15 @@ class BaseObservationFormSet(forms.BaseFormSet):
         try:
             check_transmitter_station_pairs(transmitter_station_list)
         except OutOfRangeError as error:
-            raise forms.ValidationError(error, code='invalid')
+            raise ValidationError(error, code='invalid')
 
 
-class StationForm(forms.ModelForm):
+ObservationFormSet = formset_factory(  # pylint: disable=C0103
+    ObservationForm, formset=BaseObservationFormSet, min_num=1, validate_min=True
+)
+
+
+class StationForm(ModelForm):
     """Model Form class for Station objects"""
     class Meta:
         model = Station
@@ -151,13 +158,13 @@ class StationForm(forms.ModelForm):
             'name', 'image', 'alt', 'lat', 'lng', 'qthlocator', 'horizon', 'antenna', 'testing',
             'description', 'target_utilization'
         ]
-        image = forms.ImageField(required=False)
+        image = ImageField(required=False)
 
 
-class SatelliteFilterForm(forms.Form):
+class SatelliteFilterForm(Form):
     """Form class for Satellite objects"""
-    norad = forms.IntegerField(required=False)
-    start = forms.CharField(required=False)
-    end = forms.CharField(required=False)
-    ground_station = forms.IntegerField(required=False)
-    transmitter = forms.CharField(required=False)
+    norad = IntegerField(required=False)
+    start = CharField(required=False)
+    end = CharField(required=False)
+    ground_station = IntegerField(required=False)
+    transmitter = CharField(required=False)

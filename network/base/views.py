@@ -14,7 +14,7 @@ from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.core.urlresolvers import reverse
 from django.db.models import Case, Count, IntegerField, Prefetch, Sum, When
-from django.forms import ValidationError, formset_factory
+from django.forms import ValidationError
 from django.http import HttpResponse, JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.utils.timezone import make_aware, now, utc
@@ -25,8 +25,8 @@ from rest_framework import serializers, viewsets
 from network.base.db_api import DBConnectionError, get_transmitter_by_uuid, \
     get_transmitters_by_norad_id, get_transmitters_by_status
 from network.base.decorators import admin_required, ajax_required
-from network.base.forms import BaseObservationFormSet, ObservationForm, \
-    SatelliteFilterForm, StationForm
+from network.base.forms import ObservationFormSet, SatelliteFilterForm, \
+    StationForm
 from network.base.models import Antenna, LatestTle, Observation, Satellite, \
     Station, StationStatusLog
 from network.base.perms import delete_perms, modify_delete_station_perms, \
@@ -259,9 +259,6 @@ def create_new_observations(formset, user):
 
 def observation_new_post(request):
     """Handles POST requests for creating one or more new observations."""
-    ObservationFormSet = formset_factory(  # pylint: disable=C0103
-        ObservationForm, formset=BaseObservationFormSet, min_num=1, validate_min=True
-    )
     formset = ObservationFormSet(request.user, request.POST, prefix='obs')
     try:
         if not formset.is_valid():
