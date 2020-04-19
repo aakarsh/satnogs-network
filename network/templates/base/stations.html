@@ -66,11 +66,6 @@
               <td>
                 {{ station.name }}
               </td>
-              {% if station.location %}
-                <td title="{{ station.lat|floatformat:-3 }}°, {{ station.lng|floatformat:-3 }}°, {{ station.qthlocator }}">
-                  {{ station.location }}
-                </td>
-              {% else %}
                 <td>
                   {% if station.qthlocator %}
                     <span data-toggle="tooltip" data-placement="bottom"
@@ -81,7 +76,6 @@
                   {% endif %}
                   @{{ station.alt}}m
                 </td>
-              {% endif %}
               <td>
                 <a href="{% url 'base:observations_list' %}?station={{ station.id }}" class="badge total-pill" data-placement="bottom">
                   {{ station.total_obs }}

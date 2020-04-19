@@ -90,7 +90,6 @@ class StationViewApiTest(TestCase):
             u'last_seen': self.encoder.default(self.station.last_seen),
             u'lat': self.station.lat,
             u'lng': self.station.lng,
-            u'location': self.station.location,
             u'min_horizon': self.station.horizon,
             u'name': self.station.name,
             u'observations': 0,

@@ -302,7 +302,7 @@ class StationAntennaSerializer(serializers.ModelSerializer):
 class StationSerializer(serializers.ModelSerializer):
     """SatNOGS Network Station API Serializer"""
     # Using SerializerMethodField instead of directly the reverse relation (antennas) with the
-    # StationAntennaSerializer for not to breaking the API, it should change in next API version
+    # StationAntennaSerializer for not breaking the API, it should change in next API version
     antenna = serializers.SerializerMethodField()
     altitude = serializers.SerializerMethodField()
     min_horizon = serializers.SerializerMethodField()
@@ -312,9 +312,9 @@ class StationSerializer(serializers.ModelSerializer):
     class Meta:
         model = Station
         fields = (
-            'id', 'name', 'altitude', 'min_horizon', 'lat', 'lng', 'qthlocator', 'location',
-            'antenna', 'created', 'last_seen', 'status', 'observations', 'description',
-            'client_version', 'target_utilization'
+            'id', 'name', 'altitude', 'min_horizon', 'lat', 'lng', 'qthlocator', 'antenna',
+            'created', 'last_seen', 'status', 'observations', 'description', 'client_version',
+            'target_utilization'
         )
 
     def get_altitude(self, obj):

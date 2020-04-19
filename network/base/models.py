@@ -181,8 +181,8 @@ class Station(models.Model):
     lng = models.FloatField(
         validators=[MaxValueValidator(180), MinValueValidator(-180)], help_text='eg. 23.7314'
     )
-    qthlocator = models.CharField(max_length=255, blank=True)
-    location = models.CharField(max_length=255, blank=True)
+    # https://en.wikipedia.org/wiki/Maidenhead_Locator_System
+    qthlocator = models.CharField(max_length=8, blank=True)
     antenna = models.ManyToManyField(
         Antenna,
         blank=True,
