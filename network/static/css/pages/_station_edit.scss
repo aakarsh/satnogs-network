@@ -1,0 +1,35 @@
+.antenna-label, .frequency-ranges-label {
+    display: inline-block;
+    max-width: 100%;
+    margin-top: 5px;
+    font-weight: 700;
+}
+
+.frequency-ranges {
+    padding: 2px 0;
+}
+
+.frequency-ranges-label {
+    margin-bottom: 5px;
+}
+
+.frequency-range-fields {
+
+    .btn {
+        padding: 1px 5px;
+        font-size: 12px;
+        line-height: 1.5;
+        border-radius: 3px;
+    }
+}
+
+#new-ranges {
+    display: flex;
+    align-items: flex-end;
+
+    .default-range-label {
+        display: block;
+        font-weight: 700;
+        margin-bottom: 5px;
+    }
+}

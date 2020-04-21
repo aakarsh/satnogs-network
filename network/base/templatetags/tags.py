@@ -29,8 +29,21 @@ def frq(value):
         to_format = float(value)
     except (TypeError, ValueError):
         return '-'
-    formatted = format(float(to_format) / 1000000, '.3f')
-    formatted = formatted + ' MHz'
+    if to_format >= 1000000000000:
+        formatted = format(to_format / 1000000000000, '.3f')
+        formatted = formatted + ' THz'
+    elif to_format >= 1000000000:
+        formatted = format(to_format / 1000000000, '.3f')
+        formatted = formatted + ' GHz'
+    elif to_format >= 1000000:
+        formatted = format(to_format / 1000000, '.3f')
+        formatted = formatted + ' MHz'
+    elif to_format >= 1000:
+        formatted = format(to_format / 1000, '.3f')
+        formatted = formatted + ' KHz'
+    else:
+        formatted = format(to_format, '.3f')
+        formatted = formatted + ' Hz'
     return formatted
 
 
@@ -50,3 +63,9 @@ def sortdemoddata(demoddata):
         return sorted(list(demoddata), key=lambda x: str(x.payload_demod).split('/', 2)[2:])
     except (TypeError, ValueError):
         return demoddata
+
+
+@register.filter
+def lookup_with_key(dictionary, key):
+    """Returns a value from dictionary for a given key"""
+    return dictionary.get(key)

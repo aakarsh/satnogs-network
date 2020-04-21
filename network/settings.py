@@ -364,6 +364,18 @@ STATION_HEARTBEAT_TIME = config('STATION_HEARTBEAT_TIME', default=60, cast=int)
 # Maximum window for upcoming passes in hours
 STATION_UPCOMING_END = config('STATION_UPCOMING_END', default=24, cast=int)
 WIKI_STATION_URL = config('WIKI_STATION_URL', default='https://wiki.satnogs.org/')
+MAX_ANTENNAS_PER_STATION = config('MAX_ANTENNAS_PER_STATION', default=3, cast=int)
+MAX_FREQUENCY_RANGES_PER_ANTENNA = config('MAX_FREQUENCY_RANGES_PER_ANTENNA', default=5, cast=int)
+MAX_FREQUENCY_FOR_RANGE = config('MAX_FREQUENCY_FOR_RANGE', default=4000000000, cast=int)
+MIN_FREQUENCY_FOR_RANGE = config('MIN_FREQUENCY_FOR_RANGE', default=300, cast=int)
+VHF_MIN_FREQUENCY = config('VHF_MIN_FREQUENCY', default=135000000, cast=int)
+VHF_MAX_FREQUENCY = config('VHF_MAX_FREQUENCY', default=148000000, cast=int)
+UHF_MIN_FREQUENCY = config('UHF_MIN_FREQUENCY', default=430000000, cast=int)
+UHF_MAX_FREQUENCY = config('UHF_MAX_FREQUENCY', default=470000000, cast=int)
+L_MIN_FREQUENCY = config('L_MIN_FREQUENCY', default=1050000000, cast=int)
+L_MAX_FREQUENCY = config('L_MAX_FREQUENCY', default=1750000000, cast=int)
+S_MIN_FREQUENCY = config('S_MIN_FREQUENCY', default=2200000000, cast=int)
+S_MAX_FREQUENCY = config('S_MAX_FREQUENCY', default=2450000000, cast=int)
 
 # Station status check
 # How often, in seconds, will the check for observations with no results runs

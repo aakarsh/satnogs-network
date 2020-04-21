@@ -2,7 +2,7 @@
 {% load tags %}
 {% load staticfiles %}
 
-{% block title %}{% if station %} - Edit Ground Station {{ station.name }}{% else %} - Add Ground Station{% endif %}{% endblock %}
+{% block title %}{% if station_form.instance.id %} - Edit Ground Station {{ station_form.instance.name }}{% else %} - Add Ground Station{% endif %}{% endblock %}
 
 {% block css %}
   <link href="{% static 'lib/bootstrap-select/dist/css/bootstrap-select.min.css' %}" rel="stylesheet" >
@@ -14,8 +14,8 @@
   <div class="row">
     <div class="col-md-6">
       <h2>
-        {% if station %}
-          Edit: {{ station.id }} - {{ station.name }}
+        {% if station_form.instance.id %}
+          Edit: {{ station_form.instance.id }} - {{ station_form.instance.name }}
         {% else %}
           Add Ground Station
         {% endif %}
@@ -33,12 +33,12 @@
           <div class="panel-body">
             <div class="form-group">
               <label for="name" class="control-label">Name</label>
-              <input value="{{ form.name.value|default_if_none:"" }}" id="station-name" type="text" class="form-control" name="name" required>
+              <input value="{{ station_form.name.value|default_if_none:"" }}" id="station-name" type="text" class="form-control" maxlength="{{ station_form.name.field.max_length }}" name="name" required>
             </div>
             <div class="form-group">
               <label for="description" class="control-label">Description</label>
               <textarea class="form-control" name="description"
-                        id="description" rows="3" maxlength="500">{{ form.description.value|default_if_none:"" }}</textarea>
+                        id="description" rows="3" maxlength="{{ station_form.description.field.max_length }}">{{ station_form.description.value|default_if_none:"" }}</textarea>
             </div>
           </div>
         </div>
@@ -51,19 +51,19 @@
               <div class="col-md-4">
                 <div class="form-group">
                   <label for="lat" class="control-label">Latitude</label>
-                  <input value="{{ form.lat.value|default_if_none:"" }}" id="lat" type="text" class="form-control" name="lat" placeholder="{{ form.lat.help_text }}" required>
+                  <input value="{{ station_form.lat.value|default_if_none:"" }}" id="lat" type="number" class="form-control" name="lat" step="0.000001" max="{{ station_form.lat.field.max_value }}" min="{{ station_form.lat.field.min_value }}" placeholder="{{ station_form.lat.help_text }}" required>
                 </div>
               </div>
               <div class="col-md-4">
                 <div class="form-group">
                   <label for="lng" class="control-label">Longtitude</label>
-                  <input value="{{ form.lng.value|default_if_none:"" }}" id="lng" type="text" class="form-control" name="lng" placeholder="{{ form.lng.help_text }}" required>
+                  <input value="{{ station_form.lng.value|default_if_none:"" }}" id="lng" type="number" class="form-control" name="lng" step="0.000001" max="{{ station_form.lng.field.max_value }}" min="{{ station_form.lng.field.min_value }}" placeholder="{{ station_form.lng.help_text }}" required>
                 </div>
               </div>
               <div class="col-md-4">
                 <div class="form-group">
                   <label for="alt" class="control-label">Altitude (ASL)</label>
-                  <input value="{{ form.alt.value|default_if_none:"" }}" id="alt" type="number" class="form-control" name="alt" placeholder="{{ form.alt.help_text }}" required>
+                  <input value="{{ station_form.alt.value|default_if_none:"" }}" id="alt" type="number" class="form-control" name="alt" placeholder="{{ station_form.alt.help_text }}" required>
                 </div>
               </div>
             </div>
@@ -74,7 +74,7 @@
                      id="qthlocator"
                      type="text"
                      name="qthlocator"
-                     value="{{ form.qthlocator.value|default_if_none:"" }}"
+                     value="{{ station_form.qthlocator.value|default_if_none:"" }}"
                      readonly>
             </div>
           </div>
@@ -87,7 +87,7 @@
           <div class="panel-body">
             <div class="form-group">
               <input id="station-image" type="file" name="image"
-                 {% if form.image.value %} data-existing="{{ MEDIA_URL }}{{ form.image.value }}" {% endif %}>
+                 {% if station_form.image.value and not image_changed %} data-existing="{{ MEDIA_URL }}{{ station_form.image.value }}" {% endif %}>
             </div>
           </div>
         </div>
@@ -101,29 +101,16 @@
           <div class="panel-body">
             <div class="form-group">
               <label for="horizon" class="control-label">Minimum Horizon</label>
-              <input id="horizon" type="number" value="{{ form.horizon.value|default_if_none:"" }}" class="form-control" name="horizon" placeholder="{{ form.horizon.help_text }}">
+              <input id="horizon" type="number" value="{{ station_form.horizon.value|default_if_none:"" }}" class="form-control" name="horizon" placeholder="{{ station_form.horizon.help_text }}">
               <span class="glyphicon glyphicon-question-sign" aria-hidden="true" data-toggle="tooltip"
                     title="Your station minimum observable elevation"></span>
-            </div>
-
-            <div class="form-group">
-              <label for="antennas" class="control-label">Antennas</label>
-              <select id="antenna-selection" class="form-control selectpicker" multiple name="antenna"
-                      data-selected-text-format="count" data-count-selected-text="Selected {0} antennas">
-                {% for antenna in antennas %}
-                  <option value="{{ antenna.id }}" {% if antenna in station.antenna.all %}selected{% endif %} data-content="
-                    <span class='label label-info'>{{ antenna.band }} {{ antenna.get_antenna_type_display }}</span> {{ antenna.frequency|frq }} - {{ antenna.frequency_max|frq }}
-                  ">
-                {% endfor %}
-              </select>
-              <span class="help-block">{{ form.antenna.help_text|safe }}</span>
             </div>
 
             <hr>
 
             <div class="form-group">
               <label for="utilization" class="control-label">Target Utilization</label>
-              <input id="utilization" type="number" value="{{ form.target_utilization.value|default_if_none:"" }}" class="form-control" name="target_utilization" placeholder="{{ form.utilization.help_text }}">
+              <input id="utilization" type="number" value="{{ station_form.target_utilization.value|default_if_none:"" }}" class="form-control" name="target_utilization" placeholder="{{ station_form.utilization.help_text }}">
               <span class="glyphicon glyphicon-question-sign" aria-hidden="true" data-toggle="tooltip"
                     title="Your station target utilization"></span>
             </div>
@@ -133,7 +120,7 @@
             <div class="form-group">
               <div class="checkbox">
                 <label>
-                  <input type="checkbox" name="testing" {% if form.testing.value %}checked="True"{% endif %} {% if not station.id %}disabled{% endif %}>
+                  <input type="checkbox" name="testing" {% if station_form.testing.value %}checked="True"{% endif %} {% if not station_form.instance.id %}disabled{% endif %}>
                   Testing?
                       <span class="glyphicon glyphicon-question-sign" aria-hidden="true" data-toggle="tooltip"
                             title="Make sure you station is performing well for a period of time before you remove the Testing flag"></span>
@@ -143,8 +130,159 @@
           </div>
         </div>
 
-        <button type="submit" class="btn btn-primary">Submit</button>
+        <div class="panel panel-default">
+          <div class="panel-heading">
+            <h3 class="panel-title">Antennas</h3>
+          </div>
+          <!-- Data to parse -->
+          <div id="antennas-loading" class="panel-body loading-field">
+            <div class="spinner">
+              <div class="bounce1"></div>
+              <div class="bounce2"></div>
+              <div class="bounce3"></div>
+            </div>
+            Loading Antennas
+          </div>
+          <div class="panel-body" id="antennas-panel-body" style="display:none;">
+            <div id="station-data-to-parse"
+                 data-max_antennas_per_station="{{ max_antennas_per_station }}"
+                 data-max_frequency_ranges_per_antenna="{{ max_frequency_ranges_per_antenna }}"
+                 data-max_frequency_for_range="{{ max_frequency_for_range }}"
+                 data-min_frequency_for_range="{{ min_frequency_for_range }}"
+                 data-vhf_min_frequency="{{ vhf_min_frequency }}"
+                 data-vhf_max_frequency="{{ vhf_max_frequency }}"
+                 data-uhf_min_frequency="{{ uhf_min_frequency }}"
+                 data-uhf_max_frequency="{{ uhf_max_frequency }}"
+                 data-l_min_frequency="{{ l_min_frequency }}"
+                 data-l_max_frequency="{{ l_max_frequency }}"
+                 data-s_min_frequency="{{ s_min_frequency }}"
+                 data-s_max_frequency="{{ s_max_frequency }}"
+            ></div>
 
+            <!-- Initial data -->
+            <div id="antennas-data-to-parse">
+              {% for antenna_form in antenna_formset %}
+                <div {% if antenna_form.id.value %} data-id="{{ antenna_form.id.value }}" {% endif %}
+                     {% if antenna_form.DELETE.value %}data-deleted="true" {% endif %}
+                     data-type-name="{{ antenna_form.instance.antenna_type.name }}"
+                     data-type-id="{{ antenna_form.antenna_type.value }}">
+                  {% with frequency_range_formset=frequency_range_formsets|lookup_with_key:antenna_form.prefix %}
+                    {% for frequency_range_form in frequency_range_formset %}
+                      <div {% if frequency_range_form.id.value %} data-id="{{ frequency_range_form.id.value }} {% endif %}"
+                           {% if frequency_range_form.DELETE.value %}data-deleted="true" {% endif %}
+                           data-min="{{ frequency_range_form.min_frequency.value }}"
+                           data-max="{{ frequency_range_form.max_frequency.value }}"
+                      ></div>
+                    {% endfor %}
+                  {% endwith %}
+                </div>
+              {% endfor %}
+            </div>
+
+            <div class="row" id="new-antenna">
+              <div class="col-md-12 text-right">
+                <button type="button" class="btn btn-success" data-toggle="modal" data-target="#modal" data-action="new">
+                  <span class="glyphicon glyphicon-plus" aria-hidden="true"></span>
+                  New Antenna
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Edit/New Antenna Modal-->
+          <div class="modal fade" id="modal" tabindex="-1" role="dialog" aria-labelledby="antenna modal">
+            <div class="modal-dialog" role="document">
+              <div class="modal-content">
+                <div class="modal-header">
+                  <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                  <h4 class="modal-title" id="modal-title"></h4>
+                </div>
+                <div class="modal-body">
+                  <div class='row'>
+                    <div class='col-md-12'>
+                      <div class="form-group">
+                        <label for="antenna-type" class="control-label">Type</label>
+                        <select id="antenna-type" class="form-control selectpicker" name="antenna-type">
+                          {% for antenna_type in antenna_types %}
+                            <option value="{{ antenna_type.id }}" data-content="{{ antenna_type.name }}">
+                          {% endfor %}
+                        </select>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="form-group">
+                    <span class="frequency-ranges-label">Frequency Ranges(Hz)</span>
+                    <div id="frequency-ranges-loading" class="loading-field">
+                      <div class="spinner">
+                        <div class="bounce1"></div>
+                        <div class="bounce2"></div>
+                        <div class="bounce3"></div>
+                      </div>
+                      Loading Frequency Ranges
+                    </div>
+                    <div id="frequency-ranges">Add a frequency range by choosing one of the default ranges or a custom one bellow<hr></div>
+                    <div class="row" id="new-ranges">
+                      <div class="col-md-8">
+                        <span class='default-range-label'>Add a default range:</span>
+                        <button data-range="VHF" type="button" class="btn btn-info new-range">
+                          <span class="glyphicon glyphicon-plus" aria-hidden="true"></span>
+                          VHF
+                        </button>
+                        <button data-range="UHF" type="button" class="btn btn-info new-range">
+                          <span class="glyphicon glyphicon-plus" aria-hidden="true"></span>
+                          UHF
+                        </button>
+                        <button data-range="L" type="button" class="btn btn-info new-range">
+                          <span class="glyphicon glyphicon-plus" aria-hidden="true"></span>
+                          L
+                        </button>
+                        <button data-range="S" type="button" class="btn btn-info new-range">
+                          <span class="glyphicon glyphicon-plus" aria-hidden="true"></span>
+                          S
+                        </button>
+                      </div>
+                      <div class="col-md-4 text-right">
+                        <button data-range="custom" type="button" id="new-range" class="btn btn-success new-range">
+                          <span class="glyphicon glyphicon-plus" aria-hidden="true"></span>
+                          Custom Range
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                <div class="modal-footer">
+                  <div class='row'>
+                    <div class='col-md-6 text-left'>
+                      <button id="delete-antenna" data-action="delete" type="button" class="btn btn-danger modal-action">Delete Antenna</button>
+                    </div>
+                    <div class='col-md-6'>
+                      <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+                      <button data-action="save" type="button" class="btn btn-primary modal-action">Save changes</button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <!-- End of Edit/New Antenna Modal-->
+        </div>
+
+        <div class='row'>
+          <div class='col-md-4'>
+            <div class="btn-group btn-group-justified" role="group">
+              <div class="btn-group" role="group">
+                <button id="cancel" type="button" class="btn btn-default">{% if station_form.instance.id %}Back to Station{% else %}Back to Dashboard{% endif %}</button>
+              </div>
+            </div>
+          </div>
+          <div class='col-md-8'>
+            <div class="btn-group btn-group-justified" role="group">
+              <div class="btn-group" role="group">
+                <button id="submit" type="submit" class="btn btn-primary" disabled="True">{% if station_form.instance.id %}Save Changes{% else %}Submit{% endif %}</button>
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
     </form>
   </div>
@@ -152,6 +290,7 @@
 
 {% block javascript %}
   <script src="{% static 'js/gridsquare.js' %}"></script>
+  <script src="{% static 'js/frequency_utils.js' %}"></script>
   <script src="{% static 'lib/bootstrap-select/dist/js/bootstrap-select.min.js' %}"></script>
   <script src="{% static 'lib/bootstrap-slider/dist/bootstrap-slider.min.js' %}"></script>
   <script src="{% static 'lib/bootstrap-fileinput/js/fileinput.min.js' %}"></script>

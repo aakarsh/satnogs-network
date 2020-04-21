@@ -1,12 +1,15 @@
 """SatNOGS Network django base Forms class"""
 from __future__ import absolute_import
 
-from django.forms import BaseFormSet, CharField, DateTimeField, Form, \
-    ImageField, IntegerField, ModelChoiceField, ModelForm, ValidationError, \
-    formset_factory
+from django.conf import settings
+from django.forms import BaseFormSet, BaseInlineFormSet, CharField, \
+    DateTimeField, FloatField, Form, ImageField, IntegerField, \
+    ModelChoiceField, ModelForm, ValidationError, formset_factory, \
+    inlineformset_factory
 
 from network.base.db_api import DBConnectionError, get_transmitters_by_uuid_set
-from network.base.models import Observation, Station
+from network.base.models import FrequencyRange, Observation, Station, \
+    StationAntenna
 from network.base.perms import UserNoPermissionError, \
     check_schedule_perms_per_station
 from network.base.validators import ObservationOverlapError, OutOfRangeError, \
@@ -145,20 +148,104 @@ class BaseObservationFormSet(BaseFormSet):
             raise ValidationError(error, code='invalid')
 
 
-ObservationFormSet = formset_factory(  # pylint: disable=C0103
+ObservationFormSet = formset_factory(
     ObservationForm, formset=BaseObservationFormSet, min_num=1, validate_min=True
 )
 
 
 class StationForm(ModelForm):
     """Model Form class for Station objects"""
+    lat = FloatField(min_value=-90.0, max_value=90.0)
+    lng = FloatField(min_value=-180.0, max_value=180.0)
+
     class Meta:
         model = Station
         fields = [
-            'name', 'image', 'alt', 'lat', 'lng', 'qthlocator', 'horizon', 'antenna', 'testing',
+            'name', 'image', 'alt', 'lat', 'lng', 'qthlocator', 'horizon', 'testing',
             'description', 'target_utilization'
         ]
         image = ImageField(required=False)
+
+
+StationAntennaInlineFormSet = inlineformset_factory(  # pylint: disable=C0103
+    Station,
+    StationAntenna,
+    fields=('antenna_type', ),
+    extra=0,
+    can_delete=True,
+    max_num=settings.MAX_ANTENNAS_PER_STATION,
+    validate_max=True,
+)
+
+
+class BaseFrequencyRangeInlineFormSet(BaseInlineFormSet):
+    """Base InlineFormSet class for FrequencyRange objects forms"""
+    def clean(self):
+        """Validates Observation FormSet data"""
+        if any(self.errors):
+            # If there are errors in forms validation no need for validating the formset
+            return
+
+        ranges = []
+        for form in self.forms:
+            if form.cleaned_data.get('DELETE'):
+                continue
+            ranges.append(
+                {
+                    'min': form.cleaned_data.get('min_frequency'),
+                    'max': form.cleaned_data.get('max_frequency')
+                }
+            )
+
+        for current_index, current_range in enumerate(ranges):
+            for index, frequency_range in enumerate(ranges):
+                if index == current_index:
+                    continue
+                if (frequency_range['min'] < current_range['min']
+                        and frequency_range['max'] > current_range['max']):
+                    raise ValidationError(
+                        'Frequency Range {0}-{1} is subset of another'
+                        ' antenna frequency range ({2}-{3})'.format(
+                            current_range['min'], current_range['max'], frequency_range['min'],
+                            frequency_range['max']
+                        ),
+                        code='invalid'
+                    )
+                if (frequency_range['min'] > current_range['min']
+                        and frequency_range['max'] < current_range['max']):
+                    raise ValidationError(
+                        'Frequency Range {0}-{1} is superset of another'
+                        ' antenna frequency range ({2}-{3})'.format(
+                            current_range['min'], current_range['max'], frequency_range['min'],
+                            frequency_range['max']
+                        ),
+                        code='invalid'
+                    )
+                if not (frequency_range['min'] > current_range['max']
+                        or frequency_range['max'] < current_range['min']):
+                    raise ValidationError(
+                        'Frequency Range {0}-{1} conflicts with another'
+                        ' antenna frequency range ({2}-{3})'.format(
+                            current_range['min'], current_range['max'], frequency_range['min'],
+                            frequency_range['max']
+                        ),
+                        code='invalid'
+                    )
+
+
+FrequencyRangeInlineFormSet = inlineformset_factory(  # pylint: disable=C0103
+    StationAntenna,
+    FrequencyRange,
+    fields=(
+        'min_frequency',
+        'max_frequency',
+    ),
+    formset=BaseFrequencyRangeInlineFormSet,
+    extra=0,
+    can_delete=True,
+    max_num=settings.MAX_FREQUENCY_RANGES_PER_ANTENNA,
+    validate_max=True,
+)
 
 
 class SatelliteFilterForm(Form):

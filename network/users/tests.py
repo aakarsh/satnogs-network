@@ -1,5 +1,4 @@
 """SatNOGS Network users test suites"""
-# pylint: disable=R0903
 from __future__ import absolute_import
 
 import datetime

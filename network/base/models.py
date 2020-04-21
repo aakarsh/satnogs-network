@@ -4,6 +4,7 @@ from __future__ import absolute_import, division
 import codecs
 import logging
 import os
+import re
 import struct
 from datetime import timedelta
 
@@ -275,7 +276,29 @@ class Station(models.Model):
         return token
 
     def __str__(self):
-        return "%d - %s" % (self.pk, self.name)
+        if self.pk:
+            return "%d - %s" % (self.pk, self.name)
+        return "%s" % (self.name)
+
+    def clean(self):
+        if re.search('[^\x20-\x7E\xA0-\xFF]', self.name, re.IGNORECASE):
+            raise ValidationError(
+                {
+                    'name': (
+                        'Please use characters that belong to ISO-8859-1'
+                        ' (https://en.wikipedia.org/wiki/ISO/IEC_8859-1).'
+                    )
+                }
+            )
+        if re.search('[^\n\r\t\x20-\x7E\xA0-\xFF]', self.description, re.IGNORECASE):
+            raise ValidationError(
+                {
+                    'description': (
+                        'Please use characters that belong to ISO-8859-1'
+                        ' (https://en.wikipedia.org/wiki/ISO/IEC_8859-1).'
+                    )
+                }
+            )
 
 
 post_save.connect(_station_post_save, sender=Station)
@@ -328,6 +351,42 @@ class FrequencyRange(models.Model):
         """Return comma separated string of the bands that of the frequeny range"""
         bands = bands_from_range(self.min_frequency, self.max_frequency)
         return ', '.join(bands)
+
+    class Meta:
+        ordering = ['min_frequency']
+
+    def clean(self):
+        if self.max_frequency < self.min_frequency:
+            raise ValidationError(
+                {
+                    'min_frequency': (
+                        'Minimum frequency is greater than the maximum one ({0} > {1}).'.format(
+                            self.min_frequency, self.max_frequency
+                        )
+                    ),
+                    'max_frequency': (
+                        'Maximum frequency is less than the minimum one ({0} < {1}).'.format(
+                            self.max_frequency, self.min_frequency
+                        )
+                    ),
+                }
+            )
+        if self.min_frequency < settings.MIN_FREQUENCY_FOR_RANGE:
+            raise ValidationError(
+                {
+                    'min_frequency': ('Minimum frequency should be less than {0}.').format(
+                        settings.MIN_FREQUENCY_FOR_RANGE
+                    )
+                }
+            )
+        if self.max_frequency > settings.MAX_FREQUENCY_FOR_RANGE:
+            raise ValidationError(
+                {
+                    'max_frequency': ('Maximum frequency should be less than {0}.').format(
+                        settings.MAX_FREQUENCY_FOR_RANGE
+                    )
+                }
+            )
 
 
 @python_2_unicode_compatible

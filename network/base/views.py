@@ -1,7 +1,7 @@
 """Django base views for SatNOGS Network"""
 # ephem is missing lon, lat, elevation and horizon attributes in Observer class slots,
 # Disable assigning-non-slot pylint error:
-# pylint: disable=E0237
+# pylint: disable=E0237, C0302
 from __future__ import absolute_import
 
 from collections import defaultdict
@@ -13,6 +13,7 @@ from django.conf import settings
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.core.urlresolvers import reverse
+from django.db import DatabaseError, transaction
 from django.db.models import Case, Count, IntegerField, Prefetch, Sum, When
 from django.forms import ValidationError
 from django.http import HttpResponse, JsonResponse
@@ -25,10 +26,11 @@ from rest_framework import serializers, viewsets
 from network.base.db_api import DBConnectionError, get_transmitter_by_uuid, \
     get_transmitters_by_norad_id, get_transmitters_by_status
 from network.base.decorators import admin_required, ajax_required
-from network.base.forms import ObservationFormSet, SatelliteFilterForm, \
+from network.base.forms import FrequencyRangeInlineFormSet, \
+    ObservationFormSet, SatelliteFilterForm, StationAntennaInlineFormSet, \
     StationForm
-from network.base.models import Antenna, LatestTle, Observation, Satellite, \
-    Station, StationStatusLog
+from network.base.models import AntennaType, LatestTle, Observation, \
+    Satellite, Station, StationStatusLog
 from network.base.perms import delete_perms, modify_delete_station_perms, \
     schedule_perms, schedule_station_perms, vet_perms
 from network.base.scheduling import create_new_observation, \
@@ -36,7 +38,8 @@ from network.base.scheduling import create_new_observation, \
 from network.base.stats import satellite_stats_by_transmitter_list, \
     transmitter_stats_by_uuid
 from network.base.tasks import fetch_data, update_all_tle
-from network.base.utils import community_get_discussion_details
+from network.base.utils import community_get_discussion_details, \
+    populate_formset_error_messages
 from network.base.validators import NegativeElevationError, \
     ObservationOverlapError, SinglePassError, \
     is_transmitter_in_station_range
@@ -811,47 +814,129 @@ def pass_predictions(request, station_id):
     return JsonResponse(data, safe=False)
 
 
+@login_required
 def station_edit(request, station_id=None):
     """Edit or add a single station."""
     station = None
-    antennas = Antenna.objects.all()
+    antenna_types = AntennaType.objects.all()
+    frequency_range_formsets = {}
+    antenna_formset = None
+
     if station_id:
-        station = get_object_or_404(Station, id=station_id, owner=request.user)
+        station = get_object_or_404(
+            Station.objects.prefetch_related(
+                'antennas', 'antennas__antenna_type', 'antennas__frequency_ranges'
+            ),
+            id=station_id,
+            owner=request.user
+        )
 
     if request.method == 'POST':
+        validation_successful = False
+        transaction_successful = False
+
         if station:
-            form = StationForm(request.POST, request.FILES, instance=station)
+            station_form = StationForm(request.POST, request.FILES, instance=station)
         else:
-            form = StationForm(request.POST, request.FILES)
-        if form.is_valid():
-            station_form = form.save(commit=False)
-            if not station:
-                station_form.testing = True
-            station_form.owner = request.user
-            station_form.save()
-            form.save_m2m()
-            messages.success(request, 'Ground Station saved successfully.')
-            return redirect(reverse('base:station_view', kwargs={'station_id': station_form.id}))
-        messages.error(
-            request, ('Your Ground Station submission has some '
-                      'errors. {0}').format(form.errors)
+            station_form = StationForm(request.POST, request.FILES)
+
+        antenna_formset = StationAntennaInlineFormSet(
+            request.POST, instance=station_form.instance, prefix='ant'
         )
+        frequency_range_formsets = {}
+
+        for antenna_form in antenna_formset:
+            if not antenna_form['DELETE'].value():
+                prefix = antenna_form.prefix
+                frequency_range_formsets[prefix] = FrequencyRangeInlineFormSet(
+                    request.POST, instance=antenna_form.instance, prefix=prefix + '-fr'
+                )
+
+        if station_form.is_valid():
+            station = station_form.save(commit=False)
+            station.owner = request.user
+
+            if antenna_formset.is_valid():
+                for frequency_range_formset in frequency_range_formsets:
+                    if not frequency_range_formsets[frequency_range_formset].is_valid():
+                        populate_formset_error_messages(
+                            messages, request, frequency_range_formsets[frequency_range_formset]
+                        )
+                        break
+                else:
+                    validation_successful = True
+            else:
+                populate_formset_error_messages(messages, request, antenna_formset)
+        else:
+            messages.error(request, str(station_form.errors))
+
+        if validation_successful:
+            try:
+                with transaction.atomic():
+                    station.save()
+                    antenna_formset.save()
+                    for frequency_range_formset in frequency_range_formsets:
+                        frequency_range_formsets[frequency_range_formset].save()
+                    transaction_successful = True
+            except DatabaseError:
+                messages.error(
+                    request, 'Something went worng, if the problem persists'
+                    ' please contact an administrator'
+                )
+
+        if transaction_successful:
+            messages.success(request, 'Ground Station {0} saved successfully.'.format(station.id))
+            return redirect(reverse('base:station_view', kwargs={'station_id': station.id}))
         return render(
             request, 'base/station_edit.html', {
-                'form': form,
-                'station': station,
-                'antennas': antennas
+                'station_form': station_form,
+                'antenna_formset': antenna_formset,
+                'frequency_range_formsets': frequency_range_formsets,
+                'antenna_types': antenna_types,
+                'max_antennas_per_station': settings.MAX_ANTENNAS_PER_STATION,
+                'max_frequency_ranges_per_antenna': settings.MAX_FREQUENCY_RANGES_PER_ANTENNA,
+                'max_frequency_for_range': settings.MAX_FREQUENCY_FOR_RANGE,
+                'min_frequency_for_range': settings.MIN_FREQUENCY_FOR_RANGE,
+                'vhf_min_frequency': settings.VHF_MIN_FREQUENCY,
+                'vhf_max_frequency': settings.VHF_MAX_FREQUENCY,
+                'uhf_min_frequency': settings.UHF_MIN_FREQUENCY,
+                'uhf_max_frequency': settings.UHF_MAX_FREQUENCY,
+                'l_min_frequency': settings.L_MIN_FREQUENCY,
+                'l_max_frequency': settings.L_MAX_FREQUENCY,
+                's_min_frequency': settings.S_MIN_FREQUENCY,
+                's_max_frequency': settings.S_MAX_FREQUENCY,
+                'image_changed': 'image' in station_form.changed_data,
             }
         )
     if station:
-        form = StationForm(instance=station)
+        station_form = StationForm(instance=station)
+        antenna_formset = StationAntennaInlineFormSet(instance=station, prefix='ant')
+        for antenna_form in antenna_formset.forms:
+            antenna_prefix = antenna_form.prefix
+            frequency_range_formsets[antenna_prefix] = FrequencyRangeInlineFormSet(
+                instance=antenna_form.instance, prefix=antenna_prefix + '-fr'
+            )
     else:
-        form = StationForm()
+        station_form = StationForm()
+        antenna_formset = StationAntennaInlineFormSet(prefix='ant')
     return render(
         request, 'base/station_edit.html', {
-            'form': form,
-            'station': station,
-            'antennas': antennas
+            'station_form': station_form,
+            'antenna_formset': antenna_formset,
+            'frequency_range_formsets': frequency_range_formsets,
+            'antenna_types': antenna_types,
+            'max_antennas_per_station': settings.MAX_ANTENNAS_PER_STATION,
+            'max_frequency_ranges_per_antenna': settings.MAX_FREQUENCY_RANGES_PER_ANTENNA,
+            'max_frequency_for_range': settings.MAX_FREQUENCY_FOR_RANGE,
+            'min_frequency_for_range': settings.MIN_FREQUENCY_FOR_RANGE,
+            'vhf_min_frequency': settings.VHF_MIN_FREQUENCY,
+            'vhf_max_frequency': settings.VHF_MAX_FREQUENCY,
+            'uhf_min_frequency': settings.UHF_MIN_FREQUENCY,
+            'uhf_max_frequency': settings.UHF_MAX_FREQUENCY,
+            'l_min_frequency': settings.L_MIN_FREQUENCY,
+            'l_max_frequency': settings.L_MAX_FREQUENCY,
+            's_min_frequency': settings.S_MIN_FREQUENCY,
+            's_max_frequency': settings.S_MAX_FREQUENCY,
         }
     )
 

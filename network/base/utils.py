@@ -14,6 +14,19 @@ from django.utils.text import slugify
 from requests.exceptions import RequestException
 
 
+def populate_formset_error_messages(messages, request, formset):
+    """Add errors to django messages framework by extracting them from formset)"""
+    non_form_errors = formset.non_form_errors()
+    if non_form_errors:
+        messages.error(request, str(non_form_errors()[0]))
+        return
+    for error in formset.errors:
+        if error:
+            for field in error:
+                messages.error(request, str(error[field][0]))
+        return
+
+
 def bands_from_range(min_frequency, max_frequency):
     """Returns band names of the given frequency range based on
     https://www.itu.int/rec/R-REC-V.431-8-201508-I/en recommendation from ITU
