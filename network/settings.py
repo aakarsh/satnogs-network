@@ -284,31 +284,43 @@ SECURE_HSTS_INCLUDE_SUBDOMAINS = True
 SECURE_CONTENT_TYPE_NOSNIFF = True
 SECURE_BROWSER_XSS_FILTER = True
 ALLOWED_HOSTS = config('ALLOWED_HOSTS', default='localhost', cast=Csv())
-CSP_DEFAULT_SRC = (
-    "'self'",
-    'https://*.mapbox.com',
-    'https://*.archive.org',
+CSP_DEFAULT_SRC = config(
+    'CSP_DEFAULT_SRC',
+    cast=lambda v: tuple(s.strip() for s in v.split(',')),
+    default="'self',"
+    'https://*.mapbox.com,'
+    'https://*.archive.org'
 )
-CSP_SCRIPT_SRC = (
-    "'self'",
-    'https://*.google-analytics.com',
-    "'unsafe-eval'",
+CSP_SCRIPT_SRC = config(
+    'CSP_SCRIPT_SRC',
+    cast=lambda v: tuple(s.strip() for s in v.split(',')),
+    default="'self',"
+    'https://*.google-analytics.com,'
+    "'unsafe-eval'"
 )
-CSP_IMG_SRC = (
-    "'self'",
-    'https://*.gravatar.com',
-    'https://*.mapbox.com',
-    'https://*.satnogs.org',
-    'https://*.google-analytics.com',
-    'data:',
-    'blob:',
+CSP_IMG_SRC = config(
+    'CSP_IMG_SRC',
+    cast=lambda v: tuple(s.strip() for s in v.split(',')),
+    default="'self',"
+    'https://*.gravatar.com,'
+    'https://*.mapbox.com,'
+    'https://*.satnogs.org,'
+    'https://*.google-analytics.com,'
+    'data:,'
+    'blob:'
 )
-CSP_STYLE_SRC = (
-    "'self'",
-    "'unsafe-inline'",
+CSP_STYLE_SRC = config(
+    'CSP_STYLE_SRC',
+    cast=lambda v: tuple(s.strip() for s in v.split(',')),
+    default="'self',"
+    "'unsafe-inline'"
 )
-CSP_WORKER_SRC = ('blob:', )
-CSP_CHILD_SRC = ('blob:', )
+CSP_WORKER_SRC = config(
+    'CSP_WORKER_SRC', cast=lambda v: tuple(s.strip() for s in v.split(',')), default='blob:'
+)
+CSP_CHILD_SRC = config(
+    'CSP_CHILD_SRC', cast=lambda v: tuple(s.strip() for s in v.split(',')), default='blob:'
+)
 
 # Database
 DATABASE_URL = config('DATABASE_URL', default='sqlite:///db.sqlite3')
