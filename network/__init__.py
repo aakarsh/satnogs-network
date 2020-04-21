@@ -2,7 +2,7 @@
 from __future__ import absolute_import
 
 from ._version import get_versions
-from .celery import APP as celery_app  # noqa
+from .celery import APP as celery_app
 
 __all__ = ['celery_app']
 

@@ -103,3 +103,13 @@ def satellite_stats_by_transmitter_list(transmitter_list):
         'success_rate': success_rate,
         'bad_rate': bad_rate
     }
+
+
+def transmitters_with_stats(transmitters_list):
+    """Returns a list of transmitters with their statistics"""
+    transmitters_with_stats_list = []
+    for transmitter in transmitters_list:
+        transmitter_stats = transmitter_stats_by_uuid(transmitter['uuid'])
+        transmitter_with_stats = dict(transmitter, **transmitter_stats)
+        transmitters_with_stats_list.append(transmitter_with_stats)
+    return transmitters_with_stats_list
