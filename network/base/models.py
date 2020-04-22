@@ -343,8 +343,8 @@ class FrequencyRange(models.Model):
     antenna = models.ForeignKey(
         StationAntenna, on_delete=models.CASCADE, related_name='frequency_ranges'
     )
-    min_frequency = models.PositiveIntegerField()
-    max_frequency = models.PositiveIntegerField()
+    min_frequency = models.BigIntegerField()
+    max_frequency = models.BigIntegerField()
 
     @property
     def bands(self):
