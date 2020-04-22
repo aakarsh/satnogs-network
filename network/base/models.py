@@ -326,8 +326,11 @@ class StationAntenna(models.Model):
         """Return comma separated string of the bands that the antenna works on"""
         bands = []
         for frequency_range in self.frequency_ranges.all():
-            bands += bands_from_range(frequency_range.min_frequency, frequency_range.max_frequency)
-        return ', '.join(list(set(bands)))
+            for band in bands_from_range(frequency_range.min_frequency,
+                                         frequency_range.max_frequency):
+                if band not in bands:
+                    bands.append(band)
+        return ', '.join(bands)
 
     def __str__(self):
         if self.pk:
