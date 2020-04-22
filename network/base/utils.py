@@ -18,7 +18,7 @@ def populate_formset_error_messages(messages, request, formset):
     """Add errors to django messages framework by extracting them from formset)"""
     non_form_errors = formset.non_form_errors()
     if non_form_errors:
-        messages.error(request, str(non_form_errors()[0]))
+        messages.error(request, str(non_form_errors[0]))
         return
     for error in formset.errors:
         if error:
