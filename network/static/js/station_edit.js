@@ -244,13 +244,20 @@ $(document).ready(function() {
     });
 
     // Functions to initialize modal
-    var band_ranges = {
-        'VHF': get_band_range({'min': vhf_min, 'max': vhf_max}),
-        'UHF': get_band_range({'min': uhf_min, 'max': uhf_max}),
-        'L': get_band_range({'min': l_min, 'max': l_max}),
-        'S': get_band_range({'min': s_min, 'max': s_max}),
-        'custom': get_band_range({'min': minimum_frequency, 'max': maximum_frequency})
-    };
+    function band_ranges(band){
+        switch(band){
+        case 'VHF':
+            return get_band_range({'min': vhf_min, 'max': vhf_max});
+        case 'UHF':
+            return get_band_range({'min': uhf_min, 'max': uhf_max});
+        case 'L':
+            return get_band_range({'min': l_min, 'max': l_max});
+        case 'S':
+            return get_band_range({'min': s_min, 'max': s_max});
+        default:
+            return get_band_range({'min': minimum_frequency, 'max': maximum_frequency});
+        }
+    }
 
     function create_frequency_range_well(range, order){
         return `<div class="well">
@@ -328,7 +335,7 @@ $(document).ready(function() {
     });
 
     $('.new-range').on('click', function(){
-        let range = band_ranges[$(this).data('range')];
+        let range = band_ranges($(this).data('range'));
         current_antenna.frequency_ranges.push(range);
         update_frequency_ranges_wells();
     });
