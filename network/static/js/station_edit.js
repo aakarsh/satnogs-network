@@ -318,7 +318,7 @@ $(document).ready(function() {
     // Events related to modal
     $('#antenna-type').on('changed.bs.select', function (e, clickedIndex, isSelected) {
         if(isSelected !== null){
-            let value = $('#antenna-type').children(':nth-child(' + clickedIndex + ')').val();
+            let value = e.target.value;
             current_antenna.type_name = $('option[value=' + value + ']').data('content');
             current_antenna.type_id = value;
         }
