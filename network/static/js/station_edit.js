@@ -89,7 +89,7 @@ $(document).ready(function() {
                     </div>
                     <div class='col-md-6'>
                       <button type="button" data-action="edit" data-order="` + order + `" class="btn btn-primary pull-right" data-toggle="modal" data-target="#modal">
-                        <span class="glyphicon glyphicon-pencil" aria-hidden="true"></span>
+                        <span class="glyphicon glyphicon-edit" aria-hidden="true"></span>
                         Edit
                       </button>
                     </div>
