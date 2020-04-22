@@ -23,6 +23,19 @@ def drifted_frq(value, drift):
 
 
 @register.filter
+def sort_types(types):
+    """Returns sorted 'Other' antenna types"""
+    other = []
+    sorted_types = []
+    for antenna_type in types:
+        if 'Other' in antenna_type.name:
+            other.append(antenna_type)
+            continue
+        sorted_types.append(antenna_type)
+    return sorted_types + other
+
+
+@register.filter
 def frq(value):
     """Returns Hz formatted frequency html string"""
     try:

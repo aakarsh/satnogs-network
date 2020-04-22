@@ -202,8 +202,8 @@
                     <div class='col-md-12'>
                       <div class="form-group">
                         <label for="antenna-type" class="control-label">Type</label>
-                        <select id="antenna-type" class="form-control selectpicker" name="antenna-type">
-                          {% for antenna_type in antenna_types %}
+                        <select id="antenna-type" class="form-control selectpicker show-tick" name="antenna-type">
+                          {% for antenna_type in antenna_types.all|sort_types %}
                             <option value="{{ antenna_type.id }}" data-content="{{ antenna_type.name }}">
                           {% endfor %}
                         </select>
