@@ -6,26 +6,10 @@ from django.contrib import admin, messages
 from django.shortcuts import redirect
 from django.urls import reverse
 
-from network.base.models import Antenna, AntennaType, DemodData, \
-    FrequencyRange, Observation, Satellite, Station, StationAntenna, Tle, \
-    Transmitter
+from network.base.models import AntennaType, DemodData, FrequencyRange, \
+    Observation, Satellite, Station, StationAntenna, Tle, Transmitter
 from network.base.tasks import sync_to_db
 from network.base.utils import export_as_csv, export_station_status
-
-
-@admin.register(Antenna)
-class AntennaAdmin(admin.ModelAdmin):
-    """Define Antenna view in django admin UI"""
-    list_display = ('id', '__str__', 'antenna_count', 'station_list')
-    list_filter = ('band', 'antenna_type')
-
-    def antenna_count(self, obj):  # pylint: disable=no-self-use
-        """Return the number of antennas"""
-        return obj.stations.all().count()
-
-    def station_list(self, obj):  # pylint: disable=no-self-use
-        """Return stations that use the antenna"""
-        return ",\n".join([str(s.id) for s in obj.stations.all()])
 
 
 @admin.register(FrequencyRange)

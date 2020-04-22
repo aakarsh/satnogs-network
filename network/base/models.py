@@ -30,24 +30,6 @@ from network.base.managers import ObservationManager
 from network.base.utils import bands_from_range
 from network.users.models import User
 
-ANTENNA_BANDS = ['HF', 'VHF', 'UHF', 'L', 'S', 'C', 'X', 'KU']
-ANTENNA_TYPES = (
-    ('dipole', 'Dipole'),
-    ('v-dipole', 'V-Dipole'),
-    ('discone', 'Discone'),
-    ('ground', 'Ground Plane'),
-    ('yagi', 'Yagi'),
-    ('cross-yagi', 'Cross Yagi'),
-    ('helical', 'Helical'),
-    ('parabolic', 'Parabolic'),
-    ('vertical', 'Vertical'),
-    ('turnstile', 'Turnstile'),
-    ('quadrafilar', 'Quadrafilar'),
-    ('eggbeater', 'Eggbeater'),
-    ('lindenblad', 'Lindenblad'),
-    ('paralindy', 'Parasitic Lindenblad'),
-    ('patch', 'Patch')  # yapf: disable
-)
 OBSERVATION_STATUSES = (
     ('unknown', 'Unknown'),
     ('good', 'Good'),
@@ -154,20 +136,6 @@ def validate_image(fieldfile_obj):
 
 
 @python_2_unicode_compatible
-class Antenna(models.Model):
-    """Model for antennas tracked with SatNOGS."""
-    frequency = models.PositiveIntegerField()
-    frequency_max = models.PositiveIntegerField()
-    band = models.CharField(choices=list(zip(ANTENNA_BANDS, ANTENNA_BANDS)), max_length=5)
-    antenna_type = models.CharField(choices=ANTENNA_TYPES, max_length=15)
-
-    def __str__(self):
-        return '{0} - {1} - {2} - {3}'.format(
-            self.band, self.antenna_type, self.frequency, self.frequency_max
-        )
-
-
-@python_2_unicode_compatible
 class Station(models.Model):
     """Model for SatNOGS ground stations."""
     owner = models.ForeignKey(
@@ -184,16 +152,6 @@ class Station(models.Model):
     )
     # https://en.wikipedia.org/wiki/Maidenhead_Locator_System
     qthlocator = models.CharField(max_length=8, blank=True)
-    antenna = models.ManyToManyField(
-        Antenna,
-        blank=True,
-        related_name="stations",
-        help_text=(
-            'If you want to add a new Antenna contact '
-            '<a href="https://community.satnogs.org/" '
-            'target="_blank">SatNOGS Team</a>'
-        )
-    )
     featured_date = models.DateField(null=True, blank=True)
     created = models.DateTimeField(auto_now_add=True)
     testing = models.BooleanField(default=True)
