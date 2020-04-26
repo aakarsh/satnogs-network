@@ -398,6 +398,62 @@ $(document).ready(function() {
         $('#submit').prop('disabled', false); // Enable submit button
     });
 
+    // Initialize Station form elements
+    var horizon_value = $('#horizon').val();
+    $('#horizon').slider({
+        id: 'horizon_value',
+        min: 0,
+        max: 90,
+        step: 1,
+        value: horizon_value});
+
+    var utilization_value = $('#utilization').val();
+    $('#utilization').slider({
+        id: 'utilization_value',
+        min: 0,
+        max: 100,
+        step: 1,
+        value: utilization_value});
+
+    var image_exists = Object.prototype.hasOwnProperty.call($('#station-image').data(), 'existing');
+    var send_remove_file = false;
+    if(image_exists){
+        $('#station-image').fileinput({
+            showRemove: true,
+            showUpload: false,
+            initialPreview: $('#station-image').data('existing'),
+            initialPreviewAsData: true,
+            allowedFileTypes: ['image'],
+            autoOrientImage: false,
+            fileActionSettings: {
+                showDownload: false,
+                showRemove: false,
+                showZoom: true,
+                showDrag: false,
+            }
+        });
+    } else {
+        $('#station-image').fileinput({
+            showRemove: true,
+            showUpload: false,
+            allowedFileTypes: ['image'],
+            autoOrientImage: false,
+            fileActionSettings: {
+                showDownload: false,
+                showRemove: false,
+                showZoom: true,
+                showDrag: false,
+            }
+        });
+    }
+    $('#station-image').on('change', function() {
+        send_remove_file = false;
+    });
+
+    $('#station-image').on('fileclear', function() {
+        send_remove_file = image_exists;
+    });
+
     // Submit or Cancel form
     $('#cancel').on('click', function(){
         if(this.textContent == 'Back to Dashboard'){
@@ -412,6 +468,10 @@ $(document).ready(function() {
         let antennas_total = 0;
         let antennas_initial = 0;
         let form = $('form');
+        // Prepare station form
+        if(send_remove_file){
+            form.append('<input type="checkbox" name="image-clear" style="display: none" checked>');
+        }
         // Prepare antennas forms
         antennas.forEach(function(antenna, order){
             antennas_total++;
@@ -450,30 +510,4 @@ $(document).ready(function() {
         form.append('<input type="hidden" name="ant-MAX_NUM_FORMS" value="' + max_antennas + '">');
     });
 
-    // Initialize Station form elements
-    var horizon_value = $('#horizon').val();
-    $('#horizon').slider({
-        id: 'horizon_value',
-        min: 0,
-        max: 90,
-        step: 1,
-        value: horizon_value});
-
-    var utilization_value = $('#utilization').val();
-    $('#utilization').slider({
-        id: 'utilization_value',
-        min: 0,
-        max: 100,
-        step: 1,
-        value: utilization_value});
-
-    var image_exists = Object.prototype.hasOwnProperty.call($('#station-image').data(), 'existing');
-    if(image_exists){
-        $('#station-image').fileinput({
-            initialPreview: $('#station-image').data('existing'),
-            initialPreviewAsData: true,
-        });
-    } else {
-        $('#station-image').fileinput();
-    }
 });

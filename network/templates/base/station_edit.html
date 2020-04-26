@@ -86,7 +86,7 @@
           </div>
           <div class="panel-body">
             <div class="form-group">
-              <input id="station-image" type="file" name="image"
+              <input id="station-image" type="file" name="image" accept="image/*"
                  {% if station_form.image.value and not image_changed %} data-existing="{{ MEDIA_URL }}{{ station_form.image.value }}" {% endif %}>
             </div>
           </div>
