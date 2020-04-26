@@ -8,8 +8,7 @@ from django.forms import BaseFormSet, BaseInlineFormSet, CharField, \
     inlineformset_factory
 
 from network.base.db_api import DBConnectionError, get_transmitters_by_uuid_set
-from network.base.models import FrequencyRange, Observation, Station, \
-    StationAntenna
+from network.base.models import Antenna, FrequencyRange, Observation, Station
 from network.base.perms import UserNoPermissionError, \
     check_schedule_perms_per_station
 from network.base.validators import ObservationOverlapError, OutOfRangeError, \
@@ -167,9 +166,9 @@ class StationForm(ModelForm):
         image = ImageField(required=False)
 
 
-StationAntennaInlineFormSet = inlineformset_factory(  # pylint: disable=C0103
+AntennaInlineFormSet = inlineformset_factory(  # pylint: disable=C0103
     Station,
-    StationAntenna,
+    Antenna,
     fields=('antenna_type', ),
     extra=0,
     can_delete=True,
@@ -234,7 +233,7 @@ class BaseFrequencyRangeInlineFormSet(BaseInlineFormSet):
 
 
 FrequencyRangeInlineFormSet = inlineformset_factory(  # pylint: disable=C0103
-    StationAntenna,
+    Antenna,
     FrequencyRange,
     fields=(
         'min_frequency',

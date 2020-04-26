@@ -5,8 +5,8 @@ from django.core.management import call_command
 from django.core.management.base import BaseCommand
 
 from network.base.models import AntennaType
-from network.base.tests import DemodDataFactory, FrequencyRangeFactory, \
-    RealisticObservationFactory, StationAntennaFactory, StationFactory, \
+from network.base.tests import AntennaFactory, DemodDataFactory, \
+    FrequencyRangeFactory, RealisticObservationFactory, StationFactory, \
     generate_payload, generate_payload_name
 
 
@@ -57,7 +57,7 @@ class Command(BaseCommand):
         # Create random fixtures for remaining models
         self.stdout.write("Creating fixtures...")
         StationFactory.create_batch(station_fixture_count)
-        StationAntennaFactory.create_batch(antenna_fixture_count)
+        AntennaFactory.create_batch(antenna_fixture_count)
         FrequencyRangeFactory.create_batch(antenna_fixture_count)
         self.stdout.write("Added {} stations.".format(station_fixture_count))
         RealisticObservationFactory.create_batch(observation_fixture_count)

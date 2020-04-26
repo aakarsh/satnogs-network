@@ -86,7 +86,7 @@
                   {{ station.future_obs }}
                 </a>
               </td>
-              <td class="station-antennas">
+              <td class="antennas">
                 {% for antenna in station.antennas.all %}
                   <span class="antenna-pill" data-toggle="tooltip" data-placement="bottom"
                         title="{% for range in antenna.frequency_ranges.all %} {{ range.min_frequency|frq }} - {{ range.max_frequency|frq }}&#xA{% endfor %}">

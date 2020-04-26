@@ -8,8 +8,8 @@ from future.builtins import round
 from rest_framework import serializers
 
 from network.base.db_api import DBConnectionError, get_transmitters_by_uuid_set
-from network.base.models import DemodData, FrequencyRange, Observation, \
-    Station, StationAntenna, Transmitter
+from network.base.models import Antenna, DemodData, FrequencyRange, \
+    Observation, Station, Transmitter
 from network.base.perms import UserNoPermissionError, \
     check_schedule_perms_per_station
 from network.base.scheduling import create_new_observation
@@ -289,20 +289,20 @@ class FrequencyRangeSerializer(serializers.ModelSerializer):
         fields = ('min_frequency', 'max_frequency', 'bands')
 
 
-class StationAntennaSerializer(serializers.ModelSerializer):
+class AntennaSerializer(serializers.ModelSerializer):
     """SatNOGS Network Antenna API Serializer"""
     antenna_type = serializers.StringRelatedField()
     frequency_ranges = FrequencyRangeSerializer(many=True)
 
     class Meta:
-        model = StationAntenna
+        model = Antenna
         fields = ('antenna_type', 'frequency_ranges')
 
 
 class StationSerializer(serializers.ModelSerializer):
     """SatNOGS Network Station API Serializer"""
     # Using SerializerMethodField instead of directly the reverse relation (antennas) with the
-    # StationAntennaSerializer for not breaking the API, it should change in next API version
+    # AntennaSerializer for not breaking the API, it should change in next API version
     antenna = serializers.SerializerMethodField()
     altitude = serializers.SerializerMethodField()
     min_horizon = serializers.SerializerMethodField()
@@ -347,7 +347,7 @@ class StationSerializer(serializers.ModelSerializer):
             'Other Directional': 'other direct',
             'Other Omni-Directional': 'other omni',
         }
-        serializer = StationAntennaSerializer(obj.antennas, many=True)
+        serializer = AntennaSerializer(obj.antennas, many=True)
         antennas = []
         for antenna in serializer.data:
             for frequency_range in antenna['frequency_ranges']:

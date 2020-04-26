@@ -6,8 +6,8 @@ from django.contrib import admin, messages
 from django.shortcuts import redirect
 from django.urls import reverse
 
-from network.base.models import AntennaType, DemodData, FrequencyRange, \
-    Observation, Satellite, Station, StationAntenna, Tle, Transmitter
+from network.base.models import Antenna, AntennaType, DemodData, \
+    FrequencyRange, Observation, Satellite, Station, Tle, Transmitter
 from network.base.tasks import sync_to_db
 from network.base.utils import export_as_csv, export_station_status
 
@@ -27,7 +27,7 @@ class FrequenyRangeAdmin(admin.ModelAdmin):
 
     def formfield_for_foreignkey(self, db_field, request, **kwargs):
         if db_field.name == "antenna":
-            kwargs["queryset"] = StationAntenna.objects.order_by('station_id')
+            kwargs["queryset"] = Antenna.objects.order_by('station_id')
         return super(FrequenyRangeAdmin,
                      self).formfield_for_foreignkey(db_field, request, **kwargs)
 
@@ -50,8 +50,8 @@ class AntennaTypeAdmin(admin.ModelAdmin):
         return ",\n".join([str(s.station.id) for s in obj.station_antennas.all().order_by('id')])
 
 
-@admin.register(StationAntenna)
-class StationAntennaAdmin(admin.ModelAdmin):
+@admin.register(Antenna)
+class AntennaAdmin(admin.ModelAdmin):
     """Define Antenna Type view in django admin UI"""
     list_display = ('id', 'antenna_type', 'station', 'ranges_list')
 
@@ -69,8 +69,7 @@ class StationAntennaAdmin(admin.ModelAdmin):
     def formfield_for_foreignkey(self, db_field, request, **kwargs):
         if db_field.name == "station":
             kwargs["queryset"] = Station.objects.order_by('id')
-        return super(StationAntennaAdmin,
-                     self).formfield_for_foreignkey(db_field, request, **kwargs)
+        return super(AntennaAdmin, self).formfield_for_foreignkey(db_field, request, **kwargs)
 
 
 @admin.register(Station)

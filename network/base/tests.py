@@ -14,8 +14,8 @@ from django.utils.timezone import now
 # C0412 below clashes with isort
 from factory import fuzzy  # pylint: disable=C0412
 
-from network.base.models import OBSERVATION_STATUSES, AntennaType, DemodData, \
-    FrequencyRange, Observation, Satellite, Station, StationAntenna, Tle
+from network.base.models import OBSERVATION_STATUSES, Antenna, AntennaType, \
+    DemodData, FrequencyRange, Observation, Satellite, Station, Tle
 from network.users.tests import UserFactory
 
 OBSERVATION_STATUS_IDS = [c[0] for c in OBSERVATION_STATUSES]
@@ -57,20 +57,20 @@ class StationFactory(factory.django.DjangoModelFactory):
         model = Station
 
 
-class StationAntennaFactory(factory.django.DjangoModelFactory):
+class AntennaFactory(factory.django.DjangoModelFactory):
     """Antenna model factory."""
     antenna_type = factory.Iterator(AntennaType.objects.all())
     station = factory.Iterator(Station.objects.all())
 
     class Meta:
-        model = StationAntenna
+        model = Antenna
 
 
 class FrequencyRangeFactory(factory.django.DjangoModelFactory):
     """FrequencyRange model factory."""
     min_frequency = fuzzy.FuzzyInteger(200000000, 500000000)
     max_frequency = fuzzy.FuzzyInteger(500000000, 800000000)
-    antenna = factory.Iterator(StationAntenna.objects.all())
+    antenna = factory.Iterator(Antenna.objects.all())
 
     class Meta:
         model = FrequencyRange

@@ -272,7 +272,7 @@ class AntennaType(models.Model):
 
 
 @python_2_unicode_compatible
-class StationAntenna(models.Model):
+class Antenna(models.Model):
     """Model for antennas of SatNOGS ground stations."""
     antenna_type = models.ForeignKey(
         AntennaType, on_delete=models.PROTECT, related_name='station_antennas'
@@ -301,9 +301,7 @@ class StationAntenna(models.Model):
 @python_2_unicode_compatible
 class FrequencyRange(models.Model):
     """Model for frequency ranges of antennas."""
-    antenna = models.ForeignKey(
-        StationAntenna, on_delete=models.CASCADE, related_name='frequency_ranges'
-    )
+    antenna = models.ForeignKey(Antenna, on_delete=models.CASCADE, related_name='frequency_ranges')
     min_frequency = models.BigIntegerField()
     max_frequency = models.BigIntegerField()
 

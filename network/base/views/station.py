@@ -11,8 +11,8 @@ from django.shortcuts import get_object_or_404, redirect, render
 from django.utils.timezone import now
 from rest_framework import viewsets
 
-from network.base.forms import FrequencyRangeInlineFormSet, \
-    StationAntennaInlineFormSet, StationForm
+from network.base.forms import AntennaInlineFormSet, \
+    FrequencyRangeInlineFormSet, StationForm
 from network.base.models import AntennaType, Station, StationStatusLog
 from network.base.perms import modify_delete_station_perms, \
     schedule_station_perms
@@ -216,7 +216,7 @@ def station_edit(request, station_id=None):
         else:
             station_form = StationForm(request.POST, request.FILES)
 
-        antenna_formset = StationAntennaInlineFormSet(
+        antenna_formset = AntennaInlineFormSet(
             request.POST, instance=station_form.instance, prefix='ant'
         )
         frequency_range_formsets = {}
@@ -285,7 +285,7 @@ def station_edit(request, station_id=None):
         )
     if station:
         station_form = StationForm(instance=station)
-        antenna_formset = StationAntennaInlineFormSet(instance=station, prefix='ant')
+        antenna_formset = AntennaInlineFormSet(instance=station, prefix='ant')
         for antenna_form in antenna_formset.forms:
             antenna_prefix = antenna_form.prefix
             frequency_range_formsets[antenna_prefix] = FrequencyRangeInlineFormSet(
@@ -293,7 +293,7 @@ def station_edit(request, station_id=None):
             )
     else:
         station_form = StationForm()
-        antenna_formset = StationAntennaInlineFormSet(prefix='ant')
+        antenna_formset = AntennaInlineFormSet(prefix='ant')
     return render(
         request, 'base/station_edit.html', {
             'station_form': station_form,

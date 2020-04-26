@@ -7,8 +7,8 @@ import pytest
 from django.test import TestCase
 from rest_framework.utils.encoders import JSONEncoder
 
-from network.base.tests import FrequencyRangeFactory, ObservationFactory, \
-    SatelliteFactory, StationAntennaFactory, StationFactory
+from network.base.tests import AntennaFactory, FrequencyRangeFactory, \
+    ObservationFactory, SatelliteFactory, StationFactory
 
 
 @pytest.mark.django_db(transaction=True)
@@ -44,7 +44,7 @@ class StationViewApiTest(TestCase):
     def setUp(self):
         self.encoder = JSONEncoder()
         self.station = StationFactory()
-        self.antenna = StationAntennaFactory(station=self.station)
+        self.antenna = AntennaFactory(station=self.station)
         self.frequency_range = FrequencyRangeFactory(antenna=self.antenna)
 
     def test_station_view_api(self):
