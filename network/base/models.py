@@ -275,7 +275,7 @@ class AntennaType(models.Model):
 class Antenna(models.Model):
     """Model for antennas of SatNOGS ground stations."""
     antenna_type = models.ForeignKey(
-        AntennaType, on_delete=models.PROTECT, related_name='station_antennas'
+        AntennaType, on_delete=models.PROTECT, related_name='antennas'
     )
     station = models.ForeignKey(Station, on_delete=models.CASCADE, related_name='antennas')
 

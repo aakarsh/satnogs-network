@@ -39,15 +39,15 @@ class AntennaTypeAdmin(admin.ModelAdmin):
 
     def antenna_count(self, obj):  # pylint: disable=no-self-use
         """Return the number of antennas use this antenna type"""
-        return obj.station_antennas.all().count()
+        return obj.antennas.all().count()
 
     def antenna_list(self, obj):  # pylint: disable=no-self-use
         """Return antennas that use the antenna type"""
-        return ",\n".join([str(s.id) for s in obj.station_antennas.all().order_by('id')])
+        return ",\n".join([str(s.id) for s in obj.antennas.all().order_by('id')])
 
     def station_list(self, obj):  # pylint: disable=no-self-use
         """Return antennas that use the antenna type"""
-        return ",\n".join([str(s.station.id) for s in obj.station_antennas.all().order_by('id')])
+        return ",\n".join([str(s.station.id) for s in obj.antennas.all().order_by('id')])
 
 
 @admin.register(Antenna)
