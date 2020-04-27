@@ -266,11 +266,11 @@ $(document).ready(function() {
                       <div class='col-md-10'>
                         <div class='row'>
                           <div class='col-md-6'>
-                            <label for="` + order + `-min" class="control-label col-md-2">Minimum</label>
+                            <label for="` + order + `-min" class="control-label">Minimum</label>
                             <input data-order="` + order + '" data-field="min" value="' + range.min + '" id="' + order + '-min" type="number" min="' + minimum_frequency + '" max="' + maximum_frequency + `" class="form-control frequency" placeholder="Minimum Frequency">
                           </div>
                           <div class='col-md-6'>
-                            <label for="` + order + `-max" class="control-label col-md-2">Maximum</label>
+                            <label for="` + order + `-max" class="control-label">Maximum</label>
                             <input data-order="` + order + '" data-field="max" value="' + range.max + '" id="' + order + '-max" type="number" min="' + minimum_frequency + '" max="' + maximum_frequency + `" class="form-control frequency " placeholder="Maximum Frequency">
                           </div>
                         </div>
