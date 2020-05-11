@@ -1,14 +1,17 @@
 """Django database base model for SatNOGS Network"""
 from __future__ import absolute_import, division
 
+import os
 import struct
 from datetime import timedelta
 
+from django.conf import settings
 from django.db.models.signals import post_save
 from django.utils.timezone import now
 from tinytag import TinyTag, TinyTagException
 
 from network.base.models import Observation, Station, StationStatusLog, Tle
+from network.base.tasks import archive_audio
 
 
 def _observation_post_save(sender, instance, created, **kwargs):  # pylint: disable=W0613
@@ -18,6 +21,7 @@ def _observation_post_save(sender, instance, created, **kwargs):  # pylint: disa
     * Validate audio file
     * Auto vet as good observation with DemodData
     * Mark Observations from testing stations
+    * Run task for archiving audio
     """
     post_save.disconnect(_observation_post_save, sender=Observation)
     if instance.has_audio and not instance.archived:
@@ -32,6 +36,8 @@ def _observation_post_save(sender, instance, created, **kwargs):  # pylint: disa
         except (struct.error, TypeError):
             # Remove audio file with wrong structure
             instance.payload.delete()
+        if settings.ENVIRONMENT == 'production' and os.path.isfile(instance.payload.path):
+            archive_audio.delay(instance.id)
     if created and instance.ground_station.testing:
         instance.testing = True
         instance.save()
