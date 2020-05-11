@@ -5,7 +5,6 @@ import codecs
 import logging
 import os
 import re
-import struct
 from datetime import timedelta
 
 import requests
@@ -15,7 +14,6 @@ from django.core.exceptions import ValidationError
 from django.core.validators import MaxValueValidator, MinValueValidator
 from django.db import models
 from django.db.models import OuterRef, Subquery
-from django.db.models.signals import post_save
 from django.dispatch import receiver
 from django.urls import reverse
 from django.utils.encoding import python_2_unicode_compatible
@@ -24,7 +22,6 @@ from django.utils.timezone import now
 from PIL import Image
 from rest_framework.authtoken.models import Token
 from shortuuidfield import ShortUUIDField
-from tinytag import TinyTag, TinyTagException
 
 from network.base.managers import ObservationManager
 from network.base.utils import bands_from_range
@@ -62,69 +59,6 @@ def _name_obs_demoddata(instance, filename):
     """Return a filepath for DemodData formatted by Observation ID"""
     # On change of the string bellow, change it also at api/views.py
     return 'data_obs/{0}/{1}'.format(instance.observation.id, filename)
-
-
-def _observation_post_save(sender, instance, created, **kwargs):  # pylint: disable=W0613
-    """
-    Post save Observation operations
-    * Auto vet as good observation with DemodData
-    * Mark Observations from testing stations
-    * Update client version for ground station
-    """
-    post_save.disconnect(_observation_post_save, sender=Observation)
-    if instance.has_audio and not instance.archived:
-        try:
-            audio_metadata = TinyTag.get(instance.payload.path)
-            # Remove audio if it is less than 1 sec
-            if audio_metadata.duration is None or audio_metadata.duration < 1:
-                instance.payload.delete()
-        except TinyTagException:
-            # Remove invalid audio file
-            instance.payload.delete()
-        except (struct.error, TypeError):
-            # Remove audio file with wrong structure
-            instance.payload.delete()
-    if created and instance.ground_station.testing:
-        instance.testing = True
-        instance.save()
-    if instance.has_demoddata and instance.vetted_status == 'unknown':
-        instance.vetted_status = 'good'
-        instance.vetted_datetime = now()
-        instance.save()
-    post_save.connect(_observation_post_save, sender=Observation)
-
-
-def _station_post_save(sender, instance, created, **kwargs):  # pylint: disable=W0613
-    """
-    Post save Station operations
-    * Store current status
-    """
-    post_save.disconnect(_station_post_save, sender=Station)
-    if not created:
-        current_status = instance.status
-        if instance.is_offline:
-            instance.status = 0
-        elif instance.testing:
-            instance.status = 1
-        else:
-            instance.status = 2
-        instance.save()
-        if instance.status != current_status:
-            StationStatusLog.objects.create(station=instance, status=instance.status)
-    else:
-        StationStatusLog.objects.create(station=instance, status=instance.status)
-    post_save.connect(_station_post_save, sender=Station)
-
-
-def _tle_post_save(sender, instance, created, **kwargs):  # pylint: disable=W0613
-    """
-    Post save Tle operations
-    * Update TLE for future observations
-    """
-    if created:
-        start = now() + timedelta(minutes=10)
-        Observation.objects.filter(satellite=instance.satellite, start__gt=start) \
-                           .update(tle=instance.id)
 
 
 def validate_image(fieldfile_obj):
@@ -257,9 +191,6 @@ class Station(models.Model):
                     )
                 }
             )
-
-
-post_save.connect(_station_post_save, sender=Station)
 
 
 @python_2_unicode_compatible
@@ -414,9 +345,6 @@ class Tle(models.Model):
         """Return TLE in string array format"""
         # tle fields are unicode, pyephem and others expect python strings
         return [str(self.tle0), str(self.tle1), str(self.tle2)]
-
-
-post_save.connect(_tle_post_save, sender=Tle)
 
 
 class LatestTleManager(models.Manager):  # pylint: disable=R0903
@@ -621,9 +549,6 @@ def observation_remove_files(sender, instance, **kwargs):  # pylint: disable=W06
     if instance.waterfall:
         if os.path.isfile(instance.waterfall.path):
             os.remove(instance.waterfall.path)
-
-
-post_save.connect(_observation_post_save, sender=Observation)
 
 
 @python_2_unicode_compatible
