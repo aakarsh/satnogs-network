@@ -12,7 +12,7 @@ from rest_framework.serializers import ValidationError
 from network.api import filters, pagination, serializers
 from network.api.perms import StationOwnerPermission
 from network.base.models import LatestTle, Observation, Station, Transmitter
-from network.base.tasks import sync_demoddata_to_db
+from network.base.tasks import sync_to_db
 from network.base.validators import NegativeElevationError, \
     ObservationOverlapError, SinglePassError
 
@@ -69,8 +69,7 @@ class ObservationView(  # pylint: disable=R0901
                 )
             except ObjectDoesNotExist:
                 demoddata = instance.demoddata.create(payload_demod=request.data.get('demoddata'))
-                if Transmitter.objects.get(uuid=instance.transmitter_uuid).sync_to_db:
-                    sync_demoddata_to_db.delay(demoddata)
+                sync_to_db.delay(frame_id=demoddata.id)
         if request.data.get('waterfall'):
             if instance.has_waterfall:
                 return Response(
