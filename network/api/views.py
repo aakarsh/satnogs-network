@@ -5,7 +5,6 @@ from django.core.exceptions import ObjectDoesNotExist
 from django.db.models import Count
 from django.shortcuts import get_object_or_404
 from django.utils.timezone import now
-from requests.exceptions import RequestException
 from rest_framework import mixins, status, viewsets
 from rest_framework.response import Response
 from rest_framework.serializers import ValidationError
@@ -13,7 +12,7 @@ from rest_framework.serializers import ValidationError
 from network.api import filters, pagination, serializers
 from network.api.perms import StationOwnerPermission
 from network.base.models import LatestTle, Observation, Station, Transmitter
-from network.base.utils import sync_demoddata_to_db
+from network.base.tasks import sync_demoddata_to_db
 from network.base.validators import NegativeElevationError, \
     ObservationOverlapError, SinglePassError
 
@@ -71,11 +70,7 @@ class ObservationView(  # pylint: disable=R0901
             except ObjectDoesNotExist:
                 demoddata = instance.demoddata.create(payload_demod=request.data.get('demoddata'))
                 if Transmitter.objects.get(uuid=instance.transmitter_uuid).sync_to_db:
-                    try:
-                        sync_demoddata_to_db(demoddata)
-                    except RequestException:
-                        # Sync to db failed, let the periodic task handle the sync to db later
-                        pass
+                    sync_demoddata_to_db.delay(demoddata)
         if request.data.get('waterfall'):
             if instance.has_waterfall:
                 return Response(

@@ -3,7 +3,7 @@ from __future__ import absolute_import, division, print_function
 
 import json
 import os
-from datetime import timedelta
+from datetime import datetime, timedelta
 
 import requests
 from celery import shared_task
@@ -19,7 +19,6 @@ from satellite_tle import fetch_tles
 
 from network.base.models import DemodData, LatestTle, Observation, Satellite, \
     Station, Tle, Transmitter
-from network.base.utils import sync_demoddata_to_db
 
 
 @shared_task
@@ -200,6 +199,45 @@ def clean_observations():
 
 
 @shared_task
+def sync_demoddata_to_db(frame):
+    """
+    Task to send a frame from SatNOGS Network to SatNOGS DB
+
+    Raises requests.exceptions.RequestException if sync fails."""
+    obs = frame.observation
+    sat = obs.satellite
+    ground_station = obs.ground_station
+
+    # need to abstract the timestamp from the filename. hacky..
+    file_datetime = frame.payload_demod.name.split('/')[2].split('_')[2]
+    frame_datetime = datetime.strptime(file_datetime, '%Y-%m-%dT%H-%M-%S')
+    submit_datetime = datetime.strftime(frame_datetime, '%Y-%m-%dT%H:%M:%S.000Z')
+
+    # SiDS parameters
+    params = {
+        'noradID': sat.norad_cat_id,
+        'source': ground_station.name,
+        'timestamp': submit_datetime,
+        'locator': 'longLat',
+        'longitude': ground_station.lng,
+        'latitude': ground_station.lat,
+        'frame': frame.display_payload_hex().replace(' ', ''),
+        'satnogs_network': 'True'  # NOT a part of SiDS
+    }
+
+    telemetry_url = "{}telemetry/".format(settings.DB_API_ENDPOINT)
+
+    response = requests.post(telemetry_url, data=params, timeout=settings.DB_API_TIMEOUT)
+    try:
+        response.raise_for_status()
+        frame.copied_to_db = True
+        frame.save()
+    except requests.exceptions.RequestException:
+        # Sync to db failed, let the periodic task handle the sync to db later
+        pass
+
+
+@shared_task
 def sync_to_db():
     """Task to send demod data to SatNOGS DB / SiDS"""
     transmitters = Transmitter.objects.filter(sync_to_db=True).values_list('uuid', flat=True)
@@ -210,12 +248,7 @@ def sync_to_db():
     for frame in frames:
         if frame.is_image() or frame.copied_to_db or not os.path.isfile(frame.payload_demod.path):
             continue
-
-        try:
-            sync_demoddata_to_db(frame)
-        except requests.exceptions.RequestException:
-            # Sync to db failed, skip this frame for a future task instance
-            continue
+        sync_demoddata_to_db(frame)
 
 
 @shared_task

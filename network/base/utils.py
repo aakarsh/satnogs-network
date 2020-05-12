@@ -3,7 +3,6 @@ from __future__ import absolute_import, division
 
 import csv
 from builtins import str
-from datetime import datetime
 
 import requests  # pylint: disable=C0412
 from django.conf import settings
@@ -125,41 +124,6 @@ def export_station_status(self, request, queryset):
         writer.writerow([getattr(obj, field) for field in field_names])
 
     return response
-
-
-def sync_demoddata_to_db(frame):
-    """
-    Task to send a frame from SatNOGS Network to SatNOGS DB
-
-    Raises requests.exceptions.RequestException if sync fails."""
-    obs = frame.observation
-    sat = obs.satellite
-    ground_station = obs.ground_station
-
-    # need to abstract the timestamp from the filename. hacky..
-    file_datetime = frame.payload_demod.name.split('/')[2].split('_')[2]
-    frame_datetime = datetime.strptime(file_datetime, '%Y-%m-%dT%H-%M-%S')
-    submit_datetime = datetime.strftime(frame_datetime, '%Y-%m-%dT%H:%M:%S.000Z')
-
-    # SiDS parameters
-    params = {
-        'noradID': sat.norad_cat_id,
-        'source': ground_station.name,
-        'timestamp': submit_datetime,
-        'locator': 'longLat',
-        'longitude': ground_station.lng,
-        'latitude': ground_station.lat,
-        'frame': frame.display_payload_hex().replace(' ', ''),
-        'satnogs_network': 'True'  # NOT a part of SiDS
-    }
-
-    telemetry_url = "{}telemetry/".format(settings.DB_API_ENDPOINT)
-
-    response = requests.post(telemetry_url, data=params, timeout=settings.DB_API_TIMEOUT)
-    response.raise_for_status()
-
-    frame.copied_to_db = True
-    frame.save()
 
 
 def community_get_discussion_details(
