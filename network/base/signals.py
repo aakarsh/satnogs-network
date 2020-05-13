@@ -30,14 +30,14 @@ def _observation_post_save(sender, instance, created, **kwargs):  # pylint: disa
             # Remove audio if it is less than 1 sec
             if audio_metadata.duration is None or audio_metadata.duration < 1:
                 instance.payload.delete()
+            elif settings.ENVIRONMENT == 'production' and os.path.isfile(instance.payload.path):
+                archive_audio.delay(instance.id)
         except TinyTagException:
             # Remove invalid audio file
             instance.payload.delete()
         except (struct.error, TypeError):
             # Remove audio file with wrong structure
             instance.payload.delete()
-        if settings.ENVIRONMENT == 'production' and os.path.isfile(instance.payload.path):
-            archive_audio.delay(instance.id)
     if created and instance.ground_station.testing:
         instance.testing = True
         instance.save()
