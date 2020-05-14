@@ -6,6 +6,7 @@ import struct
 from datetime import timedelta
 
 from django.conf import settings
+from django.core.cache import cache
 from django.db.models.signals import post_save
 from django.utils.timezone import now
 from tinytag import TinyTag, TinyTagException
@@ -24,13 +25,18 @@ def _observation_post_save(sender, instance, created, **kwargs):  # pylint: disa
     * Run task for archiving audio
     """
     post_save.disconnect(_observation_post_save, sender=Observation)
-    if instance.has_audio and not instance.archived:
+    if (instance.has_audio and not instance.archived
+            and not cache.has_key('audio-archive-lock-{0}'.format(instance.id))):  # noqa: W601
         try:
             audio_metadata = TinyTag.get(instance.payload.path)
             # Remove audio if it is less than 1 sec
             if audio_metadata.duration is None or audio_metadata.duration < 1:
                 instance.payload.delete()
             elif settings.ENVIRONMENT == 'production' and os.path.isfile(instance.payload.path):
+                cache.set(
+                    'audio-archive-lock-{0}'.format(instance.id), '',
+                    settings.ARCHIVE_AUDIO_LOCK_EXPIRATION
+                )
                 archive_audio.delay(instance.id)
         except TinyTagException:
             # Remove invalid audio file

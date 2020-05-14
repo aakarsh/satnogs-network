@@ -357,6 +357,8 @@ OBSERVATION_OLD_RANGE = config('OBSERVATION_OLD_RANGE', default=30, cast=int)
 OBSERVATION_DURATION_MIN = config('OBSERVATION_DURATION_MIN', default=120, cast=int)
 # Minimum observations for showing warning on scheduling
 OBSERVATION_WARN_MIN_OBS = config('OBSERVATION_WARN_MIN_OBS', default=30, cast=int)
+# Cache expiration of the lock for "archive audio" task
+ARCHIVE_AUDIO_LOCK_EXPIRATION = config('ARCHIVE_AUDIO_LOCK_EXPIRATION', default=900, cast=int)
 
 # Station settings
 # Heartbeat for keeping a station online in minutes
