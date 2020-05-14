@@ -22,6 +22,12 @@ from network.base.models import DemodData, LatestTle, Observation, Satellite, \
 from network.base.utils import sync_demoddata_to_db
 
 
+def delay_task_with_lock(task, lock_id, lock_expiration, *args):
+    """Ensure unique run of a task by aquiring lock"""
+    if cache.add('{0}-{1}'.format(task.name, lock_id), '', lock_expiration):
+        task.delay(*args)
+
+
 @shared_task
 def update_all_tle():
     """Task to update all satellite TLEs"""
