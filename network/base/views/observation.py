@@ -123,9 +123,9 @@ class ObservationListView(ListView):  # pylint: disable=R0901
         """
         context = super(ObservationListView, self).get_context_data(**kwargs)
         context['satellites'] = Satellite.objects.all()
-        observers_ids = list(set(Observation.objects.values_list('author_id', flat=True)))
-        context['authors'] = User.objects.filter(id__in=observers_ids) \
-                                         .order_by('first_name', 'last_name', 'username')
+        context['authors'] = User.objects.filter(
+            observations__isnull=False
+        ).distinct().order_by('first_name', 'last_name', 'username')
         context['stations'] = Station.objects.all().order_by('id')
         norad_cat_id = self.request.GET.get('norad', None)
         observer = self.request.GET.get('observer', None)
