@@ -3,10 +3,9 @@ from __future__ import absolute_import
 
 from django.conf import settings
 from django.template.loader import render_to_string
-from django.utils.timezone import now
 
 from network import __version__
-from network.base.models import Observation
+from network.base.stats import vetting_count
 
 
 def analytics(request):
@@ -26,9 +25,7 @@ def stage_notice(request):
 def user_processor(request):
     """Returns number of user's unvetted observations."""
     if request.user.is_authenticated():
-        owner_vetting_count = Observation.objects.filter(
-            author=request.user, vetted_status='unknown', end__lt=now()
-        ).count()
+        owner_vetting_count = vetting_count(request.user)
         return {'owner_vetting_count': owner_vetting_count}
     return {'owner_vetting_count': ''}
 

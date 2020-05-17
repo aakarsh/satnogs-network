@@ -113,3 +113,15 @@ def transmitters_with_stats(transmitters_list):
         transmitter_with_stats = dict(transmitter, **transmitter_stats)
         transmitters_with_stats_list.append(transmitter_with_stats)
     return transmitters_with_stats_list
+
+
+def vetting_count(user):
+    """Returns a count of unvetted observation per user"""
+    user_vetting_count = cache.get('user-{0}-unvet'.format(user.id))
+    if user_vetting_count is None:
+        user_vetting_count = Observation.objects.filter(
+            author=user, vetted_status='unknown', end__lt=now()
+        ).count()
+        cache.set('user-{0}-unvet'.format(user.id), user_vetting_count, 120)
+
+    return user_vetting_count
