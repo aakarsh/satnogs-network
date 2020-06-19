@@ -186,8 +186,8 @@ def archive_audio(obs_id):
         obs.archived = True
         obs.archive_url = '{0}{1}/{2}'.format(settings.ARCHIVE_URL, identifier, filename)
         obs.archive_identifier = identifier
-        obs.save()
-        obs.payload.delete()
+        obs.payload.delete(save=False)
+        obs.save(update_fields=['archived', 'archive_url', 'archive_identifier', 'payload'])
 
 
 @shared_task
