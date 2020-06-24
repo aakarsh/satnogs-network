@@ -43,11 +43,6 @@ def _observation_post_save(sender, instance, created, **kwargs):  # pylint: disa
     if created and instance.ground_station.testing:
         instance.testing = True
         instance.save()
-    if (instance.has_demoddata and instance.vetted_status == 'unknown'
-            and instance.transmitter_mode != 'CW'):
-        instance.vetted_status = 'good'
-        instance.vetted_datetime = now()
-        instance.save()
     post_save.connect(_observation_post_save, sender=Observation)
 
 
