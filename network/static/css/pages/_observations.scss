@@ -23,7 +23,16 @@
     display: inline !important;
 }
 
+.bootstrap-select.show-tick .dropdown-menu li a span.text {
+    /* overwrite imposed margin to text */
+    margin-right: 0 !important;
+}
+
 /* stylelint-enable */
+
+.station-description {
+    margin-left: 5px;
+}
 
 .transmitter-option {
     display: flex;
