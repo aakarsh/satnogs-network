@@ -171,7 +171,9 @@ class ObservationAdmin(admin.ModelAdmin):
     """Define Observation view in django admin UI"""
     list_display = ('id', 'author', 'satellite', 'transmitter_uuid', 'start', 'end')
     list_filter = ('start', 'end')
-    search_fields = ('satellite', 'author')
+    search_fields = (
+        'satellite__name', 'satellite__names', 'satellite__norad_cat_id', 'author__username'
+    )
     inlines = [
         DemodDataInline,
     ]
