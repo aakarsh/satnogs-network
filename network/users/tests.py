@@ -1,6 +1,4 @@
 """SatNOGS Network users test suites"""
-from __future__ import absolute_import
-
 import datetime
 
 import factory

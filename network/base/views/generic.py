@@ -1,6 +1,4 @@
 """Django base views for SatNOGS Network"""
-from __future__ import absolute_import
-
 from django.conf import settings
 from django.contrib import messages
 from django.core.urlresolvers import reverse

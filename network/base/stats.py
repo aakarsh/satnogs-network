@@ -1,6 +1,4 @@
 """Module for calculating and keep in cache satellite and transmitter statistics"""
-from __future__ import absolute_import, division
-
 import math
 
 from django.core.cache import cache
@@ -49,10 +47,10 @@ def transmitter_stats_by_uuid(uuid):
     bad_rate = 0
 
     if total_count:
-        unvetted_rate = math.trunc(10000 * (float(unvetted_count) / float(total_count))) / 100.0
-        future_rate = math.trunc(10000 * (float(future_count) / float(total_count))) / 100.0
-        success_rate = math.trunc(10000 * (float(good_count) / float(total_count))) / 100.0
-        bad_rate = math.trunc(10000 * (float(bad_count) / float(total_count))) / 100.0
+        unvetted_rate = math.trunc(10000 * (unvetted_count / total_count)) / 100
+        future_rate = math.trunc(10000 * (future_count / total_count)) / 100
+        success_rate = math.trunc(10000 * (good_count / total_count)) / 100
+        bad_rate = math.trunc(10000 * (bad_count / total_count)) / 100
 
     return {
         'total_count': total_count,
@@ -87,10 +85,10 @@ def satellite_stats_by_transmitter_list(transmitter_list):
         bad_count += transmitter_stats['bad_count']
 
     if total_count:
-        unvetted_rate = math.trunc(10000 * (float(unvetted_count) / float(total_count))) / 100.0
-        future_rate = math.trunc(10000 * (float(future_count) / float(total_count))) / 100.0
-        success_rate = math.trunc(10000 * (float(good_count) / float(total_count))) / 100.0
-        bad_rate = math.trunc(10000 * (float(bad_count) / float(total_count))) / 100.0
+        unvetted_rate = math.trunc(10000 * (unvetted_count / total_count)) / 100
+        future_rate = math.trunc(10000 * (future_count / total_count)) / 100
+        success_rate = math.trunc(10000 * (good_count / total_count)) / 100
+        bad_rate = math.trunc(10000 * (bad_count / total_count)) / 100
 
     return {
         'total_count': total_count,

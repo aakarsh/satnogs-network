@@ -1,6 +1,4 @@
 """SatNOGS Network Celery task functions"""
-from __future__ import absolute_import, division, print_function
-
 import json
 import os
 from datetime import timedelta
@@ -281,5 +279,5 @@ def stations_cache_rates():
             id__in=(o.id for o in observations if o.is_good or o.is_bad)
         ).count()
         if observations:
-            rate = int(100 * (float(success) / float(observations.count())))
+            rate = int(100 * (success / observations.count()))
             cache.set('station-{0}-rate'.format(station.id), rate, 60 * 60 * 2)

@@ -1,6 +1,4 @@
 """SatNOGS Network API test suites"""
-from __future__ import absolute_import
-
 import json
 
 import pytest
@@ -72,30 +70,30 @@ class StationViewApiTest(TestCase):
 
         ser_ants = [
             {
-                u'band': self.frequency_range.bands,
-                u'frequency': self.frequency_range.min_frequency,
-                u'frequency_max': self.frequency_range.max_frequency,
-                u'antenna_type': antenna_types[self.antenna.antenna_type.name],
-                u'antenna_type_name': self.antenna.antenna_type.name,
+                'band': self.frequency_range.bands,
+                'frequency': self.frequency_range.min_frequency,
+                'frequency_max': self.frequency_range.max_frequency,
+                'antenna_type': antenna_types[self.antenna.antenna_type.name],
+                'antenna_type_name': self.antenna.antenna_type.name,
             }
         ]
 
         station_serialized = {
-            u'id': self.station.id,
-            u'altitude': self.station.alt,
-            u'antenna': ser_ants,
-            u'client_version': self.station.client_version,
-            u'created': self.encoder.default(self.station.created),
-            u'description': self.station.description,
-            u'last_seen': self.encoder.default(self.station.last_seen),
-            u'lat': self.station.lat,
-            u'lng': self.station.lng,
-            u'min_horizon': self.station.horizon,
-            u'name': self.station.name,
-            u'observations': 0,
-            u'qthlocator': self.station.qthlocator,
-            u'target_utilization': self.station.target_utilization,
-            u'status': self.station.get_status_display(),
+            'id': self.station.id,
+            'altitude': self.station.alt,
+            'antenna': ser_ants,
+            'client_version': self.station.client_version,
+            'created': self.encoder.default(self.station.created),
+            'description': self.station.description,
+            'last_seen': self.encoder.default(self.station.last_seen),
+            'lat': self.station.lat,
+            'lng': self.station.lng,
+            'min_horizon': self.station.horizon,
+            'name': self.station.name,
+            'observations': 0,
+            'qthlocator': self.station.qthlocator,
+            'target_utilization': self.station.target_utilization,
+            'status': self.station.get_status_display(),
         }
 
         response = self.client.get('/api/stations/')

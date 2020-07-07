@@ -1,6 +1,4 @@
 """SatNOGS Network django base Forms class"""
-from __future__ import absolute_import
-
 from django.conf import settings
 from django.forms import BaseFormSet, BaseInlineFormSet, CharField, \
     DateTimeField, FloatField, Form, ImageField, IntegerField, \

@@ -1,6 +1,4 @@
 """SatNOGS Network django management command to set last seen value on stations entries"""
-from __future__ import absolute_import
-
 from django.core.management.base import BaseCommand
 from django.utils.timezone import now
 

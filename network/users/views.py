@@ -1,6 +1,4 @@
 """Django users views for SatNOGS Network"""
-from __future__ import absolute_import
-
 from braces.views import LoginRequiredMixin
 from django.core.urlresolvers import reverse
 from django.db.models import Case, Count, IntegerField, Sum, When

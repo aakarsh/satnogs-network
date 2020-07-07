@@ -1,6 +1,4 @@
 """SatNOGS Network django management command to fetch data (Satellites and Transmitters)"""
-from __future__ import absolute_import
-
 from django.core.management.base import BaseCommand, CommandError
 # Remove this import after Python 3 migration
 from requests.exceptions import ConnectionError  # pylint: disable=W0622

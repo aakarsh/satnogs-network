@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-#
 # satnogs-network documentation build configuration file, created by
 # sphinx-quickstart on Fri Dec 19 19:35:32 2014.
 #

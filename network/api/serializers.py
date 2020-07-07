@@ -1,10 +1,7 @@
 """SatNOGS Network API serializers, django rest framework"""
 #  pylint: disable=no-self-use
-from __future__ import absolute_import, division
-
 from collections import defaultdict
 
-from future.builtins import round
 from rest_framework import serializers
 
 from network.base.db_api import DBConnectionError, get_transmitters_by_uuid_set

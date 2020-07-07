@@ -1,6 +1,4 @@
 """Django database base model for SatNOGS Network"""
-from __future__ import absolute_import, division
-
 import codecs
 import logging
 import os
@@ -152,7 +150,7 @@ class Station(models.Model):
                 id__in=(o.id for o in observations if o.is_good or o.is_bad)
             ).count()
             if observations:
-                rate = int(100 * (float(success) / float(observations.count())))
+                rate = int(100 * (success / observations.count()))
                 cache.set('station-{0}-rate'.format(self.id), rate)
             else:
                 rate = False

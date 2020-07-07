@@ -1,9 +1,6 @@
 """Django template tags for SatNOGS Network"""
-from __future__ import absolute_import, division
-
 from django import template
 from django.core.urlresolvers import reverse
-from future.builtins import round
 
 register = template.Library()
 

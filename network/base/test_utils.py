@@ -1,8 +1,5 @@
 """Tests for miscellaneous functions for SatNOGS Network"""
 # pylint: disable=W0621
-
-from __future__ import absolute_import
-
 import pytest
 
 from network.base.utils import community_get_discussion_details

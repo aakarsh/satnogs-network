@@ -1,6 +1,4 @@
 """Django base views for SatNOGS Network"""
-from __future__ import absolute_import
-
 from collections import defaultdict
 from datetime import datetime, timedelta
 from operator import itemgetter

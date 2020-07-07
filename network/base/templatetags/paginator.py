@@ -2,8 +2,6 @@
 Tag to load a smart paginator that does not iterate over every page but has
 ellipses to truncate pages outside an adjacency
 """
-from __future__ import absolute_import
-
 from django import template
 
 register = template.Library()

@@ -1,6 +1,4 @@
 """Miscellaneous functions for SatNOGS Network"""
-from __future__ import absolute_import, division
-
 import csv
 from builtins import str
 from datetime import datetime

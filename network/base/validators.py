@@ -1,6 +1,4 @@
 """Django base validators for SatNOGS Network"""
-from __future__ import absolute_import
-
 from datetime import datetime, timedelta
 
 from django.conf import settings

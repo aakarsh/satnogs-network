@@ -1,6 +1,4 @@
 """Django base manager for SatNOGS Network"""
-from __future__ import absolute_import
-
 from django.db import models
 from django.utils.timezone import now
 
