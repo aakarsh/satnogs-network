@@ -169,9 +169,12 @@ SATELLITE_DEFAULT_IMAGE = 'https://db.satnogs.org/static/img/sat.png'
 COMPRESS_ENABLED = config('COMPRESS_ENABLED', default=False, cast=bool)
 COMPRESS_OFFLINE = config('COMPRESS_OFFLINE', default=False, cast=bool)
 COMPRESS_CACHE_BACKEND = config('COMPRESS_CACHE_BACKEND', default='default')
-COMPRESS_CSS_FILTERS = [
-    'compressor.filters.css_default.CssAbsoluteFilter', 'compressor.filters.cssmin.rCSSMinFilter'
-]
+COMPRESS_FILTERS = {
+    'css': [
+        'compressor.filters.css_default.CssAbsoluteFilter',
+        'compressor.filters.cssmin.rCSSMinFilter'
+    ]
+}
 COMPRESS_PRECOMPILERS = (('text/scss', 'sass --scss {infile} {outfile}'), )
 
 # App conf
