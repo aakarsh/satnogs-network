@@ -7,8 +7,8 @@ from network.base.models import Observation, Station, Transmitter
 
 class ObservationViewFilter(FilterSet):
     """SatNOGS Network Observation API View Filter"""
-    start = django_filters.IsoDateTimeFilter(name='start', lookup_expr='gte')
-    end = django_filters.IsoDateTimeFilter(name='end', lookup_expr='lte')
+    start = django_filters.IsoDateTimeFilter(field_name='start', lookup_expr='gte')
+    end = django_filters.IsoDateTimeFilter(field_name='end', lookup_expr='lte')
 
     class Meta:
         model = Observation

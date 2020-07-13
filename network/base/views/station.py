@@ -2,10 +2,10 @@
 from django.conf import settings
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
-from django.core.urlresolvers import reverse
 from django.db import DatabaseError, transaction
-from django.db.models import Case, Count, IntegerField, Sum, When
+from django.db.models import Count, Q
 from django.shortcuts import get_object_or_404, redirect, render
+from django.urls import reverse
 from django.utils.timezone import now
 from rest_framework import viewsets
 
@@ -26,16 +26,9 @@ class StationAllView(viewsets.ReadOnlyModelViewSet):  # pylint: disable=R0901
 
 def stations_list(request):
     """View to render Stations page."""
-    # Sum - Case - When should be replaced with Count and filter when we move to Django 2.*
-    # more at https://docs.djangoproject.com/en/2.2/ref/models/conditional-expressions in
-    # "Conditional aggregation" section.
     stations = Station.objects.annotate(
         total_obs=Count('observations'),
-        future_obs=Sum(
-            Case(
-                When(observations__end__gt=now(), then=1), default=0, output_field=IntegerField()
-            )
-        ),
+        future_obs=Count('pk', filter=Q(observations__end__gt=now())),
     ).prefetch_related(
         'owner', 'antennas', 'antennas__antenna_type', 'antennas__frequency_ranges'
     ).order_by('-status', 'id')
@@ -65,19 +58,10 @@ def stations_list(request):
 
 def station_view(request, station_id):
     """View for single station page."""
-    # Sum - Case - When should be replaced with Count and filter when we move to Django 2.*
-    # more at https://docs.djangoproject.com/en/2.2/ref/models/conditional-expressions in
-    # "Conditional aggregation" section.
     station = get_object_or_404(
         Station.objects.annotate(
             total_obs=Count('observations'),
-            future_obs=Sum(
-                Case(
-                    When(observations__end__gt=now(), then=1),
-                    default=0,
-                    output_field=IntegerField()
-                )
-            ),
+            future_obs=Count('pk', filter=Q(observations__end__gt=now())),
         ).prefetch_related(
             'owner', 'antennas', 'antennas__antenna_type', 'antennas__frequency_ranges'
         ),
@@ -102,7 +86,7 @@ def station_view(request, station_id):
                 uptime = now() - latest.changed
             uptime = str(uptime).split('.')[0]
 
-    if request.user.is_authenticated():
+    if request.user.is_authenticated:
         if request.user == station.owner:
             wiki_help = (
                 '<a href="{0}" target="_blank" class="wiki-help"><span class="glyphicon '

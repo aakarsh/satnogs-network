@@ -2,9 +2,9 @@
 from django.conf import settings
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
-from django.core.urlresolvers import reverse
 from django.http import JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
+from django.urls import reverse
 from django.utils.timezone import now
 from django.views.generic import ListView
 
@@ -115,7 +115,7 @@ class ObservationListView(ListView):  # pylint: disable=R0901
                 observations = observations.exclude(demoddata__payload_demod__isnull=True)
         return observations
 
-    def get_context_data(self, **kwargs):
+    def get_context_data(self, **kwargs):  # pylint: disable=W0221
         """
         Need to add a list of satellites to the context for the template
         """

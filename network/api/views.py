@@ -20,7 +20,7 @@ class ObservationView(  # pylint: disable=R0901
         mixins.CreateModelMixin, viewsets.GenericViewSet):
     """SatNOGS Network Observation API view class"""
     queryset = Observation.objects.prefetch_related('satellite', 'demoddata', 'ground_station')
-    filter_class = filters.ObservationViewFilter
+    filterset_class = filters.ObservationViewFilter
     permission_classes = [StationOwnerPermission]
     pagination_class = pagination.LinkedHeaderPageNumberPagination
 
@@ -92,7 +92,7 @@ class StationView(  # pylint: disable=R0901
         total_obs=Count('observations'),
     ).prefetch_related('antennas', 'antennas__antenna_type', 'antennas__frequency_ranges')
     serializer_class = serializers.StationSerializer
-    filter_class = filters.StationViewFilter
+    filterset_class = filters.StationViewFilter
     pagination_class = pagination.LinkedHeaderPageNumberPagination
 
 
@@ -101,7 +101,7 @@ class TransmitterView(  # pylint: disable=R0901
     """SatNOGS Network Transmitter API view class"""
     queryset = Transmitter.objects.all().order_by('uuid')
     serializer_class = serializers.TransmitterSerializer
-    filter_class = filters.TransmitterViewFilter
+    filterset_class = filters.TransmitterViewFilter
     pagination_class = pagination.LinkedHeaderPageNumberPagination
 
 
@@ -109,14 +109,14 @@ class JobView(viewsets.ReadOnlyModelViewSet):  # pylint: disable=R0901
     """SatNOGS Network Job API view class"""
     queryset = Observation.objects.filter(payload='')
     serializer_class = serializers.JobSerializer
-    filter_class = filters.ObservationViewFilter
-    filter_fields = ('ground_station')
+    filterset_class = filters.ObservationViewFilter
+    filterset_fields = ('ground_station')
 
     def get_queryset(self):
         """Returns queryset for Job API view"""
         queryset = self.queryset.filter(start__gte=now()).prefetch_related('tle')
         ground_station_id = self.request.query_params.get('ground_station', None)
-        if ground_station_id and self.request.user.is_authenticated():
+        if ground_station_id and self.request.user.is_authenticated:
             ground_station = get_object_or_404(Station, id=ground_station_id)
             if ground_station.owner == self.request.user:
                 lat = self.request.query_params.get('lat', None)

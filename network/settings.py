@@ -316,8 +316,8 @@ CSP_STYLE_SRC = config(
 CSP_WORKER_SRC = config(
     'CSP_WORKER_SRC', cast=lambda v: tuple(s.strip() for s in v.split(',')), default='blob:'
 )
-CSP_CHILD_SRC = config(
-    'CSP_CHILD_SRC', cast=lambda v: tuple(s.strip() for s in v.split(',')), default='blob:'
+CSP_FRAME_SRC = config(
+    'CSP_FRAME_SRC', cast=lambda v: tuple(s.strip() for s in v.split(',')), default='blob:'
 )
 
 # Database

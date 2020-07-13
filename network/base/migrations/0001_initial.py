@@ -46,7 +46,7 @@ class Migration(migrations.Migration):
                 ('id', models.AutoField(verbose_name='ID', serialize=False, auto_created=True, primary_key=True)),
                 ('start', models.DateTimeField()),
                 ('end', models.DateTimeField()),
-                ('author', models.ForeignKey(to=settings.AUTH_USER_MODEL)),
+                ('author', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to=settings.AUTH_USER_MODEL)),
             ],
             options={
                 'ordering': ['-start', '-end'],
@@ -85,7 +85,7 @@ class Migration(migrations.Migration):
                 ('active', models.BooleanField(default=False)),
                 ('last_seen', models.DateTimeField(null=True, blank=True)),
                 ('antenna', models.ManyToManyField(help_text='If you want to add a new Antenna contact SatNOGS Team', to='base.Antenna', blank=True)),
-                ('owner', models.ForeignKey(to=settings.AUTH_USER_MODEL)),
+                ('owner', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to=settings.AUTH_USER_MODEL)),
             ],
             options={
                 'ordering': ['-active', '-last_seen'],
@@ -105,27 +105,27 @@ class Migration(migrations.Migration):
                 ('invert', models.BooleanField(default=False)),
                 ('baud', models.FloatField(blank=True, null=True, validators=[django.core.validators.MinValueValidator(0)])),
                 ('mode', models.ForeignKey(related_name='transmitters', on_delete=django.db.models.deletion.SET_NULL, blank=True, to='base.Mode', null=True)),
-                ('satellite', models.ForeignKey(related_name='transmitters', to='base.Satellite', null=True)),
+                ('satellite', models.ForeignKey(related_name='transmitters', on_delete=django.db.models.deletion.CASCADE, to='base.Satellite', null=True)),
             ],
         ),
         migrations.AddField(
             model_name='observation',
             name='satellite',
-            field=models.ForeignKey(to='base.Satellite'),
+            field=models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='base.Satellite'),
         ),
         migrations.AddField(
             model_name='observation',
             name='transmitter',
-            field=models.ForeignKey(related_name='observations', to='base.Transmitter', null=True),
+            field=models.ForeignKey(related_name='observations', on_delete=django.db.models.deletion.CASCADE, to='base.Transmitter', null=True),
         ),
         migrations.AddField(
             model_name='data',
             name='ground_station',
-            field=models.ForeignKey(to='base.Station'),
+            field=models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='base.Station'),
         ),
         migrations.AddField(
             model_name='data',
             name='observation',
-            field=models.ForeignKey(to='base.Observation'),
+            field=models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='base.Observation'),
         ),
     ]

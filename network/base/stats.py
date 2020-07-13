@@ -2,7 +2,7 @@
 import math
 
 from django.core.cache import cache
-from django.db.models import Case, IntegerField, Sum, When
+from django.db.models import Count, Q
 from django.utils.timezone import now
 
 from network.base.models import Observation
@@ -12,29 +12,15 @@ def transmitter_stats_by_uuid(uuid):
     """Calculate and put in cache transmitter statistics"""
     stats = cache.get('tr-{0}-stats'.format(uuid))
     if stats is None:
-        # Sum - Case - When should be replaced with Count and filter when we move to Django 2.*
-        # more at https://docs.djangoproject.com/en/2.2/ref/models/conditional-expressions in
-        # "Conditional aggregation" section.
         stats = Observation.objects.filter(transmitter_uuid=uuid).exclude(
             vetted_status='failed'
         ).aggregate(
-            good=Sum(Case(When(vetted_status='good', then=1), output_field=IntegerField())),
-            bad=Sum(Case(When(vetted_status='bad', then=1), output_field=IntegerField())),
-            unvetted=Sum(
-                Case(
-                    When(vetted_status='unknown', end__lte=now(), then=1),
-                    output_field=IntegerField()
-                )
-            ),
-            future=Sum(
-                Case(
-                    When(vetted_status='unknown', end__gt=now(), then=1),
-                    output_field=IntegerField()
-                )
-            )
+            good=Count('pk', filter=Q(vetted_status='good')),
+            bad=Count('pk', filter=Q(vetted_status='bad')),
+            unvetted=Count('pk', filter=Q(vetted_status='unknown', end__lte=now())),
+            future=Count('pk', filter=Q(vetted_status='unknown', end__gt=now()))
         )
         cache.set('tr-{0}-stats'.format(uuid), stats, 3600)
-
     total_count = 0
     unvetted_count = 0 if stats['unvetted'] is None else stats['unvetted']
     future_count = 0 if stats['future'] is None else stats['future']

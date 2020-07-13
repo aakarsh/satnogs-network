@@ -1,9 +1,9 @@
 """Django base views for SatNOGS Network"""
 from django.conf import settings
 from django.contrib import messages
-from django.core.urlresolvers import reverse
 from django.http import HttpResponse
 from django.shortcuts import redirect, render
+from django.urls import reverse
 
 from network.base.decorators import admin_required
 from network.base.tasks import fetch_data, update_all_tle

@@ -14,6 +14,7 @@ from factory import fuzzy  # pylint: disable=C0412
 
 from network.base.models import OBSERVATION_STATUSES, Antenna, AntennaType, \
     DemodData, FrequencyRange, Observation, Satellite, Station, Tle
+from network.users.models import User
 from network.users.tests import UserFactory
 
 OBSERVATION_STATUS_IDS = [c[0] for c in OBSERVATION_STATUSES]
@@ -104,7 +105,7 @@ class ObservationFactory(factory.django.DjangoModelFactory):
         now() - timedelta(days=3), now() + timedelta(days=3), force_microsecond=0
     )
     end = factory.LazyAttribute(lambda x: x.start + timedelta(hours=random.randint(1, 8)))
-    ground_station = factory.Iterator(Station.objects.all())
+    ground_station = factory.SubFactory(StationFactory)
     payload = factory.django.FileField(filename='data.ogg')
     vetted_datetime = factory.LazyAttribute(
         lambda x: x.end + timedelta(hours=random.randint(1, 20))
@@ -133,6 +134,9 @@ class RealisticObservationFactory(ObservationFactory):
     """Observation model factory which uses existing satellites and tles."""
     satellite = factory.Iterator(Satellite.objects.all())
     tle = factory.Iterator(Tle.objects.all())
+    author = factory.Iterator(User.objects.all())
+    ground_station = factory.Iterator(Station.objects.all())
+    vetted_user = factory.Iterator(User.objects.all())
 
 
 class DemodDataFactory(factory.django.DjangoModelFactory):

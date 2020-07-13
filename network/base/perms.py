@@ -12,7 +12,7 @@ def schedule_perms(user):
     That includes station owners, moderators, admins.
     see: https://wiki.satnogs.org/Operation#Network_permissions_matrix
     """
-    if user.is_authenticated():
+    if user.is_authenticated:
         stations_statuses = user.ground_stations.values_list('status', flat=True)
         # User has online station (status=2)
         if 2 in stations_statuses:
@@ -35,7 +35,7 @@ def schedule_station_perms(user, station):
     That includes station owners, moderators, admins.
     see: https://wiki.satnogs.org/Operation#Network_permissions_matrix
     """
-    if user.is_authenticated():
+    if user.is_authenticated:
         # User has online station (status=2) and station is online
         try:
             if user.ground_stations.filter(status=2).exists() and station.status == 2:
@@ -60,7 +60,7 @@ def schedule_stations_perms(user, stations):
     That includes station owners, moderators, admins.
     see: https://wiki.satnogs.org/Operation#Network_permissions_matrix
     """
-    if user.is_authenticated():
+    if user.is_authenticated:
         # User has special permissions
         if user.groups.filter(name='Moderators').exists():
             return {station.id: True for station in stations}
@@ -107,7 +107,7 @@ def delete_perms(user, observation):
     That includes observer, station owner involved, moderators, admins.
     see: https://wiki.satnogs.org/Operation#Network_permissions_matrix
     """
-    if not observation.is_started and user.is_authenticated():
+    if not observation.is_started and user.is_authenticated:
         # User owns the observation
         try:
             if observation.author == user:
@@ -134,7 +134,7 @@ def vet_perms(user, observation):
     That includes observer, station owner involved, moderators, admins.
     see: https://wiki.satnogs.org/Operation#Network_permissions_matrix
     """
-    if user.is_authenticated():
+    if user.is_authenticated:
         # User has online station (status=2)
         if user.ground_stations.filter(status=2).exists():
             return True
@@ -164,7 +164,7 @@ def modify_delete_station_perms(user, station):
     or bulk-delete future observations on a station.
     That includes station owners, moderators and admins.
     """
-    if user.is_authenticated():
+    if user.is_authenticated:
         # User owns the station
         try:
             if user == station.owner:

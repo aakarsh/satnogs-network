@@ -1,4 +1,5 @@
 from django.db import migrations, models
+import django.db.models.deletion
 
 
 class Migration(migrations.Migration):
@@ -40,11 +41,11 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name='tle',
             name='satellite',
-            field=models.ForeignKey(related_name='tles', to='base.Satellite', null=True),
+            field=models.ForeignKey(related_name='tles', on_delete=django.db.models.deletion.CASCADE, to='base.Satellite', null=True),
         ),
         migrations.AddField(
             model_name='observation',
             name='tle',
-            field=models.ForeignKey(to='base.Tle', null=True),
+            field=models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='base.Tle', null=True),
         ),
     ]

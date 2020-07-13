@@ -22,7 +22,7 @@ def stage_notice(request):
 
 def user_processor(request):
     """Returns number of user's unvetted observations."""
-    if request.user.is_authenticated():
+    if request.user.is_authenticated:
         owner_vetting_count = vetting_count(request.user)
         return {'owner_vetting_count': owner_vetting_count}
     return {'owner_vetting_count': ''}
