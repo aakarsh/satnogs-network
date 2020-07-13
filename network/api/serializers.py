@@ -32,7 +32,7 @@ class ObservationSerializer(serializers.ModelSerializer):
     station_lat = serializers.SerializerMethodField()
     station_lng = serializers.SerializerMethodField()
     station_alt = serializers.SerializerMethodField()
-    demoddata = DemodDataSerializer(many=True)
+    demoddata = DemodDataSerializer(required=False, many=True)
 
     class Meta:
         model = Observation
@@ -60,7 +60,6 @@ class ObservationSerializer(serializers.ModelSerializer):
 
     def update(self, instance, validated_data):
         """Updates observation object with validated data"""
-        validated_data.pop('demoddata')
         super(ObservationSerializer, self).update(instance, validated_data)
         return instance
 
