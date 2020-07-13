@@ -5,6 +5,6 @@ from . import views
 
 urlpatterns = [
     url('^$', views.index),
-    url(r'^', include('django.contrib.auth.urls', namespace='auth')),
-    url(r'^', include('social_django.urls', namespace='social')),
+    url(r'^', include(('django.contrib.auth.urls', 'auth'), namespace='auth')),
+    url(r'^', include(('social_django.urls', 'social'), namespace='social')),
 ]
