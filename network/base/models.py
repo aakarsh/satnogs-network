@@ -408,6 +408,14 @@ class Observation(models.Model):
     vetted_status = models.CharField(
         choices=OBSERVATION_STATUSES, max_length=20, default='unknown'
     )
+    """
+    Meaning of values:
+    x < -100      -> Failed
+    -100 =< x < 0 -> Bad
+    0 =< x < 100  -> Unknown (Future if observation not completed)
+    100 =< x      -> Good
+    """
+    observation_status = models.SmallIntegerField(default=0)
     testing = models.BooleanField(default=False)
     rise_azimuth = models.FloatField(blank=True, null=True)
     max_altitude = models.FloatField(blank=True, null=True)
