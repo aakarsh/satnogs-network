@@ -3,7 +3,7 @@ from django.conf import settings
 from django.template.loader import render_to_string
 
 from network import __version__
-from network.base.stats import vetting_count
+from network.base.stats import unknown_count
 
 
 def analytics(request):
@@ -21,11 +21,11 @@ def stage_notice(request):
 
 
 def user_processor(request):
-    """Returns number of user's unvetted observations."""
+    """Returns number of user's observations with unknown status."""
     if request.user.is_authenticated:
-        owner_vetting_count = vetting_count(request.user)
-        return {'owner_vetting_count': owner_vetting_count}
-    return {'owner_vetting_count': ''}
+        owner_unknown_count = unknown_count(request.user)
+        return {'owner_unknown_count': owner_unknown_count}
+    return {'owner_unknown_count': ''}
 
 
 def auth_block(request):

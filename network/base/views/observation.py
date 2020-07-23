@@ -92,14 +92,23 @@ class ObservationListView(ListView):  # pylint: disable=R0901
 
         observations = observations.filter(**filter_dict)
 
-        for filter_name in ['bad', 'good', 'failed']:
-            if not filter_params[filter_name]:
-                observations = observations.exclude(vetted_status=filter_name)
-
+        if not filter_params['failed']:
+            observations = observations.exclude(observation_status__lt=-100)
+        if not filter_params['bad']:
+            observations = observations.exclude(
+                observation_status__gte=-100, observation_status__lt=0
+            )
         if not filter_params['unvetted']:
-            observations = observations.exclude(vetted_status='unknown', end__lte=now())
+            observations = observations.exclude(
+                observation_status__gte=0, observation_status__lt=100, end__lte=now()
+            )
         if not filter_params['future']:
-            observations = observations.exclude(vetted_status='unknown', end__gt=now())
+            observations = observations.exclude(
+                observation_status__gte=0, observation_status__lt=100, end__gt=now()
+            )
+        if not filter_params['good']:
+            observations = observations.exclude(observation_status__gte=100)
+
         if results:
             if 'w0' in results:
                 observations = observations.filter(waterfall='')

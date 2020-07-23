@@ -57,16 +57,18 @@
             <ul class="nav navbar-nav navbar-right">
               <li><a href="https://www.timeanddate.com/worldclock" target="_blank" class="hidden-sm"><span id="current_utc">--:-- UTC</span></a></li>
               {% if request.user.is_authenticated %}
-                {% if owner_vetting_count %}
-                  <li data-toggle="tooltip"
-                      data-placement="bottom"
-                      title="{{ owner_vetting_count }} observations need vetting">
-                    <a href="{% url 'base:observations_list' %}?observer={{ request.user.id }}&future=0&good=0&bad=0&unvetted=1&failed=0">
-                      <span class="glyphicon glyphicon-check" aria-hidden="true"></span>
-                      <span class="badge badge-unvetted">{{ owner_vetting_count }}</span>
-                    </a>
-                  </li>
-                {% endif %}
+                {% with count=owner_unknown_count %}
+                  {% if count %}
+                    <li data-toggle="tooltip"
+                        data-placement="bottom"
+                        title="{{ count }} observations with unknown status">
+                      <a href="{% url 'base:observations_list' %}?observer={{ request.user.id }}&future=0&good=0&bad=0&unvetted=1&failed=0">
+                        <span class="glyphicon glyphicon-check" aria-hidden="true"></span>
+                        <span class="badge badge-unvetted">{{ count }}</span>
+                      </a>
+                    </li>
+                  {% endif %}
+                {% endwith %}
               <li class="dropdown">
                 <a href="#"
                    class="dropdown-toggle"
