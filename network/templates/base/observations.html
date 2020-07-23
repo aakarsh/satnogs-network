@@ -191,6 +191,16 @@
             </span>
           </div>
         </div>
+        <div class="form-group col-md-3">
+          <label for="results-selection">Rated Artifacts</label>
+          <select class="form-control selectpicker" name="rated" autocomplete="off" id="results-selection" multiple>
+            <optgroup label="Waterfall" data-icon="glyphicon-picture" data-max-options="1">
+              <option value="rwu" {% if 'rwu' in rated %}selected{% endif %}>Non Rated</option>
+              <option value="rw1" {% if 'rw1' in rated %}selected{% endif %}>With Signal</option>
+              <option value="rw0" {% if 'rw0' in rated %}selected{% endif %}>Without Signal</option>
+            </optgroup>
+          </select>
+        </div>
         <div class="form-group col-sm-12">
           <button type="submit" class="btn btn-primary pull-right">Update filters</button>
         </div>

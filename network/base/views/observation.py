@@ -57,6 +57,7 @@ class ObservationListView(ListView):  # pylint: disable=R0901
         filter_params = self.get_filter_params()
 
         results = self.request.GET.getlist('results')
+        rated = self.request.GET.getlist('rated')
 
         observations = Observation.objects.prefetch_related(
             'satellite', 'demoddata', 'author', 'ground_station'
@@ -87,7 +88,7 @@ class ObservationListView(ListView):  # pylint: disable=R0901
                         filter_params['future'], filter_params['failed']
                     ]
                 )
-            ) or results or filter_dict
+            ) or results or rated or filter_dict
         )
 
         observations = observations.filter(**filter_dict)
@@ -122,6 +123,14 @@ class ObservationListView(ListView):  # pylint: disable=R0901
                 observations = observations.filter(demoddata__payload_demod__isnull=True)
             elif 'd1' in results:
                 observations = observations.exclude(demoddata__payload_demod__isnull=True)
+
+        if rated:
+            if 'rwu' in rated:
+                observations = observations.filter(waterfall_status__isnull=True)
+            elif 'rw1' in rated:
+                observations = observations.filter(waterfall_status=True)
+            elif 'rw0' in rated:
+                observations = observations.filter(waterfall_status=False)
         return observations
 
     def get_context_data(self, **kwargs):  # pylint: disable=W0221
@@ -145,7 +154,8 @@ class ObservationListView(ListView):  # pylint: disable=R0901
         context['unvetted'] = self.request.GET.get('unvetted', '1')
         context['failed'] = self.request.GET.get('failed', '1')
         context['results'] = self.request.GET.getlist('results')
-        context['filtered'] = self.filtered
+        context['rated'] = self.request.GET.getlist('rated')
+        context['filtered'] = bool(self.filtered)
         if norad_cat_id is not None and norad_cat_id != '':
             context['norad'] = int(norad_cat_id)
         if observer is not None and observer != '':
