@@ -401,6 +401,13 @@ class Observation(models.Model):
     client_metadata = models.TextField(blank=True)
     payload = models.FileField(upload_to=_name_obs_files, blank=True, null=True)
     waterfall = models.ImageField(upload_to=_name_obs_files, blank=True, null=True)
+    """
+    Meaning of values:
+    True -> Waterfall has signal of the observed satellite
+    False -> Waterfall has not signal of the observed satellite
+    None -> Uknown whether waterfall has or hasn't signal of the observed satellite
+    """
+    waterfall_status = models.BooleanField(blank=True, null=True, default=None)
     vetted_datetime = models.DateTimeField(null=True, blank=True)
     vetted_user = models.ForeignKey(
         User, related_name='observations_vetted', on_delete=models.SET_NULL, null=True, blank=True
