@@ -29,9 +29,9 @@ BASE_URLPATTERNS = (
             name='observation_delete'
         ),
         url(
-            r'^observation_vet/(?P<observation_id>[0-9]+)/$',
-            observation.observation_vet,
-            name='observation_vet'
+            r'^waterfall_vet/(?P<observation_id>[0-9]+)/$',
+            observation.waterfall_vet,
+            name='waterfall_vet'
         ),
         url(
             r'^satellites/(?P<norad_id>[0-9]+)/$',

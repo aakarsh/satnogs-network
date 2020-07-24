@@ -403,14 +403,14 @@ class Observation(models.Model):
     waterfall = models.ImageField(upload_to=_name_obs_files, blank=True, null=True)
     """
     Meaning of values:
-    True -> Waterfall has signal of the observed satellite
-    False -> Waterfall has not signal of the observed satellite
-    None -> Uknown whether waterfall has or hasn't signal of the observed satellite
+    True -> Waterfall has signal of the observed satellite (with-signal)
+    False -> Waterfall has not signal of the observed satellite (without-signal)
+    None -> Uknown whether waterfall has or hasn't signal of the observed satellite (unknown)
     """
     waterfall_status = models.BooleanField(blank=True, null=True, default=None)
-    vetted_datetime = models.DateTimeField(null=True, blank=True)
-    vetted_user = models.ForeignKey(
-        User, related_name='observations_vetted', on_delete=models.SET_NULL, null=True, blank=True
+    waterfall_status_datetime = models.DateTimeField(null=True, blank=True)
+    waterfall_status_user = models.ForeignKey(
+        User, related_name='waterfalls_vetted', on_delete=models.SET_NULL, null=True, blank=True
     )
     vetted_status = models.CharField(
         choices=OBSERVATION_STATUSES, max_length=20, default='unknown'
@@ -488,6 +488,54 @@ class Observation(models.Model):
     def is_failed(self):
         """Return true if observation is vetted as failed"""
         return self.vetted_status == 'failed'
+
+    # The values bellow are used as returned values in the API and for css rules in templates
+    @property
+    def observation_status_label(self):
+        """Return label for observation_status field"""
+        if self.is_future:
+            return "future"
+        if self.observation_status < -100:
+            return "failed"
+        if -100 <= self.observation_status < 0:
+            return "bad"
+        if 0 <= self.observation_status < 100:
+            return "unknown"
+        return "good"
+
+    # The values bellow are used as displayed values in templates
+    @property
+    def observation_status_display(self):
+        """Return display name for observation_status field"""
+        if self.is_future:
+            return "Future"
+        if self.observation_status < -100:
+            return "Failed"
+        if -100 <= self.observation_status < 0:
+            return "Bad"
+        if 0 <= self.observation_status < 100:
+            return "Unknown"
+        return "Good"
+
+    # The values bellow are used as returned values in the API and for css rules in templates
+    @property
+    def waterfall_status_label(self):
+        """Return label for waterfall_status field"""
+        if self.waterfall_status is None:
+            return 'unknown'
+        if self.waterfall_status:
+            return 'with-signal'
+        return 'without-signal'
+
+    # The values bellow are used as displayed values in templates
+    @property
+    def waterfall_status_display(self):
+        """Return display name for waterfall_status field"""
+        if self.waterfall_status is None:
+            return 'Unknown'
+        if self.waterfall_status:
+            return 'With Signal'
+        return 'Without Signal'
 
     @property
     def has_waterfall(self):

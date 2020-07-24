@@ -116,29 +116,37 @@ $(document).ready(function() {
              </div>`);
     }
 
-    function change_vetting_labels(status, status_display, user, datetime){
-        $('#vetting-status').find('button').each(function(){
-            if(this.dataset.status == status){
+    function change_vetting_labels(user, datetime, waterfall_status_label, waterfall_status_display,
+        observation_status, observation_status_label, observation_status_display){
+        $('#waterfall-status').find('button').each(function(){
+            if(this.dataset.status == waterfall_status_label){
                 $(this).addClass('hidden');
             } else {
                 $(this).removeClass('hidden');
             }
         });
-        var label_classes = 'label-unknown label-good label-bad label-failed';
-        $('#vetting-status-label').removeClass(label_classes).addClass('label-' + status);
-        $('#vetting-status-label').text(status_display);
-        var title = 'Vetted ' + status + ' on ' + datetime + ' by ' + user;
-        if(status == 'unknown'){
-            title = 'This observation needs vetting';
+
+        var waterfall_label_classes = 'label-unknown label-with-signal label-without-signal';
+        $('#waterfall-status-label').removeClass(waterfall_label_classes).addClass('label-' + waterfall_status_label);
+        $('#waterfall-status-label').text(waterfall_status_display);
+        var waterfall_status_title = 'Vetted ' + waterfall_status_display + ' on ' + datetime + ' by ' + user;
+        if(waterfall_status_label == 'unknown'){
+            waterfall_status_title = 'Waterfall needs vetting';
         }
-        $('#vetting-status-label').prop('title', title).tooltip('fixTitle');
+        $('#waterfall-status-label').prop('title', waterfall_status_title).tooltip('fixTitle');
+
+        var rating_label_classes = 'label-unknown label-future label-good label-bad label-failed';
+        $('#rating-status span').removeClass(rating_label_classes).addClass('label-' + observation_status_label);
+        $('#rating-status span').text(observation_status_display);
+        var observation_status_title = observation_status;
+        $('#rating-status span').prop('title', observation_status_title).tooltip('fixTitle');
     }
 
     //Vetting request
     function vet_observation(id, vet_status){
         var data = {};
         data.status = vet_status;
-        var url = '/observation_vet/' + id + '/';
+        var url = '/waterfall_vet/' + id + '/';
         $.ajax({
             type: 'POST',
             url: url,
@@ -146,30 +154,42 @@ $(document).ready(function() {
             dataType: 'json',
             beforeSend: function(xhr) {
                 xhr.setRequestHeader('X-CSRFToken', $('[name="csrfmiddlewaretoken"]').val());
-                $('#vetting-status').hide();
+                $('#waterfall-status-label').hide();
+                $('#waterfall-status-form').hide();
+                $('#rating-status').hide();
                 $('#vetting-spinner').show();
+                $('#rating-spinner').show();
             }
         }).done(function(results) {
             if (Object.prototype.hasOwnProperty.call(results, 'error')) {
                 var error_msg = results.error;
                 show_alert('danger',error_msg);
             } else {
-                show_alert('success', 'Observation is vetted succesfully as ' + results.vetted_status);
-                change_vetting_labels(results.vetted_status, results.vetted_status_display, results.vetted_user, results.vetted_datetime);
+                show_alert('success', 'Waterfall is vetted succesfully as ' + results.waterfall_status);
+                change_vetting_labels(results.waterfall_status_user, results.waterfall_status_datetime,
+                    results.waterfall_status_label, results.waterfall_status_display,
+                    results.observation_status, results.observation_status_label,
+                    results.observation_status_display);
             }
             $('#vetting-spinner').hide();
-            $('#vetting-status').show();
+            $('#rating-spinner').hide();
+            $('#waterfall-status-label').show();
+            $('#waterfall-status-form').show();
+            $('#rating-status').show();
             return;
         }).fail(function() {
             var error_msg = 'Something went wrong, please try again';
             show_alert('danger', error_msg);
             $('#vetting-spinner').hide();
-            $('#vetting-status').show();
+            $('#rating-spinner').hide();
+            $('#waterfall-status-label').show();
+            $('#waterfall-status-form').show();
+            $('#rating-status').show();
             return;
         });
     }
 
-    $('#vetting-status button').click( function(){
+    $('#waterfall-status button').click( function(){
         var vet_status = $(this).data('status');
         var id = $(this).data('id');
         $(this).blur();
@@ -246,17 +266,14 @@ $(document).ready(function() {
             var link_discuss = $('#obs-discuss');
             link_discuss[0].click();
         } else if (event.which == 85) {
-            var link_unknown = $('#unknown-data');
+            var link_unknown = $('#unknown-status');
             link_unknown[0].click();
         } else if (event.which == 71) {
-            var link_good = $('#good-data');
+            var link_good = $('#with-signal-status');
             link_good[0].click();
         } else if (event.which == 66) {
-            var link_bad = $('#bad-data');
+            var link_bad = $('#without-signal-status');
             link_bad[0].click();
-        } else if (event.which == 70) {
-            var link_failed = $('#failed-data');
-            link_failed[0].click();
         }
     });
 });

@@ -107,10 +107,10 @@ class ObservationFactory(factory.django.DjangoModelFactory):
     end = factory.LazyAttribute(lambda x: x.start + timedelta(hours=random.randint(1, 8)))
     ground_station = factory.SubFactory(StationFactory)
     payload = factory.django.FileField(filename='data.ogg')
-    vetted_datetime = factory.LazyAttribute(
+    waterfall_status_datetime = factory.LazyAttribute(
         lambda x: x.end + timedelta(hours=random.randint(1, 20))
     )
-    vetted_user = factory.SubFactory(UserFactory)
+    waterfall_status_user = factory.SubFactory(UserFactory)
     vetted_status = fuzzy.FuzzyChoice(choices=OBSERVATION_STATUS_IDS)
     transmitter_uuid = fuzzy.FuzzyText(length=20)
     transmitter_description = fuzzy.FuzzyText()
@@ -136,7 +136,7 @@ class RealisticObservationFactory(ObservationFactory):
     tle = factory.Iterator(Tle.objects.all())
     author = factory.Iterator(User.objects.all())
     ground_station = factory.Iterator(Station.objects.all())
-    vetted_user = factory.Iterator(User.objects.all())
+    waterfall_status_user = factory.Iterator(User.objects.all())
 
 
 class DemodDataFactory(factory.django.DjangoModelFactory):

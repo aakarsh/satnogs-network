@@ -79,59 +79,34 @@
       </div>
       <div class="front-line">
         <span class="label label-default">Status</span>
-        <span id="vetting-spinner" class="front-data">
+        <span id="rating-spinner" class="front-data">
           <div class="spinner">
             <div class="bounce1"></div>
             <div class="bounce2"></div>
             <div class="bounce3"></div>
           </div>
         </span>
-        <span id="vetting-status" class="front-data">
-          <form class="hidden">{% csrf_token %}</form>
+        <span id="rating-status" class="front-data">
           {% if observation.is_future %}
-            <span class="label label-xs label-info" aria-hidden="true"
+            <span class="label label-future" aria-hidden="true"
                   data-toggle="tooltip" data-placement="right"
                   title="This observation is in the future">Pending</span>
-          {% else %}
-            <span id="vetting-status-label" class="label label-xs label-{{ observation.vetted_status }}" aria-hidden="true"
+          {% elif observation.observation_status < -100 %}
+            <span class="label label-failed" aria-hidden="true"
                   data-toggle="tooltip" data-placement="right"
-                  {% if observation.is_vetted %}
-                    title="Vetted {{ observation.vetted_status }} on {{ observation.vetted_datetime|date:"Y-m-d H:i:s" }}
-                           {% if observation.vetted_user %} by {{ observation.vetted_user.displayname }}
-                           {% else %} automatically
-                           {% endif %}"
-                  {% else %}
-                    title="This observation needs vetting"
-                  {% endif %}
-            >{{ observation.get_vetted_status_display }}</span>
-            {% if can_vet %}
-              <div class="pull-right">
-                <a href="https://wiki.satnogs.org/Operation#Rating_observations" target="_blank">
-                  <span class="glyphicon glyphicon-info-sign" aria-hidden="true" 
-                        data-toggle="tooltip" title="Help"></span>
-                </a>
-                <button id="unknown-data" type="button" title="Unknown (u)"
-                        class="btn btn-xs btn-warning {% if observation.vetted_status == "unknown" %}hidden{% endif %}"
-                        data-id="{{ observation.id }}" data-status="unknown" data-toggle="tooltip">
-                  <span class="glyphicon glyphicon-question-sign" aria-hidden="true"></span>
-                </button>
-                <button id="good-data" type="button" title="Good (g)"
-                        class="btn btn-xs btn-success {% if observation.vetted_status == "good" %}hidden{% endif %}"
-                        data-id="{{ observation.id }}" data-status="good" data-toggle="tooltip">
-                  <span class="glyphicon glyphicon-ok" aria-hidden="true"></span>
-                </button>
-                <button id="bad-data" type="button" title="Bad (b)"
-                        class="btn btn-xs btn-danger {% if observation.vetted_status == "bad" %}hidden{% endif %}"
-                        data-id="{{ observation.id }}" data-status="bad" data-toggle="tooltip">
-                  <span class="glyphicon glyphicon-remove" aria-hidden="true"></span>
-                </button>
-                <button id="failed-data" type="button" title="Failed (f)"
-                        class="btn btn-xs btn-failed {% if observation.vetted_status == "failed" %}hidden{% endif %}"
-                        data-id="{{ observation.id }}" data-status="failed" data-toggle="tooltip">
-                  <span class="glyphicon glyphicon-alert" aria-hidden="true"></span>
-                </button>
-              </div>
-            {% endif %}
+                  title="{{ observation.observation_status }}">Failed</span>
+          {% elif observation.observation_status >= -100  and observation.observation_status < 0 %}
+            <span class="label label-bad" aria-hidden="true"
+                  data-toggle="tooltip" data-placement="right"
+                  title="{{ observation.observation_status }}">Bad</span>
+          {% elif observation.observation_status >= 0  and observation.observation_status < 100 %}
+            <span class="label label-unknown" aria-hidden="true"
+                  data-toggle="tooltip" data-placement="right"
+                  title="{{ observation.observation_status }}">Unknown</span>
+          {% elif observation.observation_status >= 100 %}
+            <span class="label label-good" aria-hidden="true"
+                  data-toggle="tooltip" data-placement="right"
+                  title="{{ observation.observation_status }}">Good</span>
           {% endif %}
         </span>
       </div>
@@ -329,7 +304,66 @@
 
         <div class="tab-content">
           <div role="tabpanel" class="tab-pane active" id="tab-waterfall">
-            {% if observation.waterfall %}
+            {% if observation.has_waterfall %}
+              <div id="waterfall-status">
+                <div id="waterfall-current-status">
+                  <div class="label label-default">Waterfall Status:</div>
+                  {% if observation.waterfall_status == True %}
+                    <div id="waterfall-status-label" class="label label-with-signal" aria-hidden="true"
+                          data-toggle="tooltip" data-placement="right"
+                            title="Vetted With Signal on {{ observation.waterfall_status_datetime|date:"Y-m-d H:i:s" }}
+                                   {% if observation.waterfall_status_user %} by {{ observation.waterfall_status_user.displayname }}
+                                   {% else %} automatically
+                                   {% endif %}"
+                    >With Signal</div>
+
+                  {% elif observation.waterfall_status == False %}
+                    <div id="waterfall-status-label" class="label label-without-signal" aria-hidden="true"
+                          data-toggle="tooltip" data-placement="right"
+                            title="Vetted Without Signal on {{ observation.waterfall_status_datetime|date:"Y-m-d H:i:s" }}
+                                   {% if observation.waterfall_status_user %} by {{ observation.waterfall_status_user.displayname }}
+                                   {% else %} automatically
+                                   {% endif %}"
+                    >Without Signal</div>
+                  {% else %}
+                    <div id="waterfall-status-label" class="label label-unknown" aria-hidden="true"
+                          data-toggle="tooltip" data-placement="right" title="Waterfall needs vetting"
+                    >Unknown</div>
+                  {% endif %}
+                </div>
+                <div id="vetting-spinner">
+                  <div class="spinner">
+                    <div class="bounce1"></div>
+                    <div class="bounce2"></div>
+                    <div class="bounce3"></div>
+                  </div>
+                </div>
+                {% if can_vet %}
+                  <div id="waterfall-status-form">
+                    <div class="label label-default">Change Waterfall Status:</div>
+                      <a href="https://wiki.satnogs.org/Operation#Rating_observations" target="_blank">
+                        <span class="glyphicon glyphicon-info-sign" aria-hidden="true"
+                              data-toggle="tooltip" title="Help"></span>
+                      </a>
+                    <form class="hidden">{% csrf_token %}</form>
+                    <button id="unknown-status" type="button" title="Unknown (u)"
+                            class="btn btn-xs btn-warning {% if observation.waterfall_status is None %}hidden{% endif %}"
+                            data-id="{{ observation.id }}" data-status="unknown" data-toggle="tooltip">
+                      Unknown
+                    </button>
+                    <button id="with-signal-status" type="button" title="With Signal (g)"
+                            class="btn btn-xs btn-success {% if observation.waterfall_status == True %}hidden{% endif %}"
+                            data-id="{{ observation.id }}" data-status="with-signal" data-toggle="tooltip">
+                      With Signal
+                    </button>
+                    <button id="without-signal-status" type="button" title="Without Signal (b)"
+                            class="btn btn-xs btn-danger {% if observation.waterfall_status == False %}hidden{% endif %}"
+                            data-id="{{ observation.id }}" data-status="without-signal" data-toggle="tooltip">
+                      Without Signal
+                    </button>
+                  </div>
+                {% endif %}
+              </div>
               <div id="waterfall-{{ observation.id }}" class="waterfall">
                 <img class="img-responsive waterfall" src="{{ MEDIA_URL }}{{ observation.waterfall }}" alt="waterfall">
               </div>

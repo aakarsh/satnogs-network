@@ -12,6 +12,7 @@ from network.base.db_api import DBConnectionError, get_transmitters_by_norad_id
 from network.base.decorators import ajax_required
 from network.base.models import Observation, Satellite, Station
 from network.base.perms import delete_perms, schedule_perms, vet_perms
+from network.base.rating import get_observation_status_rate
 from network.base.stats import satellite_stats_by_transmitter_list, \
     transmitters_with_stats
 from network.base.utils import community_get_discussion_details
@@ -96,17 +97,11 @@ class ObservationListView(ListView):  # pylint: disable=R0901
         if not filter_params['failed']:
             observations = observations.exclude(observation_status__lt=-100)
         if not filter_params['bad']:
-            observations = observations.exclude(
-                observation_status__gte=-100, observation_status__lt=0
-            )
+            observations = observations.exclude(observation_status__range=(-100, -1))
         if not filter_params['unvetted']:
-            observations = observations.exclude(
-                observation_status__gte=0, observation_status__lt=100, end__lte=now()
-            )
+            observations = observations.exclude(observation_status__range=(0, 99), end__lte=now())
         if not filter_params['future']:
-            observations = observations.exclude(
-                observation_status__gte=0, observation_status__lt=100, end__gt=now()
-            )
+            observations = observations.exclude(end__gt=now())
         if not filter_params['good']:
             observations = observations.exclude(observation_status__gte=100)
 
@@ -231,7 +226,7 @@ def observation_delete(request, observation_id):
 
 @login_required
 @ajax_required
-def observation_vet(request, observation_id):
+def waterfall_vet(request, observation_id):
     """Handles request for vetting an observation"""
     try:
         observation = Observation.objects.get(id=observation_id)
@@ -242,24 +237,55 @@ def observation_vet(request, observation_id):
     status = request.POST.get('status', None)
     can_vet = vet_perms(request.user, observation)
 
-    if status not in ['good', 'bad', 'failed', 'unknown']:
-        data = {
-            'error': 'Invalid status, select one of \'good\', \'bad\', \'failed\' and \'unknown\'.'
-        }
-        return JsonResponse(data, safe=False)
     if not can_vet:
         data = {'error': 'Permission denied.'}
         return JsonResponse(data, safe=False)
+    if not observation.has_waterfall:
+        data = {'error': 'Observation without waterfall.'}
+        return JsonResponse(data, safe=False)
 
-    observation.vetted_status = status
-    observation.vetted_user = request.user
-    observation.vetted_datetime = now()
-    observation.save(update_fields=['vetted_status', 'vetted_user', 'vetted_datetime'])
+    if status not in ['with-signal', 'without-signal', 'unknown']:
+        data = {
+            'error':
+            'Invalid status, select one of \'with-signal\', \'without-signal\' and \'unknown\'.'
+        }
+        return JsonResponse(data, safe=False)
+
+    if status == 'with-signal':
+        observation.waterfall_status = True
+    elif status == 'without-signal':
+        observation.waterfall_status = False
+    elif status == 'unknown':
+        observation.waterfall_status = None
+
+    observation.waterfall_status_user = request.user
+    observation.waterfall_status_datetime = now()
+    observation.observation_status = get_observation_status_rate(
+        observation, 'set_waterfall_status', observation.waterfall_status
+    )
+    observation.save(
+        update_fields=[
+            'waterfall_status', 'waterfall_status_user', 'waterfall_status_datetime',
+            'observation_status'
+        ]
+    )
     data = {
-        'vetted_status': observation.vetted_status,
-        'vetted_status_display': observation.get_vetted_status_display(),
-        'vetted_user': observation.vetted_user.displayname,
-        'vetted_datetime': observation.vetted_datetime.strftime('%Y-%m-%d %H:%M:%S')
+        'waterfall_status_user':
+        observation.waterfall_status_user.displayname,
+        'waterfall_status_datetime':
+        observation.waterfall_status_datetime.strftime('%Y-%m-%d %H:%M:%S'),
+        'waterfall_status':
+        observation.waterfall_status,
+        'waterfall_status_label':
+        observation.waterfall_status_label,
+        'waterfall_status_display':
+        observation.waterfall_status_display,
+        'observation_status':
+        observation.observation_status,
+        'observation_status_label':
+        observation.observation_status_label,
+        'observation_status_display':
+        observation.observation_status_display,
     }
     return JsonResponse(data, safe=False)
 

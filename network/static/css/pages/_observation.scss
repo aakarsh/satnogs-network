@@ -85,8 +85,22 @@
     margin-top: 5px;
 }
 
-#vetting-spinner {
+#vetting-spinner,
+#rating-spinner {
     display: none;
+}
+
+#waterfall-status {
+    display: flex;
+    justify-content: space-between;
+    align-content: center;
+    align-items: center;
+    flex-wrap: wrap;
+}
+
+#waterfall-current-status,
+#waterfall-status-form {
+    margin: 5px;
 }
 
 @media screen and (max-width: 835px) {

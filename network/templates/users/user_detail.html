@@ -145,7 +145,7 @@
                 <td>
                   <a href="{% url 'base:observation_view' observation_id=observation.id %}">
                     {% if observation.is_vetted %}
-                      <span class="label label-{{observation.vetted_status }}">{{ observation.id }}</span>
+                      <span class="label label-{{observation.observation_status_label }}">{{ observation.id }}</span>
                     {% elif observation.is_future %}
                       <span class="label label-future">{{ observation.id }}</span>
                     {% else %}
