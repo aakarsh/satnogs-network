@@ -85,7 +85,7 @@
                   </a>
                 </td>
                 <td>
-                  <a href="{% url 'base:observations_list' %}?future=1&good=0&bad=0&unvetted=0&failed=0&station={{ station.id }}" class="badge badge-info">
+                  <a href="{% url 'base:observations_list' %}?future=1&good=0&bad=0&unknown=0&failed=0&station={{ station.id }}" class="badge badge-info">
                       {{ station.future_obs }}
                   </a>
                 </td>
@@ -144,13 +144,7 @@
               <tr class="clickable-row" data-href="{% url 'base:observation_view' observation_id=observation.id %}">
                 <td>
                   <a href="{% url 'base:observation_view' observation_id=observation.id %}">
-                    {% if observation.is_vetted %}
                       <span class="label label-{{observation.observation_status_label }}">{{ observation.id }}</span>
-                    {% elif observation.is_future %}
-                      <span class="label label-future">{{ observation.id }}</span>
-                    {% else %}
-                      <span class="label label-unknown">{{ observation.id }}</span>
-                    {% endif %}
                   </a>
                 </td>
                 <td>

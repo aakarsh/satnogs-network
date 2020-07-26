@@ -111,6 +111,8 @@ class ObservationFactory(factory.django.DjangoModelFactory):
         lambda x: x.end + timedelta(hours=random.randint(1, 20))
     )
     waterfall_status_user = factory.SubFactory(UserFactory)
+    waterfall_status = fuzzy.FuzzyChoice(choices=[None, True, False])
+    observation_status = fuzzy.FuzzyInteger(-1000, 1000, step=10)
     vetted_status = fuzzy.FuzzyChoice(choices=OBSERVATION_STATUS_IDS)
     transmitter_uuid = fuzzy.FuzzyText(length=20)
     transmitter_description = fuzzy.FuzzyText()
@@ -208,24 +210,24 @@ class ObservationsListViewTest(TestCase):
         self.satellites = []
         self.observations_bad = []
         self.observations_good = []
-        self.observations_unvetted = []
+        self.observations_unknown = []
         self.observations = []
         with transaction.atomic():
             for _ in range(1, 10):
                 self.satellites.append(SatelliteFactory())
             for _ in range(1, 10):
                 self.stations.append(StationFactory())
-            for _ in range(1, 5):
-                obs = ObservationFactory(vetted_status='bad')
+            for i in range(1, 5):
+                obs = ObservationFactory(observation_status=-100, start=now() - timedelta(days=i))
                 self.observations_bad.append(obs)
                 self.observations.append(obs)
-            for _ in range(1, 5):
-                obs = ObservationFactory(vetted_status='good')
+            for i in range(1, 5):
+                obs = ObservationFactory(observation_status=100, start=now() - timedelta(days=i))
                 self.observations_good.append(obs)
                 self.observations.append(obs)
             for _ in range(1, 5):
-                obs = ObservationFactory(vetted_status='unknown')
-                self.observations_unvetted.append(obs)
+                obs = ObservationFactory(observation_status=0)
+                self.observations_unknown.append(obs)
                 self.observations.append(obs)
 
     def test_observations_list(self):
@@ -236,23 +238,23 @@ class ObservationsListViewTest(TestCase):
 
     def test_observations_list_select_bad(self):
         """Test for transmitter modes of each bad observation in observations page"""
-        response = self.client.get('/observations/?bad=1')
+        response = self.client.get('/observations/?future=0&good=0&unknown=0&failed=0')
 
         for observation in self.observations_bad:
             self.assertContains(response, observation.transmitter_mode)
 
     def test_observations_list_select_good(self):
         """Test for transmitter modes of each good observation in observations page"""
-        response = self.client.get('/observations/?good=1')
+        response = self.client.get('/observations/?future=0&bad=0&unknown=0&failed=0')
 
         for observation in self.observations_good:
             self.assertContains(response, observation.transmitter_mode)
 
-    def test_observations_list_select_unvetted(self):
-        """Test for transmitter modes of each unvetted observation in observations page"""
-        response = self.client.get('/observations/?unvetted=1')
+    def test_observations_list_select_unknown(self):
+        """Test for transmitter modes of each unknown observation in observations page"""
+        response = self.client.get('/observations/?bad=0&good=0&failed=0')
 
-        for observation in self.observations_unvetted:
+        for observation in self.observations_unknown:
             self.assertContains(response, observation.transmitter_mode)
 
 

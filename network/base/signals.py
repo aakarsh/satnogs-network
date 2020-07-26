@@ -17,7 +17,6 @@ def _observation_post_save(sender, instance, created, **kwargs):  # pylint: disa
     Post save Observation operations
     * Check audio file for duration less than 1 sec
     * Validate audio file
-    * Auto vet as good observation with DemodData
     * Mark Observations from testing stations
     * Run task for archiving audio
     """

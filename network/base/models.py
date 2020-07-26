@@ -145,9 +145,13 @@ class Station(models.Model):
         """Return the success rate of the station - successful observation over failed ones"""
         rate = cache.get('station-{0}-rate'.format(self.id))
         if not rate:
-            observations = self.observations.exclude(testing=True).exclude(vetted_status="unknown")
+            observations = self.observations.exclude(testing=True
+                                                     ).exclude(observation_status__range=(0, 99))
             success = observations.filter(
-                id__in=(o.id for o in observations if o.is_good or o.is_bad)
+                id__in=(
+                    o.id for o in observations
+                    if o.observation_status >= 100 or -100 <= o.observation_status < 0
+                )
             ).count()
             if observations:
                 rate = int(100 * (success / observations.count()))
@@ -464,30 +468,6 @@ class Observation(models.Model):
     def is_started(self):
         """Return true if observation has started (start time is in the past)"""
         return self.start < now()
-
-    # this payload has been vetted good/bad/failed by someone
-    @property
-    def is_vetted(self):
-        """Return true if observation is vetted"""
-        return not self.vetted_status == 'unknown'
-
-    # this payload has been vetted as good by someone
-    @property
-    def is_good(self):
-        """Return true if observation is vetted as good"""
-        return self.vetted_status == 'good'
-
-    # this payload has been vetted as bad by someone
-    @property
-    def is_bad(self):
-        """Return true if observation is vetted as bad"""
-        return self.vetted_status == 'bad'
-
-    # this payload has been vetted as failed by someone
-    @property
-    def is_failed(self):
-        """Return true if observation is vetted as failed"""
-        return self.vetted_status == 'failed'
 
     # The values bellow are used as returned values in the API and for css rules in templates
     @property

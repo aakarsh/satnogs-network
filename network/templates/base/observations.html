@@ -86,13 +86,13 @@
               <input type="checkbox" name="bad" value="0" {% if bad == '0' %}checked{% endif %} autocomplete="off">
               <span class="glyphicon glyphicon-remove" aria-hidden="true"></span>
             </label>
-            <label class="btn btn-unknown btn-sm {% if unvetted == '0' %}active btn-inactive{% endif %}"
+            <label class="btn btn-unknown btn-sm {% if unknown == '0' %}active btn-inactive{% endif %}"
                    aria-expanded="true"
-                   aria-controls="unvetted"
+                   aria-controls="unknown"
                    data-toggle="tooltip"
                    data-placement="bottom"
-                   title="Unvetted">
-              <input type="checkbox" name="unvetted" value="0" {% if unvetted == '0' %}checked{% endif %} autocomplete="off">
+                   title="Unknown">
+              <input type="checkbox" name="unknown" value="0" {% if unknown == '0' %}checked{% endif %} autocomplete="off">
               <span class="glyphicon glyphicon-question-sign" aria-hidden="true"></span>
             </label>
             <label class="btn btn-failed btn-sm {% if failed == '0' %}active btn-inactive{% endif %}"

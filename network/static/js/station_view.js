@@ -175,9 +175,9 @@ $(document).ready(function() {
                                  data-toggle="tooltip" data-placement="bottom" title="${data.nextpasses[i].success_rate}% (${data.nextpasses[i].good_count}) Good">
                               <span class="sr-only">${data.nextpasses[i].success_rate}% Good</span>
                             </div>
-                            <div class="progress-bar progress-bar-warning" style="width: ${data.nextpasses[i].unvetted_rate}%"
-                                 data-toggle="tooltip" data-placement="bottom" title="${data.nextpasses[i].unvetted_rate}% (${data.nextpasses[i].unvetted_count}) Unvetted">
-                              <span class="sr-only">${data.nextpasses[i].unvetted_rate}% Unvetted</span>
+                            <div class="progress-bar progress-bar-warning" style="width: ${data.nextpasses[i].unknown_rate}%"
+                                 data-toggle="tooltip" data-placement="bottom" title="${data.nextpasses[i].unknown_rate}% (${data.nextpasses[i].unknown_count}) Unknown">
+                              <span class="sr-only">${data.nextpasses[i].unknown_rate}% Unknown</span>
                             </div>
                             <div class="progress-bar progress-bar-danger" style="width: ${data.nextpasses[i].bad_rate}%"
                                  data-toggle="tooltip" data-placement="bottom" title="${data.nextpasses[i].bad_rate}% (${data.nextpasses[i].bad_count}) Bad">

@@ -62,9 +62,9 @@
                     <li data-toggle="tooltip"
                         data-placement="bottom"
                         title="{{ count }} observations with unknown status">
-                      <a href="{% url 'base:observations_list' %}?observer={{ request.user.id }}&future=0&good=0&bad=0&unvetted=1&failed=0">
+                      <a href="{% url 'base:observations_list' %}?observer={{ request.user.id }}&future=0&good=0&bad=0&unknown=1&failed=0">
                         <span class="glyphicon glyphicon-check" aria-hidden="true"></span>
-                        <span class="badge badge-unvetted">{{ count }}</span>
+                        <span class="badge badge-unknown">{{ count }}</span>
                       </a>
                     </li>
                   {% endif %}

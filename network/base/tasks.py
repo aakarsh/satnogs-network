@@ -196,7 +196,7 @@ def clean_observations():
                                       .exclude(payload='')
     for obs in observations:
         if settings.ENVIRONMENT == 'stage':
-            if not obs.is_good:
+            if not obs.observation >= 100:
                 obs.delete()
                 continue
         if os.path.isfile(obs.payload.path):
@@ -274,9 +274,13 @@ def stations_cache_rates():
     """Cache the success rate of the stations"""
     stations = Station.objects.all()
     for station in stations:
-        observations = station.observations.exclude(testing=True).exclude(vetted_status="unknown")
+        observations = station.observations.exclude(testing=True
+                                                    ).exclude(observation_status__range=(0, 99))
         success = observations.filter(
-            id__in=(o.id for o in observations if o.is_good or o.is_bad)
+            id__in=(
+                o.id for o in observations
+                if o.observation_status >= 100 or -100 <= o.observation_status < 0
+            )
         ).count()
         if observations:
             rate = int(100 * (success / observations.count()))

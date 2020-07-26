@@ -28,7 +28,7 @@ class ObservationListView(ListView):  # pylint: disable=R0901
     paginate_by = settings.ITEMS_PER_PAGE
     template_name = 'base/observations.html'
     str_filters = ['norad', 'observer', 'station', 'start', 'end']
-    flag_filters = ['bad', 'good', 'unvetted', 'future', 'failed']
+    flag_filters = ['bad', 'good', 'unknown', 'future', 'failed']
     filtered = None
 
     def get_filter_params(self):
@@ -53,7 +53,7 @@ class ObservationListView(ListView):  # pylint: disable=R0901
     def get_queryset(self):
         """
         Optionally filter based on norad get argument
-        Optionally filter based on future/good/bad/unvetted/failed
+        Optionally filter based on future/good/bad/unknown/failed
         """
         filter_params = self.get_filter_params()
 
@@ -85,7 +85,7 @@ class ObservationListView(ListView):  # pylint: disable=R0901
             (
                 not all(
                     [
-                        filter_params['bad'], filter_params['good'], filter_params['unvetted'],
+                        filter_params['bad'], filter_params['good'], filter_params['unknown'],
                         filter_params['future'], filter_params['failed']
                     ]
                 )
@@ -98,7 +98,7 @@ class ObservationListView(ListView):  # pylint: disable=R0901
             observations = observations.exclude(observation_status__lt=-100)
         if not filter_params['bad']:
             observations = observations.exclude(observation_status__range=(-100, -1))
-        if not filter_params['unvetted']:
+        if not filter_params['unknown']:
             observations = observations.exclude(observation_status__range=(0, 99), end__lte=now())
         if not filter_params['future']:
             observations = observations.exclude(end__gt=now())
@@ -146,7 +146,7 @@ class ObservationListView(ListView):  # pylint: disable=R0901
         context['future'] = self.request.GET.get('future', '1')
         context['bad'] = self.request.GET.get('bad', '1')
         context['good'] = self.request.GET.get('good', '1')
-        context['unvetted'] = self.request.GET.get('unvetted', '1')
+        context['unknown'] = self.request.GET.get('unknown', '1')
         context['failed'] = self.request.GET.get('failed', '1')
         context['results'] = self.request.GET.getlist('results')
         context['rated'] = self.request.GET.getlist('rated')
@@ -227,7 +227,7 @@ def observation_delete(request, observation_id):
 @login_required
 @ajax_required
 def waterfall_vet(request, observation_id):
-    """Handles request for vetting an observation"""
+    """Handles request for vetting a waterfall"""
     try:
         observation = Observation.objects.get(id=observation_id)
     except Observation.DoesNotExist:
@@ -312,7 +312,7 @@ def satellite_view(request, norad_id):
         'success_rate': satellite_stats['success_rate'],
         'good_count': satellite_stats['good_count'],
         'bad_count': satellite_stats['bad_count'],
-        'unvetted_count': satellite_stats['unvetted_count'],
+        'unknown_count': satellite_stats['unknown_count'],
         'future_count': satellite_stats['future_count'],
         'total_count': satellite_stats['total_count'],
         'transmitters': transmitters_with_stats(transmitters)

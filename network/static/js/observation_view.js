@@ -143,7 +143,7 @@ $(document).ready(function() {
     }
 
     //Vetting request
-    function vet_observation(id, vet_status){
+    function vet_waterfall(id, vet_status){
         var data = {};
         data.status = vet_status;
         var url = '/waterfall_vet/' + id + '/';
@@ -193,7 +193,7 @@ $(document).ready(function() {
         var vet_status = $(this).data('status');
         var id = $(this).data('id');
         $(this).blur();
-        vet_observation(id, vet_status);
+        vet_waterfall(id, vet_status);
     });
 
     //JSON pretty renderer
