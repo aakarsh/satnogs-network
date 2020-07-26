@@ -145,13 +145,9 @@ class Station(models.Model):
         """Return the success rate of the station - successful observation over failed ones"""
         rate = cache.get('station-{0}-rate'.format(self.id))
         if not rate:
-            observations = self.observations.exclude(testing=True
-                                                     ).exclude(observation_status__range=(0, 99))
+            observations = self.observations.exclude(testing=True).exclude(status__range=(0, 99))
             success = observations.filter(
-                id__in=(
-                    o.id for o in observations
-                    if o.observation_status >= 100 or -100 <= o.observation_status < 0
-                )
+                id__in=(o.id for o in observations if o.status >= 100 or -100 <= o.status < 0)
             ).count()
             if observations:
                 rate = int(100 * (success / observations.count()))
@@ -426,7 +422,7 @@ class Observation(models.Model):
     0 =< x < 100  -> Unknown (Future if observation not completed)
     100 =< x      -> Good
     """
-    observation_status = models.SmallIntegerField(default=0)
+    status = models.SmallIntegerField(default=0)
     testing = models.BooleanField(default=False)
     rise_azimuth = models.FloatField(blank=True, null=True)
     max_altitude = models.FloatField(blank=True, null=True)
@@ -471,29 +467,29 @@ class Observation(models.Model):
 
     # The values bellow are used as returned values in the API and for css rules in templates
     @property
-    def observation_status_label(self):
-        """Return label for observation_status field"""
+    def status_label(self):
+        """Return label for status field"""
         if self.is_future:
             return "future"
-        if self.observation_status < -100:
+        if self.status < -100:
             return "failed"
-        if -100 <= self.observation_status < 0:
+        if -100 <= self.status < 0:
             return "bad"
-        if 0 <= self.observation_status < 100:
+        if 0 <= self.status < 100:
             return "unknown"
         return "good"
 
     # The values bellow are used as displayed values in templates
     @property
-    def observation_status_display(self):
-        """Return display name for observation_status field"""
+    def status_display(self):
+        """Return display name for status field"""
         if self.is_future:
             return "Future"
-        if self.observation_status < -100:
+        if self.status < -100:
             return "Failed"
-        if -100 <= self.observation_status < 0:
+        if -100 <= self.status < 0:
             return "Bad"
-        if 0 <= self.observation_status < 100:
+        if 0 <= self.status < 100:
             return "Unknown"
         return "Good"
 

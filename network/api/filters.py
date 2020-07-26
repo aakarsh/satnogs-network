@@ -32,19 +32,17 @@ class ObservationViewFilter(FilterSet):
 
     start = django_filters.IsoDateTimeFilter(field_name='start', lookup_expr='gte')
     end = django_filters.IsoDateTimeFilter(field_name='end', lookup_expr='lte')
-    observation_status = django_filters.ChoiceFilter(
-        field_name='observation_status',
-        choices=OBSERVATION_STATUS_CHOICES,
-        method='filter_observation_status'
+    status = django_filters.ChoiceFilter(
+        field_name='status', choices=OBSERVATION_STATUS_CHOICES, method='filter_status'
     )
     waterfall_status = django_filters.ChoiceFilter(
         field_name='waterfall_status', choices=WATERFALL_STATUS_CHOICES, null_label='Unknown'
     )
     vetted_status = django_filters.ChoiceFilter(
-        label='Vetted status (deprecated: please use Observation Status)',
-        field_name='observation_status',
+        label='Vetted status (deprecated: please use Status)',
+        field_name='status',
         choices=VETTED_STATUS_CHOICES,
-        method='filter_observation_status'
+        method='filter_status'
     )
     vetted_user = django_filters.ModelChoiceFilter(
         label='Vetted user (deprecated: will be removed in next version)',
@@ -53,26 +51,26 @@ class ObservationViewFilter(FilterSet):
     )
 
     # see https://django-filter.readthedocs.io/en/master/ref/filters.html for W0613
-    def filter_observation_status(self, queryset, name, value):  # pylint: disable=W0613,R0201
+    def filter_status(self, queryset, name, value):  # pylint: disable=W0613,R0201
         """ Returns filtered observations for a given observation status"""
         if value == 'failed':
-            observations = queryset.filter(observation_status__lt=-100)
+            observations = queryset.filter(status__lt=-100)
         if value == 'bad':
-            observations = queryset.filter(observation_status__range=(-100, -1))
+            observations = queryset.filter(status__range=(-100, -1))
         if value == 'unknown':
-            observations = queryset.filter(observation_status__range=(0, 99), end__lte=now())
+            observations = queryset.filter(status__range=(0, 99), end__lte=now())
         if value == 'future':
             observations = queryset.filter(end__gt=now())
         if value == 'good':
-            observations = queryset.filter(observation_status__gte=100)
+            observations = queryset.filter(status__gte=100)
         return observations
 
     class Meta:
         model = Observation
         fields = [
-            'id', 'observation_status', 'ground_station', 'start', 'end',
-            'satellite__norad_cat_id', 'transmitter_uuid', 'transmitter_mode', 'transmitter_type',
-            'waterfall_status', 'vetted_status', 'vetted_user'
+            'id', 'status', 'ground_station', 'start', 'end', 'satellite__norad_cat_id',
+            'transmitter_uuid', 'transmitter_mode', 'transmitter_type', 'waterfall_status',
+            'vetted_status', 'vetted_user'
         ]
 
 

@@ -230,13 +230,13 @@
                   <a href="{% url 'base:observation_view' observation_id=observation.id %}" class="obs-link">
                     {% if observation.is_future %}
                       <span class="label label-future">{{ observation.id }}</span>
-                    {% elif observation.observation_status < -100 %}
+                    {% elif observation.status < -100 %}
                       <span class="label label-failed">{{ observation.id }}</span>
-                    {% elif observation.observation_status >= -100  and observation.observation_status < 0 %}
+                    {% elif observation.status >= -100  and observation.status < 0 %}
                       <span class="label label-bad">{{ observation.id }}</span>
-                    {% elif observation.observation_status >= 0  and observation.observation_status < 100 %}
+                    {% elif observation.status >= 0  and observation.status < 100 %}
                       <span class="label label-unknown">{{ observation.id }}</span>
-                    {% elif observation.observation_status >= 100 %}
+                    {% elif observation.status >= 100 %}
                       <span class="label label-good">{{ observation.id }}</span>
                     {% endif %}
                   </a>

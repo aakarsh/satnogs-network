@@ -91,22 +91,22 @@
             <span class="label label-future" aria-hidden="true"
                   data-toggle="tooltip" data-placement="right"
                   title="This observation is in the future">Pending</span>
-          {% elif observation.observation_status < -100 %}
+          {% elif observation.status < -100 %}
             <span class="label label-failed" aria-hidden="true"
                   data-toggle="tooltip" data-placement="right"
-                  title="{{ observation.observation_status }}">Failed</span>
-          {% elif observation.observation_status >= -100  and observation.observation_status < 0 %}
+                  title="{{ observation.status }}">Failed</span>
+          {% elif observation.status >= -100  and observation.status < 0 %}
             <span class="label label-bad" aria-hidden="true"
                   data-toggle="tooltip" data-placement="right"
-                  title="{{ observation.observation_status }}">Bad</span>
-          {% elif observation.observation_status >= 0  and observation.observation_status < 100 %}
+                  title="{{ observation.status }}">Bad</span>
+          {% elif observation.status >= 0  and observation.status < 100 %}
             <span class="label label-unknown" aria-hidden="true"
                   data-toggle="tooltip" data-placement="right"
-                  title="{{ observation.observation_status }}">Unknown</span>
-          {% elif observation.observation_status >= 100 %}
+                  title="{{ observation.status }}">Unknown</span>
+          {% elif observation.status >= 100 %}
             <span class="label label-good" aria-hidden="true"
                   data-toggle="tooltip" data-placement="right"
-                  title="{{ observation.observation_status }}">Good</span>
+                  title="{{ observation.status }}">Good</span>
           {% endif %}
         </span>
       </div>

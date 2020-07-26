@@ -12,7 +12,7 @@ from network.base.db_api import DBConnectionError, get_transmitters_by_norad_id
 from network.base.decorators import ajax_required
 from network.base.models import Observation, Satellite, Station
 from network.base.perms import delete_perms, schedule_perms, vet_perms
-from network.base.rating import get_observation_status_rate
+from network.base.rating import get_status_rate
 from network.base.stats import satellite_stats_by_transmitter_list, \
     transmitters_with_stats
 from network.base.utils import community_get_discussion_details
@@ -95,15 +95,15 @@ class ObservationListView(ListView):  # pylint: disable=R0901
         observations = observations.filter(**filter_dict)
 
         if not filter_params['failed']:
-            observations = observations.exclude(observation_status__lt=-100)
+            observations = observations.exclude(status__lt=-100)
         if not filter_params['bad']:
-            observations = observations.exclude(observation_status__range=(-100, -1))
+            observations = observations.exclude(status__range=(-100, -1))
         if not filter_params['unknown']:
-            observations = observations.exclude(observation_status__range=(0, 99), end__lte=now())
+            observations = observations.exclude(status__range=(0, 99), end__lte=now())
         if not filter_params['future']:
             observations = observations.exclude(end__gt=now())
         if not filter_params['good']:
-            observations = observations.exclude(observation_status__gte=100)
+            observations = observations.exclude(status__gte=100)
 
         if results:
             if 'w0' in results:
@@ -260,13 +260,12 @@ def waterfall_vet(request, observation_id):
 
     observation.waterfall_status_user = request.user
     observation.waterfall_status_datetime = now()
-    observation.observation_status = get_observation_status_rate(
+    observation.status = get_status_rate(
         observation, 'set_waterfall_status', observation.waterfall_status
     )
     observation.save(
         update_fields=[
-            'waterfall_status', 'waterfall_status_user', 'waterfall_status_datetime',
-            'observation_status'
+            'waterfall_status', 'waterfall_status_user', 'waterfall_status_datetime', 'status'
         ]
     )
     data = {
@@ -280,12 +279,12 @@ def waterfall_vet(request, observation_id):
         observation.waterfall_status_label,
         'waterfall_status_display':
         observation.waterfall_status_display,
-        'observation_status':
-        observation.observation_status,
-        'observation_status_label':
-        observation.observation_status_label,
-        'observation_status_display':
-        observation.observation_status_display,
+        'status':
+        observation.status,
+        'status_label':
+        observation.status_label,
+        'status_display':
+        observation.status_display,
     }
     return JsonResponse(data, safe=False)
 

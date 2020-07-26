@@ -274,13 +274,9 @@ def stations_cache_rates():
     """Cache the success rate of the stations"""
     stations = Station.objects.all()
     for station in stations:
-        observations = station.observations.exclude(testing=True
-                                                    ).exclude(observation_status__range=(0, 99))
+        observations = station.observations.exclude(testing=True).exclude(status__range=(0, 99))
         success = observations.filter(
-            id__in=(
-                o.id for o in observations
-                if o.observation_status >= 100 or -100 <= o.observation_status < 0
-            )
+            id__in=(o.id for o in observations if o.status >= 100 or -100 <= o.status < 0)
         ).count()
         if observations:
             rate = int(100 * (success / observations.count()))

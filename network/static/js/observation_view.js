@@ -117,7 +117,7 @@ $(document).ready(function() {
     }
 
     function change_vetting_labels(user, datetime, waterfall_status_label, waterfall_status_display,
-        observation_status, observation_status_label, observation_status_display){
+        status, status_label, status_display){
         $('#waterfall-status').find('button').each(function(){
             if(this.dataset.status == waterfall_status_label){
                 $(this).addClass('hidden');
@@ -136,10 +136,10 @@ $(document).ready(function() {
         $('#waterfall-status-label').prop('title', waterfall_status_title).tooltip('fixTitle');
 
         var rating_label_classes = 'label-unknown label-future label-good label-bad label-failed';
-        $('#rating-status span').removeClass(rating_label_classes).addClass('label-' + observation_status_label);
-        $('#rating-status span').text(observation_status_display);
-        var observation_status_title = observation_status;
-        $('#rating-status span').prop('title', observation_status_title).tooltip('fixTitle');
+        $('#rating-status span').removeClass(rating_label_classes).addClass('label-' + status_label);
+        $('#rating-status span').text(status_display);
+        var status_title = status;
+        $('#rating-status span').prop('title', status_title).tooltip('fixTitle');
     }
 
     //Vetting request
@@ -168,8 +168,8 @@ $(document).ready(function() {
                 show_alert('success', 'Waterfall is vetted succesfully as ' + results.waterfall_status);
                 change_vetting_labels(results.waterfall_status_user, results.waterfall_status_datetime,
                     results.waterfall_status_label, results.waterfall_status_display,
-                    results.observation_status, results.observation_status_label,
-                    results.observation_status_display);
+                    results.status, results.status_label,
+                    results.status_display);
             }
             $('#vetting-spinner').hide();
             $('#rating-spinner').hide();

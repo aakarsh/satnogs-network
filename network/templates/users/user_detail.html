@@ -144,7 +144,7 @@
               <tr class="clickable-row" data-href="{% url 'base:observation_view' observation_id=observation.id %}">
                 <td>
                   <a href="{% url 'base:observation_view' observation_id=observation.id %}">
-                      <span class="label label-{{observation.observation_status_label }}">{{ observation.id }}</span>
+                      <span class="label label-{{observation.status_label }}">{{ observation.id }}</span>
                   </a>
                 </td>
                 <td>

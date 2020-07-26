@@ -13,12 +13,12 @@ def transmitter_stats_by_uuid(uuid):
     stats = cache.get('tr-{0}-stats'.format(uuid))
     if stats is None:
         stats = Observation.objects.filter(transmitter_uuid=uuid).exclude(
-            observation_status__lt=-100
+            status__lt=-100
         ).aggregate(
             future=Count('pk', filter=Q(end__gt=now())),
-            bad=Count('pk', filter=Q(observation_status__range=(-100, -1))),
-            unknown=Count('pk', filter=Q(observation_status__range=(0, 99), end__lte=now())),
-            good=Count('pk', filter=Q(observation_status__gte=100)),
+            bad=Count('pk', filter=Q(status__range=(-100, -1))),
+            unknown=Count('pk', filter=Q(status__range=(0, 99), end__lte=now())),
+            good=Count('pk', filter=Q(status__gte=100)),
         )
         cache.set('tr-{0}-stats'.format(uuid), stats, 3600)
     total_count = 0
@@ -104,7 +104,7 @@ def unknown_observations_count(user):
     user_unknown_count = cache.get('user-{0}-unknown-count'.format(user.id))
     if user_unknown_count is None:
         user_unknown_count = Observation.objects.filter(
-            author=user, observation_status__range=(0, 99), end__lte=now()
+            author=user, status__range=(0, 99), end__lte=now()
         ).count()
         cache.set('user-{0}-unknown-count'.format(user.id), user_unknown_count, 120)
 

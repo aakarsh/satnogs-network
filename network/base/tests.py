@@ -112,7 +112,7 @@ class ObservationFactory(factory.django.DjangoModelFactory):
     )
     waterfall_status_user = factory.SubFactory(UserFactory)
     waterfall_status = fuzzy.FuzzyChoice(choices=[None, True, False])
-    observation_status = fuzzy.FuzzyInteger(-1000, 1000, step=10)
+    status = fuzzy.FuzzyInteger(-1000, 1000, step=10)
     vetted_status = fuzzy.FuzzyChoice(choices=OBSERVATION_STATUS_IDS)
     transmitter_uuid = fuzzy.FuzzyText(length=20)
     transmitter_description = fuzzy.FuzzyText()
@@ -218,15 +218,15 @@ class ObservationsListViewTest(TestCase):
             for _ in range(1, 10):
                 self.stations.append(StationFactory())
             for i in range(1, 5):
-                obs = ObservationFactory(observation_status=-100, start=now() - timedelta(days=i))
+                obs = ObservationFactory(status=-100, start=now() - timedelta(days=i))
                 self.observations_bad.append(obs)
                 self.observations.append(obs)
             for i in range(1, 5):
-                obs = ObservationFactory(observation_status=100, start=now() - timedelta(days=i))
+                obs = ObservationFactory(status=100, start=now() - timedelta(days=i))
                 self.observations_good.append(obs)
                 self.observations.append(obs)
             for _ in range(1, 5):
-                obs = ObservationFactory(observation_status=0)
+                obs = ObservationFactory(status=0)
                 self.observations_unknown.append(obs)
                 self.observations.append(obs)
 
