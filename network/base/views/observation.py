@@ -12,7 +12,7 @@ from network.base.db_api import DBConnectionError, get_transmitters_by_norad_id
 from network.base.decorators import ajax_required
 from network.base.models import Observation, Satellite, Station
 from network.base.perms import delete_perms, schedule_perms, vet_perms
-from network.base.rating import get_status_rate
+from network.base.rating_task import rate_observation
 from network.base.stats import satellite_stats_by_transmitter_list, \
     transmitters_with_stats
 from network.base.utils import community_get_discussion_details
@@ -260,8 +260,8 @@ def waterfall_vet(request, observation_id):
 
     observation.waterfall_status_user = request.user
     observation.waterfall_status_datetime = now()
-    observation.status = get_status_rate(
-        observation, 'set_waterfall_status', observation.waterfall_status
+    observation.status = rate_observation(
+        observation.id, 'set_waterfall_status', observation.waterfall_status
     )
     observation.save(
         update_fields=[
