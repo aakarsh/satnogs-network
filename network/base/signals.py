@@ -9,6 +9,7 @@ from django.utils.timezone import now
 from tinytag import TinyTag, TinyTagException
 
 from network.base.models import Observation, Station, StationStatusLog, Tle
+from network.base.rating_tasks import rate_observation
 from network.base.tasks import archive_audio, delay_task_with_lock
 
 
@@ -31,6 +32,7 @@ def _observation_post_save(sender, instance, created, **kwargs):  # pylint: disa
                 delay_task_with_lock(
                     archive_audio, instance.id, settings.ARCHIVE_AUDIO_LOCK_EXPIRATION, instance.id
                 )
+                rate_observation(instance.id, 'audio_upload', audio_metadata.duration)
         except TinyTagException:
             # Remove invalid audio file
             instance.payload.delete()

@@ -10,6 +10,7 @@ from rest_framework.serializers import ValidationError
 from network.api import filters, pagination, serializers
 from network.api.perms import StationOwnerPermission
 from network.base.models import LatestTle, Observation, Station, Transmitter
+from network.base.rating_tasks import rate_observation
 from network.base.tasks import sync_to_db
 from network.base.validators import NegativeElevationError, \
     ObservationOverlapError, SinglePassError
@@ -68,6 +69,7 @@ class ObservationView(  # pylint: disable=R0901
             except ObjectDoesNotExist:
                 demoddata = instance.demoddata.create(payload_demod=request.data.get('demoddata'))
                 sync_to_db.delay(frame_id=demoddata.id)
+                rate_observation.delay(instance.id, 'data_upload')
         if request.data.get('waterfall'):
             if instance.has_waterfall:
                 return Response(
@@ -82,6 +84,8 @@ class ObservationView(  # pylint: disable=R0901
         # False-positive no-member (E1101) pylint error:
         # Parent class rest_framework.mixins.UpdateModelMixin provides the 'update' method
         super(ObservationView, self).update(request, *args, **kwargs)  # pylint: disable=E1101
+        if request.data.get('waterfall'):
+            rate_observation.delay(instance.id, 'waterfall_upload')
         return Response(status=status.HTTP_200_OK)
 
 

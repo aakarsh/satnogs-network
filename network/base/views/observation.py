@@ -12,7 +12,7 @@ from network.base.db_api import DBConnectionError, get_transmitters_by_norad_id
 from network.base.decorators import ajax_required
 from network.base.models import Observation, Satellite, Station
 from network.base.perms import delete_perms, schedule_perms, vet_perms
-from network.base.rating_task import rate_observation
+from network.base.rating_tasks import rate_observation
 from network.base.stats import satellite_stats_by_transmitter_list, \
     transmitters_with_stats
 from network.base.utils import community_get_discussion_details
@@ -111,7 +111,7 @@ class ObservationListView(ListView):  # pylint: disable=R0901
             elif 'w1' in results:
                 observations = observations.exclude(waterfall='')
             if 'a0' in results:
-                observations = observations.exclude(archived=True).filter(payload='')
+                observations = observations.filter(archived=False, payload='')
             elif 'a1' in results:
                 observations = observations.exclude(archived=False, payload='')
             if 'd0' in results:
@@ -260,14 +260,11 @@ def waterfall_vet(request, observation_id):
 
     observation.waterfall_status_user = request.user
     observation.waterfall_status_datetime = now()
-    observation.status = rate_observation(
-        observation.id, 'set_waterfall_status', observation.waterfall_status
-    )
     observation.save(
-        update_fields=[
-            'waterfall_status', 'waterfall_status_user', 'waterfall_status_datetime', 'status'
-        ]
+        update_fields=['waterfall_status', 'waterfall_status_user', 'waterfall_status_datetime']
     )
+    (observation_status, observation_status_label, observation_status_display
+     ) = rate_observation(observation.id, 'set_waterfall_status', observation.waterfall_status)
     data = {
         'waterfall_status_user':
         observation.waterfall_status_user.displayname,
@@ -280,11 +277,11 @@ def waterfall_vet(request, observation_id):
         'waterfall_status_display':
         observation.waterfall_status_display,
         'status':
-        observation.status,
+        observation_status,
         'status_label':
-        observation.status_label,
+        observation_status_label,
         'status_display':
-        observation.status_display,
+        observation_status_display,
     }
     return JsonResponse(data, safe=False)
 

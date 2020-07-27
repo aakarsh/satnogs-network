@@ -9,7 +9,7 @@ os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'network.settings')
 RUN_DAILY = 60 * 60 * 24
 RUN_EVERY_TWO_HOURS = 2 * 60 * 60
 RUN_HOURLY = 60 * 60
-RUN_EVERY_MINUTE = 60
+RUN_EVERY_15_MINUTES = 60 * 15
 RUN_TWICE_HOURLY = 60 * 30
 
 APP = Celery('network')
@@ -64,6 +64,14 @@ def notify_for_stations_without_results():
     periodic_task()
 
 
+@APP.task
+def find_and_rate_failed_observations():
+    """Wrapper task for 'find_and_rate_failed_observations' shared task"""
+    from network.base.rating_tasks import find_and_rate_failed_observations as \
+        periodic_task  # pylint: disable=C0415
+    periodic_task()
+
+
 @APP.on_after_finalize.connect
 def setup_periodic_tasks(sender, **kwargs):  # pylint: disable=W0613
     """Initializes celery tasks that need to run on a scheduled basis"""
@@ -81,4 +89,10 @@ def setup_periodic_tasks(sender, **kwargs):  # pylint: disable=W0613
         settings.OBS_NO_RESULTS_CHECK_PERIOD,
         notify_for_stations_without_results.s(),
         name='notify_for_stations_without_results'
+    )
+
+    sender.add_periodic_task(
+        RUN_EVERY_15_MINUTES,
+        find_and_rate_failed_observations.s(),
+        name='find_and_rate_failed_observations'
     )
