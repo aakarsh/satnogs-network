@@ -249,7 +249,9 @@ def predict_available_observation_windows(station, min_horizon, overlapped, tle,
     while True:
         try:
             pass_params = next_pass(observer, satellite)
-        except ValueError:
+        # We catch TypeError, to avoid cases like this one that is described in ephem issue:
+        # https://github.com/brandon-rhodes/pyephem/issues/176
+        except (TypeError, ValueError):
             break
 
         # no match if the sat will not rise above the configured min horizon
