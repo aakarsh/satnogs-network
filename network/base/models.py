@@ -14,7 +14,6 @@ from django.db import models
 from django.db.models import OuterRef, Subquery
 from django.dispatch import receiver
 from django.urls import reverse
-from django.utils.encoding import python_2_unicode_compatible
 from django.utils.html import format_html
 from django.utils.timezone import now
 from PIL import Image
@@ -67,7 +66,6 @@ def validate_image(fieldfile_obj):
         raise ValidationError("Max file size is %sMB" % str(megabyte_limit))
 
 
-@python_2_unicode_compatible
 class Station(models.Model):
     """Model for SatNOGS ground stations."""
     owner = models.ForeignKey(
@@ -191,7 +189,6 @@ class Station(models.Model):
             )
 
 
-@python_2_unicode_compatible
 class AntennaType(models.Model):
     """Model for antenna types."""
     name = models.CharField(max_length=25, unique=True)
@@ -200,7 +197,6 @@ class AntennaType(models.Model):
         return self.name
 
 
-@python_2_unicode_compatible
 class Antenna(models.Model):
     """Model for antennas of SatNOGS ground stations."""
     antenna_type = models.ForeignKey(
@@ -227,7 +223,6 @@ class Antenna(models.Model):
         return "%s" % (self.antenna_type.name)
 
 
-@python_2_unicode_compatible
 class FrequencyRange(models.Model):
     """Model for frequency ranges of antennas."""
     antenna = models.ForeignKey(Antenna, on_delete=models.CASCADE, related_name='frequency_ranges')
@@ -277,7 +272,6 @@ class FrequencyRange(models.Model):
             )
 
 
-@python_2_unicode_compatible
 class StationStatusLog(models.Model):
     """Model for keeping Status log for Station."""
     station = models.ForeignKey(
@@ -294,7 +288,6 @@ class StationStatusLog(models.Model):
         return '{0} - {1}'.format(self.station, self.status)
 
 
-@python_2_unicode_compatible
 class Satellite(models.Model):
     """Model for SatNOGS satellites."""
     norad_cat_id = models.PositiveIntegerField(db_index=True)
@@ -320,7 +313,6 @@ class Satellite(models.Model):
         return self.name
 
 
-@python_2_unicode_compatible
 class Tle(models.Model):
     """Model for TLEs."""
     tle0 = models.CharField(max_length=100, blank=True, db_index=True)
@@ -357,7 +349,6 @@ class LatestTleManager(models.Manager):  # pylint: disable=R0903
                      self).get_queryset().filter(updated=Subquery(subquery.values('updated')[:1]))
 
 
-@python_2_unicode_compatible
 class LatestTle(Tle):
     """LatestTle is the latest entry of a Satellite Tle objects
     """
@@ -370,7 +361,6 @@ class LatestTle(Tle):
         return '{:d} - {:s}'.format(self.id, self.tle0)
 
 
-@python_2_unicode_compatible
 class Transmitter(models.Model):
     """Model for antennas transponders."""
     uuid = ShortUUIDField(db_index=True)
@@ -380,7 +370,6 @@ class Transmitter(models.Model):
         return self.uuid
 
 
-@python_2_unicode_compatible
 class Observation(models.Model):
     """Model for SatNOGS observations."""
     satellite = models.ForeignKey(
@@ -588,7 +577,6 @@ def observation_remove_files(sender, instance, **kwargs):  # pylint: disable=W06
             os.remove(instance.waterfall.path)
 
 
-@python_2_unicode_compatible
 class DemodData(models.Model):
     """Model for DemodData."""
     observation = models.ForeignKey(
