@@ -74,8 +74,16 @@ def _tle_post_save(sender, instance, created, **kwargs):  # pylint: disable=W061
     """
     if created:
         start = now() + timedelta(minutes=10)
-        Observation.objects.filter(satellite=instance.satellite, start__gt=start) \
-                           .update(tle=instance.id)
+        Observation.objects.filter(
+            satellite=instance.satellite, start__gt=start
+        ).update(
+            tle=instance.id,
+            tle_line_0=instance.tle0,
+            tle_line_1=instance.tle1,
+            tle_line_2=instance.tle2,
+            tle_source=instance.tle_source,
+            tle_updated=instance.updated
+        )
 
 
 post_save.connect(_observation_post_save, sender=Observation)

@@ -354,6 +354,11 @@ def create_new_observation(station, transmitter, start, end, author):
     return Observation(
         satellite=sat,
         tle=tle,
+        tle_line_0=tle.tle0,
+        tle_line_1=tle.tle1,
+        tle_line_2=tle.tle2,
+        tle_source=tle.tle_source,
+        tle_updated=tle.updated,
         author=author,
         start=start,
         end=end,

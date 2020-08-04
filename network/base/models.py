@@ -9,7 +9,8 @@ import requests
 from django.conf import settings
 from django.core.cache import cache
 from django.core.exceptions import ValidationError
-from django.core.validators import MaxValueValidator, MinValueValidator
+from django.core.validators import MaxLengthValidator, MaxValueValidator, \
+    MinLengthValidator, MinValueValidator
 from django.db import models
 from django.db.models import OuterRef, Subquery
 from django.dispatch import receiver
@@ -378,6 +379,20 @@ class Observation(models.Model):
     tle = models.ForeignKey(
         Tle, related_name='observations', on_delete=models.SET_NULL, null=True, blank=True
     )
+    tle_line_0 = models.CharField(
+        max_length=69, blank=True, validators=[MinLengthValidator(1),
+                                               MaxLengthValidator(69)]
+    )
+    tle_line_1 = models.CharField(
+        max_length=69, blank=True, validators=[MinLengthValidator(69),
+                                               MaxLengthValidator(69)]
+    )
+    tle_line_2 = models.CharField(
+        max_length=69, blank=True, validators=[MinLengthValidator(69),
+                                               MaxLengthValidator(69)]
+    )
+    tle_source = models.CharField(max_length=300, blank=True)
+    tle_updated = models.DateTimeField(null=True, blank=True)
     author = models.ForeignKey(
         User, related_name='observations', on_delete=models.SET_NULL, null=True, blank=True
     )
