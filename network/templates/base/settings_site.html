@@ -10,7 +10,7 @@
 
       <h3>Fetch Data</h3>
 
-      <p>You can update all Satellites and Transmitters data from DB.</p>
+      <p>You can update all Satellites and Transmitters data from DB and update all future observations with newest TLE sets from DB.</p>
 
       <form id="fetchform" method="post" class="form-horizontal" role="form" action="{% url 'base:settings_site' %}">{% csrf_token %}
         <input type="hidden" name="fetch" value="true">

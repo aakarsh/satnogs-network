@@ -22,6 +22,15 @@ APP.autodiscover_tasks()
 # See https://github.com/celery/celery/issues/5059
 # and https://github.com/celery/celery/issues/3797#issuecomment-422656038
 @APP.task
+def update_future_observations_with_new_tle_sets():
+    """Wrapper task for 'update_future_observations_with_new_tle_sets' shared task"""
+    from network.base.tasks import (  # pylint: disable=C0415
+        update_future_observations_with_new_tle_sets as periodic_task
+    )
+    periodic_task()
+
+
+@APP.task
 def update_all_tle():
     """Wrapper task for 'update_all_tle' shared task"""
     from network.base.tasks import update_all_tle as periodic_task  # pylint: disable=C0415
@@ -75,6 +84,12 @@ def find_and_rate_failed_observations():
 @APP.on_after_finalize.connect
 def setup_periodic_tasks(sender, **kwargs):  # pylint: disable=W0613
     """Initializes celery tasks that need to run on a scheduled basis"""
+    sender.add_periodic_task(
+        RUN_EVERY_TWO_HOURS,
+        update_future_observations_with_new_tle_sets.s(),
+        name='update-all-tle'
+    )
+
     sender.add_periodic_task(RUN_EVERY_TWO_HOURS, update_all_tle.s(), name='update-all-tle')
 
     sender.add_periodic_task(RUN_HOURLY, fetch_data.s(), name='fetch-data')

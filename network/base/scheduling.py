@@ -9,9 +9,10 @@ import ephem
 from django.conf import settings
 from django.utils.timezone import make_aware, now, utc
 
-from network.base.models import LatestTle, Observation, Satellite
+from network.base.db_api import DBConnectionError, get_tle_set_by_norad_id
+from network.base.models import Observation, Satellite
 from network.base.perms import schedule_stations_perms
-from network.base.validators import NegativeElevationError, \
+from network.base.validators import NegativeElevationError, NoTleSetError, \
     ObservationOverlapError, SinglePassError
 
 
@@ -101,9 +102,9 @@ def create_station_window(
         'az_start': azr,
         'az_end': azs,
         'elev_max': altitude,
-        'tle0': tle.tle0,
-        'tle1': tle.tle1,
-        'tle2': tle.tle2,
+        'tle0': tle['tle0'],
+        'tle1': tle['tle1'],
+        'tle2': tle['tle2'],
         'valid_duration': valid_duration,
         'overlapped': overlapped,
         'overlap_ratio': overlap_ratio
@@ -227,9 +228,8 @@ def predict_available_observation_windows(station, min_horizon, overlapped, tle,
     '''
     passes_found = []
     station_windows = []
-    tle_as_str_array = tle.str_array
     # Initialize pyehem Satellite for propagation
-    satellite = ephem.readtle(*tle_as_str_array)
+    satellite = ephem.readtle(str(tle['tle0']), str(tle['tle1']), str(tle['tle2']))
     # Initialize pyephem Observer for propagation
     observer = ephem.Observer()
     observer.lon = str(station.lng)
@@ -284,7 +284,7 @@ def predict_available_observation_windows(station, min_horizon, overlapped, tle,
     return passes_found, station_windows
 
 
-def create_new_observation(station, transmitter, start, end, author):
+def create_new_observation(station, transmitter, start, end, author, tle_set=None):
     """
     Creates and returns a new Observation object
 
@@ -294,6 +294,7 @@ def create_new_observation(station, transmitter, start, end, author):
     start - datetime
     end - datetime
     author - network.base.models.User
+    tle_set - empty list or list of one tle set
 
     Returns network.base.models.Observation
     Raises NegativeElevationError, ObservationOverlapError, SinglePassError or more
@@ -308,9 +309,21 @@ def create_new_observation(station, transmitter, start, end, author):
         )
 
     sat = Satellite.objects.get(norad_cat_id=transmitter['norad_cat_id'])
-    tle = LatestTle.objects.get(satellite_id=sat.id)
+    if not tle_set:
+        try:
+            tle_set = get_tle_set_by_norad_id(transmitter['norad_cat_id'])
+        except DBConnectionError:
+            tle_set = []
 
-    sat_ephem = ephem.readtle(str(tle.tle0), str(tle.tle1), str(tle.tle2))
+        if not tle_set:
+            raise NoTleSetError(
+                'Satellite with transmitter {} and NORAD ID {} hasn\'t available TLE set'.format(
+                    transmitter['uuid'], transmitter['norad_cat_id']
+                )
+            )
+
+    tle = tle_set[0]
+    sat_ephem = ephem.readtle(str(tle['tle0']), str(tle['tle1']), str(tle['tle2']))
     observer = ephem.Observer()
     observer.lon = str(station.lng)
     observer.lat = str(station.lat)
@@ -353,12 +366,11 @@ def create_new_observation(station, transmitter, start, end, author):
 
     return Observation(
         satellite=sat,
-        tle=tle,
-        tle_line_0=tle.tle0,
-        tle_line_1=tle.tle1,
-        tle_line_2=tle.tle2,
-        tle_source=tle.tle_source,
-        tle_updated=tle.updated,
+        tle_line_0=tle['tle0'],
+        tle_line_1=tle['tle1'],
+        tle_line_2=tle['tle2'],
+        tle_source=tle['tle_source'],
+        tle_updated=tle['updated'],
         author=author,
         start=start,
         end=end,

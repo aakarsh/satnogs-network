@@ -200,8 +200,8 @@
             <svg
                 xmlns="http://www.w3.org/2000/svg" version="1.1"
                 id="polar"
-                data-tle1="{{ observation.tle.tle1 }}"
-                data-tle2="{{ observation.tle.tle2 }}"
+                data-tle1="{{ observation.tle_line_1 }}"
+                data-tle2="{{ observation.tle_line_2 }}"
                 data-timeframe-start="{{ observation.start|date:"c" }}"
                 data-timeframe-end="{{ observation.end|date:"c" }}"
                 data-groundstation-lat="{{ observation.ground_station.lat }}"
@@ -462,12 +462,12 @@
         TLE used
         <small>
           fetched from Celestrak
-          <span data-toggle="tooltip" data-placement="bottom" title="{{ observation.tle.updated|date:"Y-m-d H:i:s" }}">
-            {{ observation.tle.updated|naturaltime }}
+          <span data-toggle="tooltip" data-placement="bottom" title="{{ observation.tle_updated|date:"Y-m-d H:i:s" }}">
+            {{ observation.tle_updated|naturaltime }}
           </span>
         </small>
       </h3>
-      <pre>{{ observation.tle.tle1 }}<br>{{ observation.tle.tle2 }}</pre>
+      <pre>{{ observation.tle_line_1 }}<br>{{ observation.tle_line_2 }}</pre>
     </div>
   </div>
 

@@ -21,6 +21,10 @@ class SinglePassError(Exception):
     """Error when between given start and end datetimes there are more than one satellite passes"""
 
 
+class NoTleSetError(Exception):
+    """Error when satellite doesn't have available TLE set"""
+
+
 def check_start_datetime(start):
     """Validate start datetime"""
     if start < make_aware(datetime.now(), utc):

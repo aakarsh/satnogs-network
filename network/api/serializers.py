@@ -4,7 +4,8 @@ from collections import defaultdict
 
 from rest_framework import serializers
 
-from network.base.db_api import DBConnectionError, get_transmitters_by_uuid_set
+from network.base.db_api import DBConnectionError, \
+    get_tle_sets_by_norad_id_set, get_transmitters_by_uuid_set
 from network.base.models import Antenna, DemodData, FrequencyRange, \
     Observation, Station, Transmitter
 from network.base.perms import UserNoPermissionError, \
@@ -144,6 +145,7 @@ class ObservationSerializer(serializers.ModelSerializer):
 class NewObservationListSerializer(serializers.ListSerializer):
     """SatNOGS Network New Observation API List Serializer"""
     transmitters = {}
+    tle_sets = set()
 
     def validate(self, attrs):
         """Validates data from a list of new observations"""
@@ -176,6 +178,8 @@ class NewObservationListSerializer(serializers.ListSerializer):
         try:
             transmitters = get_transmitters_by_uuid_set(transmitter_uuid_set)
             self.transmitters = transmitters
+            norad_id_set = {transmitters[uuid]['norad_cat_id'] for uuid in transmitter_uuid_set}
+            self.tle_sets = get_tle_sets_by_norad_id_set(norad_id_set)
         except ValueError as error:
             raise serializers.ValidationError(error, code='invalid')
         except DBConnectionError as error:
@@ -197,13 +201,16 @@ class NewObservationListSerializer(serializers.ListSerializer):
 
             transmitter_uuid = observation_data['transmitter_uuid']
             transmitter = self.transmitters[transmitter_uuid]
+            tle_set = self.tle_sets[transmitter['norad_cat_id']]
+            print(tle_set, flush=True)
 
             observation = create_new_observation(
                 station=observation_data['ground_station'],
                 transmitter=transmitter,
                 start=observation_data['start'],
                 end=observation_data['end'],
-                author=self.context['request'].user
+                author=self.context['request'].user,
+                tle_set=tle_set,
             )
             new_observations.append(observation)
 
@@ -404,9 +411,6 @@ class StationSerializer(serializers.ModelSerializer):
 class JobSerializer(serializers.ModelSerializer):
     """SatNOGS Network Job API Serializer"""
     frequency = serializers.SerializerMethodField()
-    tle0 = serializers.SerializerMethodField()
-    tle1 = serializers.SerializerMethodField()
-    tle2 = serializers.SerializerMethodField()
     mode = serializers.SerializerMethodField()
     transmitter = serializers.SerializerMethodField()
     baud = serializers.SerializerMethodField()
@@ -414,8 +418,8 @@ class JobSerializer(serializers.ModelSerializer):
     class Meta:
         model = Observation
         fields = (
-            'id', 'start', 'end', 'ground_station', 'tle0', 'tle1', 'tle2', 'frequency', 'mode',
-            'transmitter', 'baud'
+            'id', 'start', 'end', 'ground_station', 'tle_line_0', 'tle_line_1', 'tle_line_2',
+            'frequency', 'mode', 'transmitter', 'baud'
         )
 
     def get_frequency(self, obj):
@@ -429,18 +433,6 @@ class JobSerializer(serializers.ModelSerializer):
     def get_transmitter(self, obj):
         """Returns Transmitter UUID"""
         return obj.transmitter_uuid
-
-    def get_tle0(self, obj):
-        """Returns line 0 of TLE"""
-        return obj.tle.tle0
-
-    def get_tle1(self, obj):
-        """Returns line 1 of TLE"""
-        return obj.tle.tle1
-
-    def get_tle2(self, obj):
-        """Returns line 2 of TLE"""
-        return obj.tle.tle2
 
     def get_mode(self, obj):
         """Returns Transmitter mode"""

@@ -9,10 +9,10 @@ from rest_framework.serializers import ValidationError
 
 from network.api import filters, pagination, serializers
 from network.api.perms import StationOwnerPermission
-from network.base.models import LatestTle, Observation, Station, Transmitter
+from network.base.models import Observation, Station, Transmitter
 from network.base.rating_tasks import rate_observation
 from network.base.tasks import sync_to_db
-from network.base.validators import NegativeElevationError, \
+from network.base.validators import NegativeElevationError, NoTleSetError, \
     ObservationOverlapError, SinglePassError
 
 
@@ -45,9 +45,8 @@ class ObservationView(  # pylint: disable=R0901
                 response = Response(data, status=status.HTTP_400_BAD_REQUEST)
         except (NegativeElevationError, SinglePassError, ValidationError, ValueError) as error:
             response = Response(str(error), status=status.HTTP_400_BAD_REQUEST)
-        except LatestTle.DoesNotExist:
-            data = 'Scheduling failed: Satellite without TLE'
-            response = Response(data, status=status.HTTP_501_NOT_IMPLEMENTED)
+        except NoTleSetError as error:
+            response = Response(str(error), status=status.HTTP_501_NOT_IMPLEMENTED)
         except ObservationOverlapError as error:
             response = Response(str(error), status=status.HTTP_409_CONFLICT)
         return response

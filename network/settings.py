@@ -398,6 +398,9 @@ DB_API_ENDPOINT = config('DB_API_ENDPOINT', default='https://db.satnogs.org/api/
 # API timeout in seconds
 DB_API_TIMEOUT = config('DB_API_TIMEOUT', default=2.0, cast=float)
 
+# API key for DB
+DB_API_KEY = config('DB_API_KEY', default='')
+
 # Timeout in seconds for the community forum
 # (used e.g. when checking for the existance of certain threads)
 COMMUNITY_TIMEOUT = config('COMMUNITY_TIMEOUT', default=2.0, cast=float)

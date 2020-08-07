@@ -1,7 +1,7 @@
 """SatNOGS Network Celery task functions"""
 import json
 import os
-from datetime import timedelta
+from datetime import datetime, timedelta
 
 import requests
 from celery import shared_task
@@ -15,6 +15,7 @@ from internetarchive import upload
 from internetarchive.exceptions import AuthenticationError
 from satellite_tle import fetch_tles
 
+from network.base.db_api import DBConnectionError, get_tle_sets_by_norad_id_set
 from network.base.models import DemodData, LatestTle, Observation, Satellite, \
     Station, Tle, Transmitter
 from network.base.utils import sync_demoddata_to_db
@@ -24,6 +25,30 @@ def delay_task_with_lock(task, lock_id, lock_expiration, *args):
     """Ensure unique run of a task by aquiring lock"""
     if cache.add('{0}-{1}'.format(task.name, lock_id), '', lock_expiration):
         task.delay(*args)
+
+
+@shared_task
+def update_future_observations_with_new_tle_sets():
+    """ Update future observations with latest TLE sets"""
+    start = now() + timedelta(minutes=10)
+    future_observations = Observation.objects.filter(start__gt=start)
+    norad_id_set = set(future_observations.values_list('satellite__norad_cat_id', flat=True))
+    try:
+        tle_sets = get_tle_sets_by_norad_id_set(norad_id_set)
+    except DBConnectionError:
+        return
+    for norad_id in tle_sets.keys():
+        tle_set = tle_sets[norad_id][0]
+        tle_updated = datetime.strptime(tle_set['updated'], "%Y-%m-%dT%H:%M:%S.%f%z")
+        future_observations.filter(
+            satellite__norad_cat_id=norad_id, tle_updated__lt=tle_updated
+        ).update(
+            tle_line_0=tle_set['tle0'],
+            tle_line_1=tle_set['tle1'],
+            tle_line_2=tle_set['tle2'],
+            tle_source=tle_set['tle_source'],
+            tle_updated=tle_set['updated'],
+        )
 
 
 @shared_task

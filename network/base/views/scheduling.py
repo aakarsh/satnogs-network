@@ -15,18 +15,19 @@ from django.urls import reverse
 from django.utils.timezone import make_aware, now, utc
 from django.views.decorators.http import require_POST
 
-from network.base.db_api import DBConnectionError, get_transmitter_by_uuid, \
-    get_transmitters_by_norad_id, get_transmitters_by_status
+from network.base.db_api import DBConnectionError, get_tle_set_by_norad_id, \
+    get_tle_sets, get_transmitter_by_uuid, get_transmitters_by_norad_id, \
+    get_transmitters_by_status
 from network.base.decorators import ajax_required
 from network.base.forms import ObservationFormSet, SatelliteFilterForm
-from network.base.models import LatestTle, Observation, Satellite, Station
+from network.base.models import Observation, Satellite, Station
 from network.base.perms import schedule_perms
 from network.base.scheduling import create_new_observation, \
     get_available_stations, predict_available_observation_windows
 from network.base.serializers import StationSerializer
 from network.base.stats import satellite_stats_by_transmitter_list, \
     transmitters_with_stats
-from network.base.validators import NegativeElevationError, \
+from network.base.validators import NegativeElevationError, NoTleSetError, \
     ObservationOverlapError, SinglePassError, \
     is_transmitter_in_station_range
 
@@ -37,13 +38,15 @@ def create_new_observations(formset, user):
     for observation_data in formset.cleaned_data:
         transmitter_uuid = observation_data['transmitter_uuid']
         transmitter = formset.transmitters[transmitter_uuid]
+        tle_set = formset.tle_sets[transmitter['norad_cat_id']]
 
         observation = create_new_observation(
             station=observation_data['ground_station'],
             transmitter=transmitter,
             start=observation_data['start'],
             end=observation_data['end'],
-            author=user
+            author=user,
+            tle_set=tle_set,
         )
         new_observations.append(observation)
 
@@ -84,12 +87,9 @@ def observation_new_post(request):
         else:
             messages.success(request, str(total) + ' Observations were scheduled successfully.')
             response = redirect(reverse('base:observations_list'))
-    except (ObservationOverlapError, NegativeElevationError, SinglePassError, ValidationError,
-            ValueError) as error:
+    except (ObservationOverlapError, NegativeElevationError, NoTleSetError, SinglePassError,
+            ValidationError, ValueError) as error:
         messages.error(request, str(error))
-        response = redirect(reverse('base:observation_new'))
-    except LatestTle.DoesNotExist:
-        messages.error(request, 'Scheduling failed: Satellite without TLE')
         response = redirect(reverse('base:observation_new'))
     return response
 
@@ -173,16 +173,17 @@ def prediction_windows(request):
         data = [{'error': 'You should select a Satellite first.'}]
         return JsonResponse(data, safe=False)
 
-    # Check there is a TLE available for this satellite
     try:
-        tle = LatestTle.objects.get(satellite_id=sat.id)
-    except LatestTle.DoesNotExist:
-        data = [{'error': 'No TLEs for this satellite yet.'}]
-        return JsonResponse(data, safe=False)
+        # Check if there is a TLE available for this satellite
+        tle_set = get_tle_set_by_norad_id(sat.norad_cat_id)
+        if tle_set:
+            tle = tle_set[0]
+        else:
+            data = [{'error': 'No TLEs for this satellite yet.'}]
+            return JsonResponse(data, safe=False)
 
-    # Check the selected transmitter exists, and if yes,
-    # store this transmitter in the downlink variable
-    try:
+        # Check the selected transmitter exists, and if yes,
+        # store this transmitter in the downlink variable
         transmitter = get_transmitter_by_uuid(params['transmitter'])
         if not transmitter:
             data = [{'error': 'You should select a valid Transmitter.'}]
@@ -269,13 +270,7 @@ def pass_predictions(request, station_id):
         id=station_id
     )
 
-    try:
-        latest_tle_queryset = LatestTle.objects.all()
-        satellites = Satellite.objects.filter(status='alive').prefetch_related(
-            Prefetch('tles', queryset=latest_tle_queryset, to_attr='tle')
-        )
-    except Satellite.DoesNotExist:
-        pass  # we won't have any next passes to display
+    satellites = Satellite.objects.filter(status='alive')
 
     # Load the station information and invoke ephem so we can
     # calculate upcoming passes for the station
@@ -292,12 +287,14 @@ def pass_predictions(request, station_id):
         datetime.utcnow() + timedelta(minutes=settings.OBSERVATION_DATE_MIN_START)
     ).strftime("%Y-%m-%d %H:%M:%S.%f")
 
+    available_transmitter_and_tle_sets = True
     try:
         all_transmitters = get_transmitters_by_status('active')
+        all_tle_sets = get_tle_sets()
     except DBConnectionError:
-        all_transmitters = []
+        available_transmitter_and_tle_sets = False
 
-    if all_transmitters:
+    if available_transmitter_and_tle_sets:
         for satellite in satellites:
             # look for a match between transmitters from the satellite and
             # ground station antenna frequency capabilities
@@ -306,12 +303,11 @@ def pass_predictions(request, station_id):
                 t for t in all_transmitters if t['norad_cat_id'] == norad_id
                 and is_transmitter_in_station_range(t, station)  # noqa: W503
             ]
-            if not transmitters:
-                continue
+            tle = next(
+                (tle_set for tle_set in all_tle_sets if tle_set["norad_cat_id"] == norad_id), None
+            )
 
-            if satellite.tle:
-                tle = satellite.tle[0]
-            else:
+            if not transmitters or not tle:
                 continue
 
             _, station_windows = predict_available_observation_windows(

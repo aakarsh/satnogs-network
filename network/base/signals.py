@@ -1,14 +1,12 @@
 """Django database base model for SatNOGS Network"""
 import os
 import struct
-from datetime import timedelta
 
 from django.conf import settings
 from django.db.models.signals import post_save
-from django.utils.timezone import now
 from tinytag import TinyTag, TinyTagException
 
-from network.base.models import Observation, Station, StationStatusLog, Tle
+from network.base.models import Observation, Station, StationStatusLog
 from network.base.rating_tasks import rate_observation
 from network.base.tasks import archive_audio, delay_task_with_lock
 
@@ -67,27 +65,6 @@ def _station_post_save(sender, instance, created, **kwargs):  # pylint: disable=
     post_save.connect(_station_post_save, sender=Station)
 
 
-def _tle_post_save(sender, instance, created, **kwargs):  # pylint: disable=W0613
-    """
-    Post save Tle operations
-    * Update TLE for future observations
-    """
-    if created:
-        start = now() + timedelta(minutes=10)
-        Observation.objects.filter(
-            satellite=instance.satellite, start__gt=start
-        ).update(
-            tle=instance.id,
-            tle_line_0=instance.tle0,
-            tle_line_1=instance.tle1,
-            tle_line_2=instance.tle2,
-            tle_source=instance.tle_source,
-            tle_updated=instance.updated
-        )
-
-
 post_save.connect(_observation_post_save, sender=Observation)
 
 post_save.connect(_station_post_save, sender=Station)
-
-post_save.connect(_tle_post_save, sender=Tle)

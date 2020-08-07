@@ -3,10 +3,54 @@ import requests
 from django.conf import settings
 
 DB_API_URL = settings.DB_API_ENDPOINT
+DB_API_KEY = settings.DB_API_KEY
 
 
 class DBConnectionError(Exception):
     """Error when there are connection issues with DB API"""
+
+
+def tle_api_request(url):
+    """Perform TLE query on SatNOGS DB API and return the results"""
+    if DB_API_KEY:
+        headers = {'authorization': 'Token {0}'.format(DB_API_KEY)}
+    if not DB_API_URL:
+        raise DBConnectionError('Error in DB API connection. Blank DB API URL!')
+    try:
+        request = requests.get(url, headers=headers)
+    except requests.exceptions.RequestException:
+        raise DBConnectionError('Error in DB API connection. Please try again!')
+    return request.json()
+
+
+def get_tle_set_by_norad_id(norad_id):
+    """Returns TLE set filtered by NORAD ID"""
+    tle_url = "{}tle/?norad_cat_id={}".format(DB_API_URL, norad_id)
+    return tle_api_request(tle_url)
+
+
+def get_tle_sets():
+    """Returns TLE sets"""
+    tle_url = "{}tle/".format(DB_API_URL)
+    return tle_api_request(tle_url)
+
+
+def get_tle_sets_by_norad_id_set(norad_id_set):
+    """Returns TLE sets filtered by NORAD ID list"""
+    if not norad_id_set:
+        raise ValueError('Expected a non empty list of NORAD IDs.')
+    if len(norad_id_set) == 1:
+        norad_id = next(iter(norad_id_set))
+        tle_set = get_tle_set_by_norad_id(norad_id)
+        return {norad_id: tle_set}
+
+    tle_sets_list = get_tle_sets()
+
+    tle_sets = {t['norad_cat_id']: [t] for t in tle_sets_list if t['norad_cat_id'] in norad_id_set}
+    found_norad_ids_set = set(tle_sets.keys())
+    for norad_id in norad_id_set.difference(found_norad_ids_set):
+        tle_sets[norad_id] = []
+    return tle_sets
 
 
 def transmitters_api_request(url):

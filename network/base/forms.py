@@ -5,7 +5,8 @@ from django.forms import BaseFormSet, BaseInlineFormSet, CharField, \
     ModelChoiceField, ModelForm, ValidationError, formset_factory, \
     inlineformset_factory
 
-from network.base.db_api import DBConnectionError, get_transmitters_by_uuid_set
+from network.base.db_api import DBConnectionError, \
+    get_tle_sets_by_norad_id_set, get_transmitters_by_uuid_set
 from network.base.models import Antenna, FrequencyRange, Observation, Station
 from network.base.perms import UserNoPermissionError, \
     check_schedule_perms_per_station
@@ -84,6 +85,7 @@ class ObservationForm(ModelForm):
 class BaseObservationFormSet(BaseFormSet):
     """Base FormSet class for Observation objects forms"""
     transmitters = {}
+    tle_sets = set()
 
     def __init__(self, user, *args, **kwargs):
         """Initializes Observation FormSet"""
@@ -130,6 +132,8 @@ class BaseObservationFormSet(BaseFormSet):
         try:
             transmitters = get_transmitters_by_uuid_set(transmitter_uuid_set)
             self.transmitters = transmitters
+            norad_id_set = {transmitters[uuid]['norad_cat_id'] for uuid in transmitter_uuid_set}
+            self.tle_sets = get_tle_sets_by_norad_id_set(norad_id_set)
         except ValueError as error:
             raise ValidationError(error, code='invalid')
         except DBConnectionError as error:
