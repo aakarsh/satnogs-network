@@ -108,6 +108,11 @@ def fetch_data():
     for satellite in r_satellites.json():
         norad_cat_id = satellite['norad_cat_id']
         satellite.pop('decayed', None)
+        satellite.pop('launched', None)
+        satellite.pop('deployed', None)
+        satellite.pop('website', None)
+        satellite.pop('operator', None)
+        satellite.pop('countries', None)
         try:
             # Update Satellite
             existing_satellite = Satellite.objects.get(norad_cat_id=norad_cat_id)
