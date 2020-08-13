@@ -201,7 +201,7 @@ def clean_observations():
                                       .exclude(payload='')
     for obs in observations:
         if settings.ENVIRONMENT == 'stage':
-            if not obs.observation >= 100:
+            if not obs.status >= 100:
                 obs.delete()
                 continue
         if os.path.isfile(obs.payload.path):
