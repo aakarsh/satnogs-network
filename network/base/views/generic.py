@@ -6,7 +6,7 @@ from django.shortcuts import redirect, render
 from django.urls import reverse
 
 from network.base.decorators import admin_required
-from network.base.tasks import fetch_data, update_all_tle, \
+from network.base.tasks import fetch_data, \
     update_future_observations_with_new_tle_sets
 
 
@@ -32,7 +32,6 @@ def settings_site(request):
     """View to render settings page."""
     if request.method == 'POST':
         fetch_data.delay()
-        update_all_tle.delay()
         update_future_observations_with_new_tle_sets.delay()
         messages.success(request, 'Data fetching task was triggered successfully!')
         return redirect(reverse('users:view_user', kwargs={"username": request.user.username}))

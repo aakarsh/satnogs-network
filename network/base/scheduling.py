@@ -216,7 +216,7 @@ def predict_available_observation_windows(station, min_horizon, overlapped, tle,
     :param overlapped: Calculate and return overlapped observations fully, truncated or not at all
     :type overlapped: integer values: 0 (no return), 1(truncated overlaps), 2(full overlaps)
     :param tle: Satellite current TLE
-    :type tle: Tle django.db.model.Model
+    :type tle: dictionary with Tle details
     :param start: Start datetime of scheduling period
     :type start: datetime string in '%Y-%m-%d %H:%M'
     :param end: End datetime of scheduling period

@@ -5,7 +5,7 @@ from django.shortcuts import redirect
 from django.urls import reverse
 
 from network.base.models import Antenna, AntennaType, DemodData, \
-    FrequencyRange, Observation, Satellite, Station, Tle, Transmitter
+    FrequencyRange, Observation, Satellite, Station, Transmitter
 from network.base.tasks import sync_to_db
 from network.base.utils import export_as_csv, export_station_status
 
@@ -115,17 +115,6 @@ class SatelliteAdmin(admin.ModelAdmin):
     search_fields = ('name', 'norad_cat_id', 'norad_follow_id')
 
 
-@admin.register(Tle)
-class TleAdmin(admin.ModelAdmin):
-    """Define TLE view in django admin UI"""
-    list_display = ('satellite_name', 'tle0', 'tle1', 'updated', 'tle_source')
-    list_filter = ('tle_source', 'satellite__name')
-
-    def satellite_name(self, obj):  # pylint: disable=no-self-use
-        """Return the satellite name"""
-        return obj.satellite.name
-
-
 @admin.register(Transmitter)
 class TransmitterAdmin(admin.ModelAdmin):
     """Define Transmitter view in django admin UI"""
@@ -175,4 +164,3 @@ class ObservationAdmin(admin.ModelAdmin):
     inlines = [
         DemodDataInline,
     ]
-    readonly_fields = ('tle', )

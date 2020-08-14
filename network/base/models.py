@@ -12,7 +12,6 @@ from django.core.exceptions import ValidationError
 from django.core.validators import MaxLengthValidator, MaxValueValidator, \
     MinLengthValidator, MinValueValidator
 from django.db import models
-from django.db.models import OuterRef, Subquery
 from django.dispatch import receiver
 from django.urls import reverse
 from django.utils.html import format_html
@@ -314,54 +313,6 @@ class Satellite(models.Model):
         return self.name
 
 
-class Tle(models.Model):
-    """Model for TLEs."""
-    tle0 = models.CharField(max_length=100, blank=True, db_index=True)
-    tle1 = models.CharField(max_length=200, blank=True)
-    tle2 = models.CharField(max_length=200, blank=True)
-    tle_source = models.CharField(max_length=300, blank=True)
-    updated = models.DateTimeField(auto_now=True, blank=True)
-    satellite = models.ForeignKey(
-        Satellite, related_name='tles', on_delete=models.CASCADE, null=True, blank=True
-    )
-
-    class Meta:
-        ordering = ['tle0']
-
-    def __str__(self):
-        return '{:d} - {:s}'.format(self.id, self.tle0)
-
-    @property
-    def str_array(self):
-        """Return TLE in string array format"""
-        # tle fields are unicode, pyephem and others expect python strings
-        return [str(self.tle0), str(self.tle1), str(self.tle2)]
-
-
-class LatestTleManager(models.Manager):  # pylint: disable=R0903
-    """Django Manager for latest Tle objects"""
-    def get_queryset(self):
-        """Returns query of latest Tle
-
-        :returns: the latest Tle for each Satellite
-        """
-        subquery = Tle.objects.filter(satellite=OuterRef('satellite')).order_by('-updated')
-        return super(LatestTleManager,
-                     self).get_queryset().filter(updated=Subquery(subquery.values('updated')[:1]))
-
-
-class LatestTle(Tle):
-    """LatestTle is the latest entry of a Satellite Tle objects
-    """
-    objects = LatestTleManager()
-
-    class Meta:
-        proxy = True
-
-    def __str__(self):
-        return '{:d} - {:s}'.format(self.id, self.tle0)
-
-
 class Transmitter(models.Model):
     """Model for antennas transponders."""
     uuid = ShortUUIDField(db_index=True)
@@ -375,9 +326,6 @@ class Observation(models.Model):
     """Model for SatNOGS observations."""
     satellite = models.ForeignKey(
         Satellite, related_name='observations', on_delete=models.SET_NULL, null=True, blank=True
-    )
-    tle = models.ForeignKey(
-        Tle, related_name='observations', on_delete=models.SET_NULL, null=True, blank=True
     )
     tle_line_0 = models.CharField(
         max_length=69, blank=True, validators=[MinLengthValidator(1),

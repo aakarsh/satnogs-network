@@ -1,5 +1,4 @@
 """SatNOGS Network Celery task functions"""
-import json
 import os
 from datetime import datetime, timedelta
 
@@ -9,15 +8,13 @@ from django.conf import settings
 from django.contrib.sites.models import Site
 from django.core.cache import cache
 from django.core.mail import send_mail
-from django.db.models import Prefetch
 from django.utils.timezone import now
 from internetarchive import upload
 from internetarchive.exceptions import AuthenticationError
-from satellite_tle import fetch_tles
 
 from network.base.db_api import DBConnectionError, get_tle_sets_by_norad_id_set
-from network.base.models import DemodData, LatestTle, Observation, Satellite, \
-    Station, Tle, Transmitter
+from network.base.models import DemodData, Observation, Satellite, Station, \
+    Transmitter
 from network.base.utils import sync_demoddata_to_db
 
 
@@ -49,63 +46,6 @@ def update_future_observations_with_new_tle_sets():
             tle_source=tle_set['tle_source'],
             tle_updated=tle_set['updated'],
         )
-
-
-@shared_task
-def update_all_tle():
-    """Task to update all satellite TLEs"""
-    latest_tle_queryset = LatestTle.objects.all()
-    satellites = Satellite.objects.exclude(status='re-entered').exclude(
-        manual_tle=True, norad_follow_id__isnull=True
-    ).prefetch_related(Prefetch('tles', queryset=latest_tle_queryset, to_attr='tle'))
-
-    # Collect all norad ids we are interested in
-    norad_ids = set()
-    for obj in satellites:
-        norad_id = obj.norad_cat_id
-        if obj.manual_tle:
-            norad_id = obj.norad_follow_id
-        norad_ids.add(int(norad_id))
-
-    # Filter only officially announced NORAD IDs
-    catalog_norad_ids = {norad_id for norad_id in norad_ids if norad_id < 99000}
-
-    # Check for TLE custom sources
-    other_sources = {}
-    if settings.TLE_SOURCES_JSON:
-        try:
-            sources_json = json.loads(settings.TLE_SOURCES_JSON)
-            other_sources['sources'] = list(sources_json.items())
-        except json.JSONDecodeError as error:
-            print('TLE Sources JSON ignored as it is invalid: {}'.format(error))
-    if settings.SPACE_TRACK_USERNAME and settings.SPACE_TRACK_PASSWORD:
-        other_sources['spacetrack_config'] = {
-            'identity': settings.SPACE_TRACK_USERNAME,
-            'password': settings.SPACE_TRACK_PASSWORD
-        }
-
-    print("==Fetching TLEs==")
-    tles = fetch_tles(catalog_norad_ids, **other_sources)
-
-    for obj in satellites:
-        norad_id = obj.norad_cat_id
-        if obj.manual_tle:
-            norad_id = obj.norad_follow_id
-
-        if norad_id not in list(tles.keys()):
-            # No TLE available for this satellite
-            print('{} - {}: NORAD ID not found [error]'.format(obj.name, norad_id))
-            continue
-
-        source, tle = tles[norad_id]
-
-        if obj.tle and obj.tle[0].tle1 == tle[1]:
-            # Stored TLE is already the latest available for this satellite
-            print('{} - {}: TLE already exists [defer]'.format(obj.name, norad_id))
-            continue
-
-        Tle.objects.create(tle0=tle[0], tle1=tle[1], tle2=tle[2], satellite=obj, tle_source=source)
-        print('{} - {} - {}: new TLE found [updated]'.format(obj.name, norad_id, source))
 
 
 @shared_task

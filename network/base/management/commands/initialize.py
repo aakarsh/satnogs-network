@@ -25,9 +25,6 @@ class Command(BaseCommand):
         #  Initial data
         call_command('fetch_data')
 
-        # Update TLEs
-        call_command('update_all_tle')
-
         # Check if migration AntennaType data have been removed
         if not AntennaType.objects.all():
             AntennaType.objects.bulk_create(

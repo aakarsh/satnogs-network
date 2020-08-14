@@ -31,13 +31,6 @@ def update_future_observations_with_new_tle_sets():
 
 
 @APP.task
-def update_all_tle():
-    """Wrapper task for 'update_all_tle' shared task"""
-    from network.base.tasks import update_all_tle as periodic_task  # pylint: disable=C0415
-    periodic_task()
-
-
-@APP.task
 def fetch_data():
     """Wrapper task for 'fetch_data' shared task"""
     from network.base.tasks import fetch_data as periodic_task  # pylint: disable=C0415
@@ -89,8 +82,6 @@ def setup_periodic_tasks(sender, **kwargs):  # pylint: disable=W0613
         update_future_observations_with_new_tle_sets.s(),
         name='update-all-tle'
     )
-
-    sender.add_periodic_task(RUN_EVERY_TWO_HOURS, update_all_tle.s(), name='update-all-tle')
 
     sender.add_periodic_task(RUN_HOURLY, fetch_data.s(), name='fetch-data')
 

@@ -13,7 +13,7 @@ from django.utils.timezone import now
 from factory import fuzzy  # pylint: disable=C0412
 
 from network.base.models import OBSERVATION_STATUSES, Antenna, AntennaType, \
-    DemodData, FrequencyRange, Observation, Satellite, Station, Tle
+    DemodData, FrequencyRange, Observation, Satellite, Station
 from network.users.models import User
 from network.users.tests import UserFactory
 
@@ -84,22 +84,9 @@ class SatelliteFactory(factory.django.DjangoModelFactory):
         model = Satellite
 
 
-class TleFactory(factory.django.DjangoModelFactory):
-    """Tle model factory."""
-    tle0 = 'ISS (ZARYA)'
-    tle1 = '1 25544U 98067A   17355.27738426  .00002760  00000-0  48789-4 0  9995'
-    tle2 = '2 25544  51.6403 185.6460 0002546 270.9261  71.9125 15.54204066 90844'
-    updated = fuzzy.FuzzyDateTime(now() - timedelta(days=3), now())
-    satellite = factory.SubFactory(SatelliteFactory)
-
-    class Meta:
-        model = Tle
-
-
 class ObservationFactory(factory.django.DjangoModelFactory):
     """Observation model factory."""
     satellite = factory.SubFactory(SatelliteFactory)
-    tle = factory.SubFactory(TleFactory)
     author = factory.SubFactory(UserFactory)
     start = fuzzy.FuzzyDateTime(
         now() - timedelta(days=3), now() + timedelta(days=3), force_microsecond=0
@@ -135,7 +122,6 @@ class ObservationFactory(factory.django.DjangoModelFactory):
 class RealisticObservationFactory(ObservationFactory):
     """Observation model factory which uses existing satellites and tles."""
     satellite = factory.Iterator(Satellite.objects.all())
-    tle = factory.Iterator(Tle.objects.all())
     author = factory.Iterator(User.objects.all())
     ground_station = factory.Iterator(Station.objects.all())
     waterfall_status_user = factory.Iterator(User.objects.all())
