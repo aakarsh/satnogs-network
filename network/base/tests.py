@@ -14,6 +14,7 @@ from factory import fuzzy  # pylint: disable=C0412
 
 from network.base.models import OBSERVATION_STATUSES, Antenna, AntennaType, \
     DemodData, FrequencyRange, Observation, Satellite, Station
+from network.base.test_orbital import generate_fake_tle
 from network.users.models import User
 from network.users.tests import UserFactory
 
@@ -84,15 +85,20 @@ class SatelliteFactory(factory.django.DjangoModelFactory):
         model = Satellite
 
 
-class ObservationFactory(factory.django.DjangoModelFactory):
+class ObservationFactory(factory.django.DjangoModelFactory):  # pylint: disable=R0902
     """Observation model factory."""
     satellite = factory.SubFactory(SatelliteFactory)
     author = factory.SubFactory(UserFactory)
     start = fuzzy.FuzzyDateTime(
         now() - timedelta(days=3), now() + timedelta(days=3), force_microsecond=0
     )
-    end = factory.LazyAttribute(lambda x: x.start + timedelta(hours=random.randint(1, 8)))
+    end = factory.LazyAttribute(lambda x: x.start + timedelta(minutes=random.randint(5, 12)))
     ground_station = factory.SubFactory(StationFactory)
+    tle_line_0 = ''
+    tle_line_1 = ''
+    tle_line_2 = ''
+    tle_source = ''
+    tle_updated = None
     payload = factory.django.FileField(filename='data.ogg')
     waterfall_status_datetime = factory.LazyAttribute(
         lambda x: x.end + timedelta(hours=random.randint(1, 20))
@@ -114,6 +120,19 @@ class ObservationFactory(factory.django.DjangoModelFactory):
         now() - timedelta(days=100),
         now() - timedelta(days=3)
     )
+
+    @factory.post_generation
+    def generate_tle(obj, create, extracted, **kwargs):  # pylint: disable=W0613
+        "Generate TLE set based on station location and start time of observation"
+        date = obj.start + (obj.end - obj.start) / 2
+        tle = generate_fake_tle(
+            obj.ground_station.lat, obj.ground_station.lng, obj.ground_station.alt, date
+        )
+        obj.tle_line_0 = tle[0].strip()
+        obj.tle_line_1 = tle[1]
+        obj.tle_line_2 = tle[2]
+        obj.tle_source = 'fake tle'
+        obj.tle_updated = obj.start - timedelta(hours=5)
 
     class Meta:
         model = Observation
