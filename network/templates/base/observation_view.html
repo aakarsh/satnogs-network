@@ -307,7 +307,7 @@
             {% if observation.has_waterfall %}
               <div id="waterfall-status">
                 <div id="waterfall-current-status">
-                  <div class="label label-default">Waterfall Status:</div>
+                  <div class="label label-default">Signal in WF</div>
                   {% if observation.waterfall_status == True %}
                     <div id="waterfall-status-label" class="label label-with-signal" aria-hidden="true"
                           data-toggle="tooltip" data-placement="right"
@@ -315,7 +315,7 @@
                                    {% if observation.waterfall_status_user %} by {{ observation.waterfall_status_user.displayname }}
                                    {% else %} automatically
                                    {% endif %}"
-                    >With Signal</div>
+                    >Has Signal</div>
 
                   {% elif observation.waterfall_status == False %}
                     <div id="waterfall-status-label" class="label label-without-signal" aria-hidden="true"
@@ -324,12 +324,16 @@
                                    {% if observation.waterfall_status_user %} by {{ observation.waterfall_status_user.displayname }}
                                    {% else %} automatically
                                    {% endif %}"
-                    >Without Signal</div>
+                    >No Signal</div>
                   {% else %}
                     <div id="waterfall-status-label" class="label label-unknown" aria-hidden="true"
                           data-toggle="tooltip" data-placement="right" title="Waterfall needs vetting"
                     >Unknown</div>
                   {% endif %}
+                  <a href="https://wiki.satnogs.org/Operation#Rating_observations" target="_blank">
+                    <span class="glyphicon glyphicon-info-sign" aria-hidden="true"
+                          data-toggle="tooltip" title="Help"></span>
+                  </a>
                 </div>
                 <div id="vetting-spinner">
                   <div class="spinner">
@@ -340,26 +344,21 @@
                 </div>
                 {% if can_vet %}
                   <div id="waterfall-status-form">
-                    <div class="label label-default">Change Waterfall Status:</div>
-                      <a href="https://wiki.satnogs.org/Operation#Rating_observations" target="_blank">
-                        <span class="glyphicon glyphicon-info-sign" aria-hidden="true"
-                              data-toggle="tooltip" title="Help"></span>
-                      </a>
                     <form class="hidden">{% csrf_token %}</form>
                     <button id="unknown-status" type="button" title="Unknown (u)"
                             class="btn btn-xs btn-warning {% if observation.waterfall_status is None %}hidden{% endif %}"
                             data-id="{{ observation.id }}" data-status="unknown" data-toggle="tooltip">
-                      Unknown
+                      <span class="glyphicon glyphicon-question-sign" aria-hidden="true"></span>
                     </button>
                     <button id="with-signal-status" type="button" title="With Signal (g)"
                             class="btn btn-xs btn-success {% if observation.waterfall_status == True %}hidden{% endif %}"
                             data-id="{{ observation.id }}" data-status="with-signal" data-toggle="tooltip">
-                      With Signal
+                      <span class="glyphicon glyphicon-ok" aria-hidden="true"></span>
                     </button>
                     <button id="without-signal-status" type="button" title="Without Signal (b)"
                             class="btn btn-xs btn-danger {% if observation.waterfall_status == False %}hidden{% endif %}"
                             data-id="{{ observation.id }}" data-status="without-signal" data-toggle="tooltip">
-                      Without Signal
+                      <span class="glyphicon glyphicon-remove" aria-hidden="true"></span>
                     </button>
                   </div>
                 {% endif %}

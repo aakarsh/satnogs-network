@@ -92,7 +92,6 @@
 
 #waterfall-status {
     display: flex;
-    justify-content: space-between;
     align-content: center;
     align-items: center;
     flex-wrap: wrap;
@@ -100,5 +99,5 @@
 
 #waterfall-current-status,
 #waterfall-status-form {
-    margin: 5px;
+    margin: 0.3em;
 }
