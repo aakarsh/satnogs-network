@@ -7,7 +7,7 @@ from rest_framework import serializers
 from network.base.db_api import DBConnectionError, \
     get_tle_sets_by_norad_id_set, get_transmitters_by_uuid_set
 from network.base.models import Antenna, DemodData, FrequencyRange, \
-    Observation, Station, Transmitter
+    Observation, Station
 from network.base.perms import UserNoPermissionError, \
     check_schedule_perms_per_station
 from network.base.scheduling import create_new_observation
@@ -305,10 +305,7 @@ class NewObservationSerializer(serializers.Serializer):
         )
 
     def update(self, instance, validated_data):
-        """Updates an observation from validated data
-
-        currently disabled and returns None
-        """
+        """Updates an observation from validated data, currently disabled and returns None"""
         return None
 
     class Meta:
@@ -460,17 +457,26 @@ class JobSerializer(serializers.ModelSerializer):
         return obj.transmitter_baud
 
 
-class TransmitterSerializer(serializers.ModelSerializer):
+class TransmitterSerializer(serializers.Serializer):
     """SatNOGS Network Transmitter API Serializer"""
+    uuid = serializers.SerializerMethodField()
     stats = serializers.SerializerMethodField()
 
-    class Meta:
-        model = Transmitter
-        fields = ('uuid', 'sync_to_db', 'stats')
+    def get_uuid(self, obj):
+        """Returns Transmitter UUID"""
+        return obj['transmitter_uuid']
 
     def get_stats(self, obj):
         """Returns Transmitter statistics"""
-        stats = transmitter_stats_by_uuid(obj.uuid)
+        stats = transmitter_stats_by_uuid(obj['transmitter_uuid'])
         for statistic in stats:
             stats[statistic] = int(stats[statistic])
         return stats
+
+    def create(self, validated_data):
+        """Creates an object instance of transmitter, currently disabled and returns None"""
+        return None
+
+    def update(self, instance, validated_data):
+        """Updates an object instance of transmitter, currently disabled and returns None"""
+        return None

@@ -3,7 +3,7 @@ import django_filters
 from django.utils.timezone import now
 from django_filters.rest_framework import FilterSet
 
-from network.base.models import Observation, Station, Transmitter
+from network.base.models import Observation, Station
 from network.users.models import User
 
 
@@ -83,6 +83,4 @@ class StationViewFilter(FilterSet):
 
 class TransmitterViewFilter(FilterSet):
     """SatNOGS Network Transmitter API View Filter"""
-    class Meta:
-        model = Transmitter
-        fields = ['uuid', 'sync_to_db']
+    uuid = django_filters.CharFilter(field_name='transmitter_uuid')

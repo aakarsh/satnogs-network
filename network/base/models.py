@@ -313,15 +313,6 @@ class Satellite(models.Model):
         return self.name
 
 
-class Transmitter(models.Model):
-    """Model for antennas transponders."""
-    uuid = ShortUUIDField(db_index=True)
-    sync_to_db = models.BooleanField(default=False)
-
-    def __str__(self):
-        return self.uuid
-
-
 class Observation(models.Model):
     """Model for SatNOGS observations."""
     satellite = models.ForeignKey(

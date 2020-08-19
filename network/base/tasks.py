@@ -13,8 +13,7 @@ from internetarchive import upload
 from internetarchive.exceptions import AuthenticationError
 
 from network.base.db_api import DBConnectionError, get_tle_sets_by_norad_id_set
-from network.base.models import DemodData, Observation, Satellite, Station, \
-    Transmitter
+from network.base.models import DemodData, Observation, Satellite, Station
 from network.base.utils import sync_demoddata_to_db
 
 
@@ -59,13 +58,9 @@ def fetch_data():
         print("Zero length api url, fetching is stopped")
         return
     satellites_url = "{}satellites".format(db_api_url)
-    transmitters_url = "{}transmitters".format(db_api_url)
 
     print("Fetching Satellites from {}".format(satellites_url))
     r_satellites = requests.get(satellites_url)
-
-    print("Fetching Transmitters from {}".format(transmitters_url))
-    r_transmitters = requests.get(transmitters_url)
 
     # Fetch Satellites
     satellites_added = 0
@@ -91,27 +86,6 @@ def fetch_data():
             satellites_added += 1
 
     print('Added/Updated {}/{} satellites from db.'.format(satellites_added, satellites_updated))
-
-    # Fetch Transmitters
-    transmitters_added = 0
-    transmitters_skipped = 0
-    for transmitter in r_transmitters.json():
-        uuid = transmitter['uuid']
-
-        try:
-            # Transmitter already exists, skip
-            Transmitter.objects.get(uuid=uuid)
-            transmitters_skipped += 1
-        except Transmitter.DoesNotExist:
-            # Create Transmitter
-            Transmitter.objects.create(uuid=uuid)
-            transmitters_added += 1
-
-    print(
-        'Added/Skipped {}/{} transmitters from db.'.format(
-            transmitters_added, transmitters_skipped
-        )
-    )
 
 
 @shared_task
@@ -176,17 +150,15 @@ def clean_observations():
 @shared_task
 def sync_to_db(frame_id=None):
     """Task to send demod data to SatNOGS DB / SiDS"""
-    transmitters = Transmitter.objects.filter(sync_to_db=True).values_list('uuid', flat=True)
-
-    frames = DemodData.objects.filter(
-        copied_to_db=False, observation__transmitter_uuid__in=transmitters
+    frames = DemodData.objects.filter(copied_to_db=False).exclude(
+        observation__transmitter_mode__in=settings.NOT_SYNCED_MODES
     )
 
     if frame_id:
         frames = frames.filter(pk=frame_id)[:1]
 
     for frame in frames:
-        if frame.is_image() or frame.copied_to_db or not os.path.isfile(frame.payload_demod.path):
+        if frame.is_image() or not os.path.isfile(frame.payload_demod.path):
             continue
         try:
             sync_demoddata_to_db(frame)

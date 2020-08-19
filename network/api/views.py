@@ -9,7 +9,7 @@ from rest_framework.serializers import ValidationError
 
 from network.api import filters, pagination, serializers
 from network.api.perms import StationOwnerPermission
-from network.base.models import Observation, Station, Transmitter
+from network.base.models import Observation, Station
 from network.base.rating_tasks import rate_observation
 from network.base.tasks import sync_to_db
 from network.base.validators import NegativeElevationError, NoTleSetError, \
@@ -103,8 +103,9 @@ class StationView(  # pylint: disable=R0901
 class TransmitterView(  # pylint: disable=R0901
         mixins.ListModelMixin, mixins.RetrieveModelMixin, viewsets.GenericViewSet):
     """SatNOGS Network Transmitter API view class"""
-    queryset = Transmitter.objects.all().order_by('uuid')
+    queryset = Observation.objects.order_by().values('transmitter_uuid').distinct()
     serializer_class = serializers.TransmitterSerializer
+    lookup_field = 'transmitter_uuid'
     filterset_class = filters.TransmitterViewFilter
     pagination_class = pagination.LinkedHeaderPageNumberPagination
 

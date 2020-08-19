@@ -363,6 +363,10 @@ OBSERVATION_DURATION_MIN = config('OBSERVATION_DURATION_MIN', default=120, cast=
 OBSERVATION_WARN_MIN_OBS = config('OBSERVATION_WARN_MIN_OBS', default=30, cast=int)
 # Cache expiration of the lock for "archive audio" task
 ARCHIVE_AUDIO_LOCK_EXPIRATION = config('ARCHIVE_AUDIO_LOCK_EXPIRATION', default=900, cast=int)
+# Modes, in comma separated list, of which demoded data should not be send to DB
+NOT_SYNCED_MODES = config(
+    'NOT_SYNCED_MODES', default='AHRPT,AM,APT,CW,FM,FMN,HRPT,LRPT,LSB,SSTV,USB', cast=Csv()
+)
 
 # Station settings
 # Heartbeat for keeping a station online in minutes
