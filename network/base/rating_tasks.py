@@ -89,7 +89,7 @@ def rate_observation(observation_id, action, action_value=None):
             elif observation.status == -1000:
                 status = 0
         elif action == "data_upload":
-            if observation.transmitter_mode not in ['CW, FM']:
+            if observation.transmitter_mode not in ['CW', 'FM']:
                 status = 100
             elif observation.status == -1000:
                 status = 0
