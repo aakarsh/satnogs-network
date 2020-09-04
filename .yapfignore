@@ -1,6 +1,7 @@
 node_modules
 network/_version.py
 network/*/migrations
+satnogs-network-api-client
 .tox
 build
 docs
