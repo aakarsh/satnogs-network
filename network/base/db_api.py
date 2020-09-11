@@ -12,8 +12,9 @@ class DBConnectionError(Exception):
 
 def tle_api_request(url):
     """Perform TLE query on SatNOGS DB API and return the results"""
+    headers = {}
     if DB_API_KEY:
-        headers = {'authorization': 'Token {0}'.format(DB_API_KEY)}
+        headers['authorization'] = 'Token {0}'.format(DB_API_KEY)
     if not DB_API_URL:
         raise DBConnectionError('Error in DB API connection. Blank DB API URL!')
     try:
