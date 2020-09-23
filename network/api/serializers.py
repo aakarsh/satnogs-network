@@ -202,7 +202,6 @@ class NewObservationListSerializer(serializers.ListSerializer):
             transmitter_uuid = observation_data['transmitter_uuid']
             transmitter = self.transmitters[transmitter_uuid]
             tle_set = self.tle_sets[transmitter['norad_cat_id']]
-            print(tle_set, flush=True)
 
             observation = create_new_observation(
                 station=observation_data['ground_station'],
