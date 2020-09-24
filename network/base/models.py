@@ -36,7 +36,7 @@ STATION_STATUSES = (
     (1, 'Testing'),
     (0, 'Offline'),
 )
-SATELLITE_STATUS = ['alive', 'dead', 're-entered']
+SATELLITE_STATUS = ['alive', 'dead', 'future', 're-entered']
 TRANSMITTER_STATUS = ['active', 'inactive', 'invalid']
 TRANSMITTER_TYPE = ['Transmitter', 'Transceiver', 'Transponder']
 
