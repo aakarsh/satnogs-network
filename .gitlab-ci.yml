@@ -190,6 +190,8 @@ gemnasium-python-dependency_scanning:
     - apt-get -qy install libmariadb-dev python3-pil libjpeg-dev
 sast:
   stage: security
+  variables:
+    SAST_DISABLE_BABEL: 'true'
 secret_detection:
   stage: security
 secret_detection_default_branch:
