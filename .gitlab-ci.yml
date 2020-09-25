@@ -171,6 +171,7 @@ include:
   - template: Security/Container-Scanning.gitlab-ci.yml
   - template: Security/Dependency-Scanning.gitlab-ci.yml
   - template: Security/SAST.gitlab-ci.yml
+  - template: Security/Secret-Detection.gitlab-ci.yml
 container_scanning:
   stage: security
   variables:
@@ -188,4 +189,8 @@ gemnasium-python-dependency_scanning:
     - apt-get -q update
     - apt-get -qy install libmariadb-dev python3-pil libjpeg-dev
 sast:
+  stage: security
+secret_detection:
+  stage: security
+secret_detection_default_branch:
   stage: security
