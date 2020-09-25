@@ -155,6 +155,7 @@ class ObservationSerializer(serializers.ModelSerializer):
 
     def get_tle2(self, obj):
         """Returns tle2"""
+        return obj.tle_line_2
 
 
 class NewObservationListSerializer(serializers.ListSerializer):
