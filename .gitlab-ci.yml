@@ -1,6 +1,6 @@
 variables:
   GITLAB_CI_IMAGE_ALPINE: 'alpine:3.9'
-  GITLAB_CI_IMAGE_DOCKER: 'docker:19.03'
+  GITLAB_CI_IMAGE_DOCKER: 'docker:19.03.12'
   GITLAB_CI_IMAGE_NODE: 'node:13.12'
   GITLAB_CI_IMAGE_PYTHON: 'python:3.8'
   GITLAB_CI_PYPI_DOCKER_COMPOSE: 'docker-compose~=1.23.0'
