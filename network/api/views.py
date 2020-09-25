@@ -27,7 +27,7 @@ class ObservationView(  # pylint: disable=R0901
 
     def get_serializer_class(self):
         """Returns the right serializer depending on http method that is used"""
-        if self.request.method == 'POST':
+        if self.action == 'create':
             return serializers.NewObservationSerializer
         return serializers.ObservationSerializer
 
