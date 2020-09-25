@@ -182,7 +182,6 @@ container_scanning:
 dependency_scanning:
   stage: security
   variables:
-    DS_DISABLE_DIND: 'true'
     DS_DEFAULT_ANALYZERS: 'gemnasium,gemnasium-python,retire.js'
 gemnasium-python-dependency_scanning:
   before_script:
