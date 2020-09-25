@@ -12,29 +12,8 @@ stages:
   - deploy
   - trigger
   - security
-include:
-  - template: Container-Scanning.gitlab-ci.yml
-  - template: Dependency-Scanning.gitlab-ci.yml
-  - template: SAST.gitlab-ci.yml
-container_scanning:
-  stage: security
-  variables:
-    CI_APPLICATION_REPOSITORY: ${CI_REGISTRY_IMAGE}/satnogs-network
-    CI_APPLICATION_TAG: ${CI_COMMIT_REF_NAME}
-  rules:
-    - if: $CI_REGISTRY_IMAGE && $CI_COMMIT_BRANCH == "master"
-    - if: $CI_REGISTRY_IMAGE && $CI_COMMIT_TAG
-dependency_scanning:
-  stage: security
-  variables:
-    DS_DISABLE_DIND: 'true'
-    DS_DEFAULT_ANALYZERS: 'gemnasium,gemnasium-python,retire.js'
-gemnasium-python-dependency_scanning:
-  before_script:
-    - apt-get -q update
-    - apt-get -qy install libmariadb-dev python3-pil libjpeg-dev
-sast:
-  stage: security
+
+# 'static' stage
 static_js_css:
   stage: static
   image: ${GITLAB_CI_IMAGE_NODE}
@@ -46,13 +25,15 @@ static_js_css:
     when: always
     paths:
       - network/static/lib
-static_python:
+static:
   stage: static
   image: ${GITLAB_CI_IMAGE_PYTHON}
   before_script:
     - pip install "$GITLAB_CI_PYPI_TOX"
   script:
     - tox -e "flake8,isort,yapf,pylint"
+
+# 'build' stage
 docs:
   stage: build
   image: ${GITLAB_CI_IMAGE_PYTHON}
@@ -79,6 +60,8 @@ build:
     when: always
     paths:
       - dist
+
+# 'test' stage
 test:
   stage: test
   image: ${GITLAB_CI_IMAGE_PYTHON}
@@ -88,6 +71,8 @@ test:
     - apt-get install -y ruby-sass
   script:
     - tox -e deps,pytest
+
+# 'deploy' stage
 docker:
   stage: deploy
   image: ${GITLAB_CI_IMAGE_DOCKER}
@@ -144,6 +129,18 @@ deploy:
       - $PYPI_PASSWORD
   except:
     - triggers
+pages:
+  stage: deploy
+  image: ${GITLAB_CI_IMAGE_ALPINE}
+  script:
+    - mv docs/_build/html/ public/
+  artifacts:
+    paths:
+      - public
+  only:
+    - tags
+
+# 'trigger' stage
 trigger_master:
   stage: trigger
   image: ${GITLAB_CI_IMAGE_ALPINE}
@@ -168,13 +165,28 @@ trigger_latest:
       - tags
     variables:
       - $PIPELINE_TRIGGERS_LATEST
-pages:
-  stage: deploy
-  image: ${GITLAB_CI_IMAGE_ALPINE}
-  script:
-    - mv docs/_build/html/ public/
-  artifacts:
-    paths:
-      - public
-  only:
-    - tags
+
+# 'security' stage
+include:
+  - template: Container-Scanning.gitlab-ci.yml
+  - template: Dependency-Scanning.gitlab-ci.yml
+  - template: SAST.gitlab-ci.yml
+container_scanning:
+  stage: security
+  variables:
+    CI_APPLICATION_REPOSITORY: ${CI_REGISTRY_IMAGE}/satnogs-network
+    CI_APPLICATION_TAG: ${CI_COMMIT_REF_NAME}
+  rules:
+    - if: $CI_REGISTRY_IMAGE && $CI_COMMIT_BRANCH == "master"
+    - if: $CI_REGISTRY_IMAGE && $CI_COMMIT_TAG
+dependency_scanning:
+  stage: security
+  variables:
+    DS_DISABLE_DIND: 'true'
+    DS_DEFAULT_ANALYZERS: 'gemnasium,gemnasium-python,retire.js'
+gemnasium-python-dependency_scanning:
+  before_script:
+    - apt-get -q update
+    - apt-get -qy install libmariadb-dev python3-pil libjpeg-dev
+sast:
+  stage: security
