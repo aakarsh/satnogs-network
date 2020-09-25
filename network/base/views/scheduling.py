@@ -391,10 +391,14 @@ def scheduling_stations(request):
 @require_POST
 def transmitters_view(request):
     """Returns a transmitter JSON object with information and statistics"""
-    norad_id = request.POST['satellite']
+    norad_id = request.POST.get(['satellite'], None)
     station_id = request.POST.get('station_id', None)
     try:
-        Satellite.objects.get(norad_cat_id=norad_id)
+        if norad_id:
+            Satellite.objects.get(norad_cat_id=norad_id)
+        else:
+            data = {'error': 'Satellite not provided.'}
+            return JsonResponse(data, safe=False)
     except Satellite.DoesNotExist:
         data = {'error': 'Unable to find that satellite.'}
         return JsonResponse(data, safe=False)
