@@ -39,6 +39,9 @@ class ObservationSerializer(serializers.ModelSerializer):
     vetted_user = serializers.SerializerMethodField()  # Deprecated
     vetted_datetime = serializers.SerializerMethodField()  # Deprecated
     demoddata = DemodDataSerializer(required=False, many=True)
+    tle0 = serializers.SerializerMethodField()
+    tle1 = serializers.SerializerMethodField()
+    tle2 = serializers.SerializerMethodField()
 
     class Meta:
         model = Observation
@@ -52,7 +55,7 @@ class ObservationSerializer(serializers.ModelSerializer):
             'transmitter_uplink_low', 'transmitter_uplink_high', 'transmitter_uplink_drift',
             'transmitter_downlink_low', 'transmitter_downlink_high', 'transmitter_downlink_drift',
             'transmitter_mode', 'transmitter_invert', 'transmitter_baud', 'transmitter_updated',
-            'tle'
+            'tle0', 'tle1', 'tle2'
         )
         read_only_fields = [
             'id', 'start', 'end', 'observation', 'ground_station', 'transmitter', 'norad_cat_id',
@@ -63,7 +66,8 @@ class ObservationSerializer(serializers.ModelSerializer):
             'transmitter_type', 'transmitter_uplink_low', 'transmitter_uplink_high',
             'transmitter_uplink_drift', 'transmitter_downlink_low', 'transmitter_downlink_high',
             'transmitter_downlink_drift', 'transmitter_mode', 'transmitter_invert',
-            'transmitter_baud', 'transmitter_created', 'transmitter_updated', 'tle'
+            'transmitter_baud', 'transmitter_created', 'transmitter_updated', 'tle0', 'tle1',
+            'tle2'
         ]
 
     def update(self, instance, validated_data):
@@ -140,6 +144,17 @@ class ObservationSerializer(serializers.ModelSerializer):
     def get_vetted_datetime(self, obj):
         """DEPRECATED: Returns vetted datetime"""
         return obj.waterfall_status_datetime
+
+    def get_tle0(self, obj):
+        """Returns tle0"""
+        return obj.tle_line_0
+
+    def get_tle1(self, obj):
+        """Returns tle1"""
+        return obj.tle_line_1
+
+    def get_tle2(self, obj):
+        """Returns tle2"""
 
 
 class NewObservationListSerializer(serializers.ListSerializer):

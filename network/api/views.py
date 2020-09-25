@@ -119,7 +119,7 @@ class JobView(viewsets.ReadOnlyModelViewSet):  # pylint: disable=R0901
 
     def get_queryset(self):
         """Returns queryset for Job API view"""
-        queryset = self.queryset.filter(start__gte=now()).prefetch_related('tle')
+        queryset = self.queryset.filter(start__gte=now())
         ground_station_id = self.request.query_params.get('ground_station', None)
         if ground_station_id and self.request.user.is_authenticated:
             ground_station = get_object_or_404(Station, id=ground_station_id)
