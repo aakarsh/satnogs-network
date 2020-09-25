@@ -5,10 +5,10 @@ from network.api import views
 
 ROUTER = routers.DefaultRouter()
 
-ROUTER.register(r'jobs', views.JobView, base_name='jobs')
-ROUTER.register(r'data', views.ObservationView, base_name='data')
-ROUTER.register(r'observations', views.ObservationView, base_name='observations')
-ROUTER.register(r'stations', views.StationView, base_name='stations')
-ROUTER.register(r'transmitters', views.TransmitterView, base_name='transmitters')
+ROUTER.register(r'jobs', views.JobView, basename='jobs')
+ROUTER.register(r'data', views.ObservationView, basename='data')
+ROUTER.register(r'observations', views.ObservationView, basename='observations')
+ROUTER.register(r'stations', views.StationView, basename='stations')
+ROUTER.register(r'transmitters', views.TransmitterView, basename='transmitters')
 
 API_URLPATTERNS = ROUTER.urls
