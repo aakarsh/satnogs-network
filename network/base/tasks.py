@@ -34,6 +34,8 @@ def update_future_observations_with_new_tle_sets():
     except DBConnectionError:
         return
     for norad_id in tle_sets.keys():
+        if not tle_sets[norad_id]:
+            continue
         tle_set = tle_sets[norad_id][0]
         tle_updated = datetime.strptime(tle_set['updated'], "%Y-%m-%dT%H:%M:%S.%f%z")
         future_observations.filter(
