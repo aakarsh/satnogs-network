@@ -391,7 +391,7 @@ def scheduling_stations(request):
 @require_POST
 def transmitters_view(request):
     """Returns a transmitter JSON object with information and statistics"""
-    norad_id = request.POST.get(['satellite'], None)
+    norad_id = request.POST.get('satellite', None)
     station_id = request.POST.get('station_id', None)
     try:
         if norad_id:
