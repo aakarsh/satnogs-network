@@ -3,9 +3,8 @@ from django.core.management import call_command
 from django.core.management.base import BaseCommand
 
 from network.base.models import AntennaType
-from network.base.tests import AntennaFactory, DemodDataFactory, \
-    FrequencyRangeFactory, RealisticObservationFactory, StationFactory, \
-    generate_payload, generate_payload_name
+from network.base.tests import AntennaFactory, DemodDataFactory, FrequencyRangeFactory, \
+    RealisticObservationFactory, StationFactory, generate_payload, generate_payload_name
 
 
 class Command(BaseCommand):

@@ -15,21 +15,18 @@ from django.urls import reverse
 from django.utils.timezone import make_aware, now, utc
 from django.views.decorators.http import require_POST
 
-from network.base.db_api import DBConnectionError, get_tle_set_by_norad_id, \
-    get_tle_sets, get_transmitter_by_uuid, get_transmitters_by_norad_id, \
-    get_transmitters_by_status
+from network.base.db_api import DBConnectionError, get_tle_set_by_norad_id, get_tle_sets, \
+    get_transmitter_by_uuid, get_transmitters_by_norad_id, get_transmitters_by_status
 from network.base.decorators import ajax_required
 from network.base.forms import ObservationFormSet, SatelliteFilterForm
 from network.base.models import Observation, Satellite, Station
 from network.base.perms import schedule_perms
-from network.base.scheduling import create_new_observation, \
-    get_available_stations, predict_available_observation_windows
+from network.base.scheduling import create_new_observation, get_available_stations, \
+    predict_available_observation_windows
 from network.base.serializers import StationSerializer
-from network.base.stats import satellite_stats_by_transmitter_list, \
-    transmitters_with_stats
+from network.base.stats import satellite_stats_by_transmitter_list, transmitters_with_stats
 from network.base.validators import NegativeElevationError, NoTleSetError, \
-    ObservationOverlapError, SinglePassError, \
-    is_transmitter_in_station_range
+    ObservationOverlapError, SinglePassError, is_transmitter_in_station_range
 
 
 def create_new_observations(formset, user):

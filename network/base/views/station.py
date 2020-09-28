@@ -9,11 +9,9 @@ from django.urls import reverse
 from django.utils.timezone import now
 from rest_framework import viewsets
 
-from network.base.forms import AntennaInlineFormSet, \
-    FrequencyRangeInlineFormSet, StationForm
+from network.base.forms import AntennaInlineFormSet, FrequencyRangeInlineFormSet, StationForm
 from network.base.models import AntennaType, Station, StationStatusLog
-from network.base.perms import modify_delete_station_perms, \
-    schedule_station_perms
+from network.base.perms import modify_delete_station_perms, schedule_station_perms
 from network.base.serializers import StationSerializer
 from network.base.utils import populate_formset_error_messages
 

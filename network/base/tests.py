@@ -12,8 +12,8 @@ from django.utils.timezone import now
 # C0412 below clashes with isort
 from factory import fuzzy  # pylint: disable=C0412
 
-from network.base.models import OBSERVATION_STATUSES, Antenna, AntennaType, \
-    DemodData, FrequencyRange, Observation, Satellite, Station
+from network.base.models import OBSERVATION_STATUSES, Antenna, AntennaType, DemodData, \
+    FrequencyRange, Observation, Satellite, Station
 from network.base.test_orbital import generate_fake_tle
 from network.users.models import User
 from network.users.tests import UserFactory

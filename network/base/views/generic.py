@@ -6,8 +6,7 @@ from django.shortcuts import redirect, render
 from django.urls import reverse
 
 from network.base.decorators import admin_required
-from network.base.tasks import fetch_data, \
-    update_future_observations_with_new_tle_sets
+from network.base.tasks import fetch_data, update_future_observations_with_new_tle_sets
 
 
 def index(request):

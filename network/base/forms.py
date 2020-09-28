@@ -1,18 +1,16 @@
 """SatNOGS Network django base Forms class"""
 from django.conf import settings
-from django.forms import BaseFormSet, BaseInlineFormSet, CharField, \
-    DateTimeField, FloatField, Form, ImageField, IntegerField, \
-    ModelChoiceField, ModelForm, ValidationError, formset_factory, \
-    inlineformset_factory
+from django.forms import BaseFormSet, BaseInlineFormSet, CharField, DateTimeField, FloatField, \
+    Form, ImageField, IntegerField, ModelChoiceField, ModelForm, ValidationError, \
+    formset_factory, inlineformset_factory
 
-from network.base.db_api import DBConnectionError, \
-    get_tle_sets_by_norad_id_set, get_transmitters_by_uuid_set
+from network.base.db_api import DBConnectionError, get_tle_sets_by_norad_id_set, \
+    get_transmitters_by_uuid_set
 from network.base.models import Antenna, FrequencyRange, Observation, Station
-from network.base.perms import UserNoPermissionError, \
-    check_schedule_perms_per_station
-from network.base.validators import ObservationOverlapError, OutOfRangeError, \
-    check_end_datetime, check_overlaps, check_start_datetime, \
-    check_start_end_datetimes, check_transmitter_station_pairs
+from network.base.perms import UserNoPermissionError, check_schedule_perms_per_station
+from network.base.validators import ObservationOverlapError, OutOfRangeError, check_end_datetime, \
+    check_overlaps, check_start_datetime, check_start_end_datetimes, \
+    check_transmitter_station_pairs
 
 
 class ObservationForm(ModelForm):

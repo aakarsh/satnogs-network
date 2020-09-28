@@ -13,8 +13,7 @@ from network.base.decorators import ajax_required
 from network.base.models import Observation, Satellite, Station
 from network.base.perms import delete_perms, schedule_perms, vet_perms
 from network.base.rating_tasks import rate_observation
-from network.base.stats import satellite_stats_by_transmitter_list, \
-    transmitters_with_stats
+from network.base.stats import satellite_stats_by_transmitter_list, transmitters_with_stats
 from network.base.utils import community_get_discussion_details
 from network.users.models import User
 

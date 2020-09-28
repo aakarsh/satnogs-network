@@ -1,8 +1,8 @@
 """Define functions and settings for the django admin base interface"""
 from django.contrib import admin
 
-from network.base.models import Antenna, AntennaType, DemodData, \
-    FrequencyRange, Observation, Satellite, Station
+from network.base.models import Antenna, AntennaType, DemodData, FrequencyRange, Observation, \
+    Satellite, Station
 from network.base.utils import export_as_csv, export_station_status
 
 
