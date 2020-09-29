@@ -4,11 +4,12 @@ from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.db import DatabaseError, transaction
 from django.db.models import Count, Q
+from django.http import JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse
 from django.utils.timezone import now
-from rest_framework import viewsets
 
+from network.base.decorators import ajax_required
 from network.base.forms import AntennaInlineFormSet, FrequencyRangeInlineFormSet, StationForm
 from network.base.models import AntennaType, Station, StationStatusLog
 from network.base.perms import modify_delete_station_perms, schedule_station_perms
@@ -16,10 +17,12 @@ from network.base.serializers import StationSerializer
 from network.base.utils import populate_formset_error_messages
 
 
-class StationAllView(viewsets.ReadOnlyModelViewSet):  # pylint: disable=R0901
-    """Station View of all stations"""
-    queryset = Station.objects.all()
-    serializer_class = StationSerializer
+@ajax_required
+def station_all_view(request):
+    """Return JSON with all stations"""
+    stations = Station.objects.all()
+    data = StationSerializer(stations, many=True).data
+    return JsonResponse(data, safe=False)
 
 
 def stations_list(request):

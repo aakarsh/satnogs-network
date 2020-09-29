@@ -40,11 +40,7 @@ BASE_URLPATTERNS = (
         ),
 
         # Stations
-        url(
-            r'^stations_all/$',
-            station.StationAllView.as_view({'get': 'list'}),
-            name='stations_all'
-        ),
+        url(r'^stations_all/$', station.station_all_view, name='stations_all'),
         url(r'^stations/$', station.stations_list, name='stations_list'),
         url(r'^stations/(?P<station_id>[0-9]+)/$', station.station_view, name='station_view'),
         url(
