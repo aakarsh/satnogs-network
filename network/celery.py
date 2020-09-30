@@ -78,9 +78,7 @@ def find_and_rate_failed_observations():
 def setup_periodic_tasks(sender, **kwargs):  # pylint: disable=W0613
     """Initializes celery tasks that need to run on a scheduled basis"""
     sender.add_periodic_task(
-        RUN_EVERY_TWO_HOURS,
-        update_future_observations_with_new_tle_sets.s(),
-        name='update-all-tle'
+        RUN_TWICE_HOURLY, update_future_observations_with_new_tle_sets.s(), name='update-all-tle'
     )
 
     sender.add_periodic_task(RUN_HOURLY, fetch_data.s(), name='fetch-data')
