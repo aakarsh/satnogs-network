@@ -78,16 +78,18 @@ def find_and_rate_failed_observations():
 def setup_periodic_tasks(sender, **kwargs):  # pylint: disable=W0613
     """Initializes celery tasks that need to run on a scheduled basis"""
     sender.add_periodic_task(
-        RUN_TWICE_HOURLY, update_future_observations_with_new_tle_sets.s(), name='update-all-tle'
+        RUN_TWICE_HOURLY,
+        update_future_observations_with_new_tle_sets.s(),
+        name='update_future_observations_with_new_tle_sets'
     )
 
-    sender.add_periodic_task(RUN_HOURLY, fetch_data.s(), name='fetch-data')
+    sender.add_periodic_task(RUN_HOURLY, fetch_data.s(), name='fetch_data')
 
-    sender.add_periodic_task(RUN_HOURLY, station_status_update.s(), name='station-status-update')
+    sender.add_periodic_task(RUN_HOURLY, station_status_update.s(), name='station_status_update')
 
-    sender.add_periodic_task(RUN_HOURLY, clean_observations.s(), name='clean-observations')
+    sender.add_periodic_task(RUN_HOURLY, clean_observations.s(), name='clean_observations')
 
-    sender.add_periodic_task(RUN_HOURLY, stations_cache_rates.s(), name='stations-cache-rates')
+    sender.add_periodic_task(RUN_HOURLY, stations_cache_rates.s(), name='stations_cache_rates')
 
     sender.add_periodic_task(
         settings.OBS_NO_RESULTS_CHECK_PERIOD,
