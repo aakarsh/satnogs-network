@@ -30,7 +30,10 @@ def update_future_observations_with_new_tle_sets():
     future_observations = Observation.objects.filter(start__gt=start)
     norad_id_set = set(future_observations.values_list('satellite__norad_cat_id', flat=True))
     try:
-        tle_sets = get_tle_sets_by_norad_id_set(norad_id_set)
+        if norad_id_set:
+            tle_sets = get_tle_sets_by_norad_id_set(norad_id_set)
+        else:
+            return
     except DBConnectionError:
         return
     for norad_id in tle_sets.keys():
