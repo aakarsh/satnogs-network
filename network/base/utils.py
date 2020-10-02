@@ -164,10 +164,13 @@ def sync_demoddata_to_db(frame):
     sat = obs.satellite
     ground_station = obs.ground_station
 
-    # need to abstract the timestamp from the filename. hacky..
-    file_datetime = frame.payload_demod.name.split('/')[2].split('_')[2]
-    frame_datetime = datetime.strptime(file_datetime, '%Y-%m-%dT%H-%M-%S')
-    submit_datetime = datetime.strftime(frame_datetime, '%Y-%m-%dT%H:%M:%S.000Z')
+    try:
+        # need to abstract the timestamp from the filename. hacky..
+        file_datetime = frame.payload_demod.name.split('/')[2].split('_')[2]
+        frame_datetime = datetime.strptime(file_datetime, '%Y-%m-%dT%H-%M-%S')
+        submit_datetime = datetime.strftime(frame_datetime, '%Y-%m-%dT%H:%M:%S.000Z')
+    except ValueError:
+        return
 
     # SiDS parameters
     params = {
