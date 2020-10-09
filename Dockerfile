@@ -1,4 +1,4 @@
-FROM python:3
+FROM python:3.8.6
 MAINTAINER SatNOGS project <dev@satnogs.org>
 
 WORKDIR /workdir/
