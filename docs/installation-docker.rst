@@ -49,6 +49,6 @@ Docker Installation
 
      $ docker-compose exec web django-admin flush
 
-#. **Build the documentation locally**
+#. **Build the documentation locally**::
 
      $ tox -e docs
