@@ -12,6 +12,8 @@ from sentry_sdk.integrations.django import DjangoIntegration
 from sentry_sdk.integrations.redis import RedisIntegration
 from unipath import Path
 
+from network import __version__
+
 ROOT = Path(__file__).parent
 
 ENVIRONMENT = config('ENVIRONMENT', default='dev')
@@ -246,7 +248,9 @@ LOGGING = {
 SENTRY_ENABLED = config('SENTRY_ENABLED', default=False, cast=bool)
 if SENTRY_ENABLED:
     sentry_sdk_init(
+        environment=ENVIRONMENT,
         dsn=config('SENTRY_DSN', default=''),
+        release='satnogs-network@{}'.format(__version__),
         integrations=[CeleryIntegration(),
                       DjangoIntegration(),
                       RedisIntegration()]
