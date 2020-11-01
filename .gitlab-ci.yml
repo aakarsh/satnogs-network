@@ -56,6 +56,13 @@ api:
       -g python
       -o satnogs-network-api-client
       -c satnogs-network-api-client/openapi-generator-config.json
+    - >-
+      docker-entrypoint.sh
+      generate
+      -i satnogs-network-api-client/api-schema.yml
+      -g html2
+      -o satnogs-network-api-client/html2
+      -c satnogs-network-api-client/openapi-generator-config.json
   artifacts:
     expire_in: 1 week
     when: always
