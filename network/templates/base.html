@@ -61,8 +61,8 @@
                   {% if count %}
                     <li data-toggle="tooltip"
                         data-placement="bottom"
-                        title="{{ count }} observations with unknown status">
-                      <a href="{% url 'base:observations_list' %}?observer={{ request.user.id }}&future=0&good=0&bad=0&unknown=1&failed=0">
+                        title="{{ count }} observations needs rating">
+                      <a href="{% url 'base:observations_list' %}?observer={{ request.user.id }}&future=0&good=0&bad=0&failed=0&rated=rwu">
                         <span class="glyphicon glyphicon-check" aria-hidden="true"></span>
                         <span class="badge badge-unknown">{{ count }}</span>
                       </a>
