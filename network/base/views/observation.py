@@ -120,7 +120,8 @@ class ObservationListView(ListView):  # pylint: disable=R0901
 
         if rated:
             if 'rwu' in rated:
-                observations = observations.filter(waterfall_status__isnull=True)
+                observations = observations.filter(waterfall_status__isnull=True
+                                                   ).exclude(waterfall='')
             elif 'rw1' in rated:
                 observations = observations.filter(waterfall_status=True)
             elif 'rw0' in rated:
