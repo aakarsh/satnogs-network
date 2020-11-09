@@ -2,7 +2,7 @@
 #
 # Script to refresh requirements.txt file
 #
-# Copyright (C) 2019 Libre Space Foundation <https://libre.space/>
+# Copyright (C) 2019, 2020 Libre Space Foundation <https://libre.space/>
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -26,7 +26,7 @@ PIP_COMMAND="$VIRTUALENV_DIR/bin/pip"
 virtualenv "$VIRTUALENV_DIR"
 
 # Install package with dependencies
-"$PIP_COMMAND" install --no-cache-dir --force-reinstall .
+"$PIP_COMMAND" install --no-cache-dir --force-reinstall --use-feature=2020-resolver .
 
 # Create requirements file from installed dependencies
 cat << EOF > requirements.txt
@@ -39,7 +39,7 @@ EOF
 "$PIP_COMMAND" freeze | grep -v "$EXCLUDE_REGEXP" >> requirements.txt
 
 # Install development package with dependencies
-"$PIP_COMMAND" install --no-cache-dir .[dev]
+"$PIP_COMMAND" install --no-cache-dir --use-feature=2020-resolver .[dev]
 
 # Create development requirements file from installed dependencies
 cat << EOF > requirements-dev.txt
