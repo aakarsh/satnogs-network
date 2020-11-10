@@ -3,7 +3,6 @@ from collections import defaultdict
 from datetime import datetime, timedelta
 from operator import itemgetter
 
-import ephem
 from django.conf import settings
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
@@ -268,14 +267,6 @@ def pass_predictions(request, station_id):
     )
 
     satellites = Satellite.objects.filter(status='alive')
-
-    # Load the station information and invoke ephem so we can
-    # calculate upcoming passes for the station
-    observer = ephem.Observer()
-    observer.lon = str(station.lng)
-    observer.lat = str(station.lat)
-    observer.elevation = station.alt
-    observer.horizon = str(station.horizon)
 
     nextpasses = []
     start = make_aware(datetime.utcnow(), utc)
