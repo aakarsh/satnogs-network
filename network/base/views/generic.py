@@ -5,7 +5,7 @@ from django.http import HttpResponse
 from django.shortcuts import redirect, render
 from django.urls import reverse
 
-from network.base.decorators import admin_required
+from network.base.decorators import staff_required
 from network.base.tasks import fetch_data, update_future_observations_with_new_tle_sets
 
 
@@ -26,7 +26,7 @@ def robots(request):
     return response
 
 
-@admin_required
+@staff_required
 def settings_site(request):
     """View to render settings page."""
     if request.method == 'POST':

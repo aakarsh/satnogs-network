@@ -434,7 +434,7 @@ class SettingsSiteViewTest(TestCase):
 
     def setUp(self):
         self.user = UserFactory()
-        self.user.is_superuser = True
+        self.user.is_staff = True
         self.user.save()
         self.client.force_login(self.user)
 
