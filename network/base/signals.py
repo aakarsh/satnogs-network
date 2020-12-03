@@ -3,7 +3,8 @@ import os
 import struct
 
 from django.conf import settings
-from django.db.models.signals import post_save
+from django.db.models.signals import post_save, pre_delete
+from django.utils.timezone import now
 from tinytag import TinyTag, TinyTagException
 
 from network.base.models import Observation, Station, StationStatusLog
@@ -65,6 +66,16 @@ def _station_post_save(sender, instance, created, **kwargs):  # pylint: disable=
     post_save.connect(_station_post_save, sender=Station)
 
 
+def _station_pre_delete(sender, instance, **kwargs):  # pylint: disable=W0613
+    """
+    Pre delete Station operations
+    * Delete future observation of deleted station
+    """
+    instance.observations.filter(start__gte=now()).delete()
+
+
 post_save.connect(_observation_post_save, sender=Observation)
 
 post_save.connect(_station_post_save, sender=Station)
+
+pre_delete.connect(_station_pre_delete, sender=Station)
