@@ -293,15 +293,15 @@
           <h4 class="modal-title" id="myModalLabel">Do you really want to delete the ground station?</h4>
         </div>
         <div class="modal-body">
-          <p>WARNING: You are about to delete your ground station.</p>
-          <p>Please enter the ID of your station below to confirm the action.</p>
+          <p class="station-delete-warning">WARNING: You are about to delete irreversibly your ground station!</p>
+          <p>If you want to continue, please enter the ID of your station below to confirm the action.</p>
           <input value="" id="delete-confirm-id" type="text" class="form-control" name="delete-confirm-id" placeholder="Enter your station ID to proceed with deletion">
         </div>
         <div class="modal-footer">
           <button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>
           <a class="btn btn-danger" id="station-delete" href="{% url 'base:station_delete' station_id=station.id %}">
             <span class="glyphicon glyphicon-remove" aria-hidden="true"></span>
-            Delete
+            Irreversible Delete
           </a>
         </div>
       </div>
