@@ -390,6 +390,14 @@ class Observation(models.Model):
     transmitter_invert = models.BooleanField(default=False)
     transmitter_baud = models.FloatField(validators=[MinValueValidator(0)], blank=True, null=True)
     transmitter_created = models.DateTimeField(default=now)
+    station_alt = models.PositiveIntegerField(null=True)
+    station_lat = models.FloatField(
+        validators=[MaxValueValidator(90), MinValueValidator(-90)], null=True
+    )
+    station_lng = models.FloatField(
+        validators=[MaxValueValidator(180), MinValueValidator(-180)], null=True
+    )
+    station_antennas = models.TextField(null=True)
 
     objects = ObservationManager.as_manager()
 

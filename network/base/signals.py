@@ -38,9 +38,6 @@ def _observation_post_save(sender, instance, created, **kwargs):  # pylint: disa
         except (struct.error, TypeError):
             # Remove audio file with wrong structure
             instance.payload.delete()
-    if created and instance.ground_station.testing:
-        instance.testing = True
-        instance.save()
     post_save.connect(_observation_post_save, sender=Observation)
 
 

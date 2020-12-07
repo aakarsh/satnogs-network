@@ -2,6 +2,7 @@
 # ephem is missing lon, lat, elevation and horizon attributes in Observer class slots,
 # Disable assigning-non-slot pylint error:
 # pylint: disable=E0237
+import json
 import math
 from datetime import timedelta
 
@@ -364,6 +365,19 @@ def create_new_observation(station, transmitter, start, end, author, tle_set=Non
             )
         )
 
+    # List all station antennas with their frequency ranges.
+    antennas = []
+    for antenna in station.antennas.all().prefetch_related('frequency_ranges', 'antenna_type'):
+        ranges = []
+        for frequency_range in antenna.frequency_ranges.all():
+            ranges.append(
+                {
+                    "min": frequency_range.min_frequency,
+                    "max": frequency_range.max_frequency
+                }
+            )
+        antennas.append({"type": antenna.antenna_type.name, "ranges": ranges})
+
     return Observation(
         satellite=sat,
         tle_line_0=tle['tle0'],
@@ -375,6 +389,7 @@ def create_new_observation(station, transmitter, start, end, author, tle_set=Non
         start=start,
         end=end,
         ground_station=station,
+        testing=station.testing,
         rise_azimuth=rise_azimuth,
         max_altitude=max_altitude,
         set_azimuth=set_azimuth,
@@ -390,7 +405,11 @@ def create_new_observation(station, transmitter, start, end, author, tle_set=Non
         transmitter_mode=transmitter['mode'],
         transmitter_invert=transmitter['invert'],
         transmitter_baud=transmitter['baud'],
-        transmitter_created=transmitter['updated']
+        transmitter_created=transmitter['updated'],
+        station_alt=station.alt,
+        station_lat=station.lat,
+        station_lng=station.lng,
+        station_antennas=json.dumps(antennas)
     )
 
 
