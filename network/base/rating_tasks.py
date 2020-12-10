@@ -23,7 +23,7 @@ def find_and_rate_failed_observations():
         payload='',
         demoddata__payload_demod__isnull=True,
         end__lt=time_limit
-    )
+    ).exclude(status=-1000)
     with transaction.atomic():
         for observation in observations:
             observation.status = -1000

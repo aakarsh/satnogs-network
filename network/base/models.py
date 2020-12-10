@@ -365,7 +365,7 @@ class Observation(models.Model):
     0 =< x < 100  -> Unknown (Future if observation not completed)
     100 =< x      -> Good
     """
-    status = models.SmallIntegerField(default=0)
+    status = models.SmallIntegerField(default=0, db_index=True)
     testing = models.BooleanField(default=False)
     rise_azimuth = models.FloatField(blank=True, null=True)
     max_altitude = models.FloatField(blank=True, null=True)
