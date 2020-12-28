@@ -116,7 +116,7 @@ def delete_perms(user, observation):
             pass
         # User owns the station
         try:
-            if observation.ground_station.owner == user:
+            if observation.ground_station and observation.ground_station.owner == user:
                 return True
         except (AttributeError, ObjectDoesNotExist):
             pass
@@ -146,7 +146,7 @@ def vet_perms(user, observation):
             pass
         # User owns the station
         try:
-            if observation.ground_station.owner == user:
+            if observation.ground_station and observation.ground_station.owner == user:
                 return True
         except AttributeError:
             pass
