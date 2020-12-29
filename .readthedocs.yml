@@ -7,5 +7,6 @@ python:
   version: '3.8'
   install:
     - path: '.'
+    - requirements: 'docs/requirements.txt'
 build:
   image: 'latest'
