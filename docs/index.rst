@@ -7,5 +7,6 @@ satnogs-network
 
    installation
    developer-guide
-   releasing
    maintenance
+   releasing
+   api
