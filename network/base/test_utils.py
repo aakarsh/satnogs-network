@@ -35,14 +35,11 @@ def test_community_get_discussion_details_with_discussion(observation_with_discu
     details = community_get_discussion_details(**observation_with_discussion)
 
     assert details == {
-        'url':
-        'https://community.libre.space/new-topic?title=Observation 1445404: OSCAR 7 (7530)&'
+        'url': 'https://community.libre.space/new-topic?title=Observation 1445404: OSCAR 7 (7530)&'
         'body=Regarding [Observation 1445404](https://network.satnogs.org/observations/1445404/)'
         '...&category=observations',
-        'slug':
-        'https://community.libre.space/t/observation-1445404-oscar-7-7530',
-        'has_comments':
-        True
+        'slug': 'https://community.libre.space/t/observation-1445404-oscar-7-7530',
+        'has_comments': True
     }
 
 
@@ -54,12 +51,9 @@ def test_community_get_discussion_details_without_discussion(observation_without
     details = community_get_discussion_details(**observation_without_discussion)
 
     assert details == {
-        'url':
-        'https://community.libre.space/new-topic?title=Observation 1445405: CAS-4B (42759)&'
+        'url': 'https://community.libre.space/new-topic?title=Observation 1445405: CAS-4B (42759)&'
         'body=Regarding [Observation 1445405](https://network.satnogs.org/observations/1445405/)'
         '...&category=observations',
-        'slug':
-        'https://community.libre.space/t/observation-1445405-cas-4b-42759',
-        'has_comments':
-        False
+        'slug': 'https://community.libre.space/t/observation-1445405-cas-4b-42759',
+        'has_comments': False
     }

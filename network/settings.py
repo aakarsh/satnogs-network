@@ -52,8 +52,8 @@ LOCAL_APPS = (
 if DEBUG:
     DJANGO_APPS += ('debug_toolbar', )
     DEBUG_TOOLBAR_CONFIG = {
-        'SHOW_TOOLBAR_CALLBACK':
-        lambda request: request.environ.get('SERVER_NAME', None) != 'testserver',
+        'SHOW_TOOLBAR_CALLBACK': lambda request: request.environ.get('SERVER_NAME', None) !=
+        'testserver',
     }
 if AUTH0:
     THIRD_PARTY_APPS += ('social_django', )
@@ -96,8 +96,10 @@ SERVER_EMAIL = DEFAULT_FROM_EMAIL
 # Cache
 CACHES = {
     'default': {
-        'BACKEND':
-        config('CACHE_BACKEND', default='django.core.cache.backends.locmem.LocMemCache'),
+        'BACKEND': config(
+            'CACHE_BACKEND',
+            default='django.core.cache.backends.locmem.LocMemCache',
+        ),
         'LOCATION': config('CACHE_LOCATION', default='unique-location'),
         'OPTIONS': {
             'MAX_ENTRIES': 5000,
@@ -276,8 +278,9 @@ CELERY_BROKER_TRANSPORT_OPTIONS = {
 
 # API
 REST_FRAMEWORK = {
-    'DEFAULT_PERMISSION_CLASSES':
-    ('rest_framework.permissions.DjangoModelPermissionsOrAnonReadOnly', ),
+    'DEFAULT_PERMISSION_CLASSES': (
+        'rest_framework.permissions.DjangoModelPermissionsOrAnonReadOnly',
+    ),
     'DEFAULT_AUTHENTICATION_CLASSES': ('rest_framework.authentication.TokenAuthentication', ),
     'DEFAULT_FILTER_BACKENDS': ('django_filters.rest_framework.DjangoFilterBackend', )
 }

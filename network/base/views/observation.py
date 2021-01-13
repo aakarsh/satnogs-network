@@ -246,8 +246,8 @@ def waterfall_vet(request, observation_id):
 
     if status not in ['with-signal', 'without-signal', 'unknown']:
         data = {
-            'error':
-            'Invalid status, select one of \'with-signal\', \'without-signal\' and \'unknown\'.'
+            'error': 'Invalid status, select one of \'with-signal\', \'without-signal\' and '
+            '\'unknown\'.'
         }
         return JsonResponse(data, safe=False)
 
@@ -266,22 +266,15 @@ def waterfall_vet(request, observation_id):
     (observation_status, observation_status_label, observation_status_display
      ) = rate_observation(observation.id, 'set_waterfall_status', observation.waterfall_status)
     data = {
-        'waterfall_status_user':
-        observation.waterfall_status_user.displayname,
-        'waterfall_status_datetime':
-        observation.waterfall_status_datetime.strftime('%Y-%m-%d %H:%M:%S'),
-        'waterfall_status':
-        observation.waterfall_status,
-        'waterfall_status_label':
-        observation.waterfall_status_label,
-        'waterfall_status_display':
-        observation.waterfall_status_display,
-        'status':
-        observation_status,
-        'status_label':
-        observation_status_label,
-        'status_display':
-        observation_status_display,
+        'waterfall_status_user': observation.waterfall_status_user.displayname,
+        'waterfall_status_datetime': observation.waterfall_status_datetime.
+        strftime('%Y-%m-%d %H:%M:%S'),
+        'waterfall_status': observation.waterfall_status,
+        'waterfall_status_label': observation.waterfall_status_label,
+        'waterfall_status_display': observation.waterfall_status_display,
+        'status': observation_status,
+        'status_label': observation_status_label,
+        'status_display': observation_status_display,
     }
     return JsonResponse(data, safe=False)
 

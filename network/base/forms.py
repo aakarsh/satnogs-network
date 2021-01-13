@@ -18,21 +18,19 @@ class ObservationForm(ModelForm):
     start = DateTimeField(
         input_formats=['%Y-%m-%d %H:%M:%S.%f', '%Y-%m-%d %H:%M:%S'],
         error_messages={
-            'invalid':
-            'Start datetime should have either "%Y-%m-%d %H:%M:%S.%f" or "%Y-%m-%d %H:%M:%S" '
+            'invalid': 'Start datetime should have either "%Y-%m-%d %H:%M:%S.%f" or '
+            '"%Y-%m-%d %H:%M:%S" '
             'format.',
-            'required':
-            'Start datetime is required.'
+            'required': 'Start datetime is required.'
         }
     )
     end = DateTimeField(
         input_formats=['%Y-%m-%d %H:%M:%S.%f', '%Y-%m-%d %H:%M:%S'],
         error_messages={
-            'invalid':
-            'End datetime should have either "%Y-%m-%d %H:%M:%S.%f" or "%Y-%m-%d %H:%M:%S" '
+            'invalid': 'End datetime should have either "%Y-%m-%d %H:%M:%S.%f" or '
+            '"%Y-%m-%d %H:%M:%S" '
             'format.',
-            'required':
-            'End datetime is required.'
+            'required': 'End datetime is required.'
         }
     )
     ground_station = ModelChoiceField(
