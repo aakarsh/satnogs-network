@@ -14,4 +14,4 @@ class Command(BaseCommand):
         try:
             fetch_data()
         except ConnectionError as exception:
-            raise CommandError(exception)
+            raise CommandError(exception) from exception

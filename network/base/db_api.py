@@ -19,8 +19,8 @@ def tle_api_request(url):
         raise DBConnectionError('Error in DB API connection. Blank DB API URL!')
     try:
         request = requests.get(url, headers=headers)
-    except requests.exceptions.RequestException:
-        raise DBConnectionError('Error in DB API connection. Please try again!')
+    except requests.exceptions.RequestException as error:
+        raise DBConnectionError('Error in DB API connection. Please try again!') from error
     return request.json()
 
 
@@ -60,8 +60,8 @@ def transmitters_api_request(url):
         raise DBConnectionError('Error in DB API connection. Blank DB API URL!')
     try:
         request = requests.get(url)
-    except requests.exceptions.RequestException:
-        raise DBConnectionError('Error in DB API connection. Please try again!')
+    except requests.exceptions.RequestException as error:
+        raise DBConnectionError('Error in DB API connection. Please try again!') from error
     return request.json()
 
 
