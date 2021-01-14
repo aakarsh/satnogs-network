@@ -64,7 +64,7 @@ class ObservationForm(ModelForm):
         if any(self.errors):
             # If there are errors in fields validation no need for validating the form
             return
-        cleaned_data = super(ObservationForm, self).clean()
+        cleaned_data = super().clean()
         start = cleaned_data['start']
         end = cleaned_data['end']
         try:
@@ -86,7 +86,7 @@ class BaseObservationFormSet(BaseFormSet):
     def __init__(self, user, *args, **kwargs):
         """Initializes Observation FormSet"""
         self.user = user
-        super(BaseObservationFormSet, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
 
     def clean(self):
         """Validates Observation FormSet data"""

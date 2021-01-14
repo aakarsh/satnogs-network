@@ -22,8 +22,7 @@ class FrequenyRangeAdmin(admin.ModelAdmin):
     def formfield_for_foreignkey(self, db_field, request, **kwargs):
         if db_field.name == "antenna":
             kwargs["queryset"] = Antenna.objects.order_by('station_id')
-        return super(FrequenyRangeAdmin,
-                     self).formfield_for_foreignkey(db_field, request, **kwargs)
+        return super().formfield_for_foreignkey(db_field, request, **kwargs)
 
 
 @admin.register(AntennaType)
@@ -63,7 +62,7 @@ class AntennaAdmin(admin.ModelAdmin):
     def formfield_for_foreignkey(self, db_field, request, **kwargs):
         if db_field.name == "station":
             kwargs["queryset"] = Station.objects.order_by('id')
-        return super(AntennaAdmin, self).formfield_for_foreignkey(db_field, request, **kwargs)
+        return super().formfield_for_foreignkey(db_field, request, **kwargs)
 
 
 @admin.register(Station)
@@ -93,7 +92,7 @@ class StationAdmin(admin.ModelAdmin):
 
     def get_actions(self, request):
         """Return the list of actions for station admin view"""
-        actions = super(StationAdmin, self).get_actions(request)
+        actions = super().get_actions(request)
         if 'delete_selected' in actions:
             del actions['delete_selected']
         return actions

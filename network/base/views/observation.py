@@ -132,7 +132,7 @@ class ObservationListView(ListView):  # pylint: disable=R0901
         """
         Need to add a list of satellites to the context for the template
         """
-        context = super(ObservationListView, self).get_context_data(**kwargs)
+        context = super().get_context_data(**kwargs)
         context['satellites'] = Satellite.objects.all()
         context['authors'] = User.objects.filter(
             observations__isnull=False

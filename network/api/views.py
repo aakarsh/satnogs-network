@@ -114,7 +114,7 @@ class ObservationView(  # pylint: disable=R0901
 
         # False-positive no-member (E1101) pylint error:
         # Parent class rest_framework.mixins.UpdateModelMixin provides the 'update' method
-        super(ObservationView, self).update(request, *args, **kwargs)  # pylint: disable=E1101
+        super().update(request, *args, **kwargs)  # pylint: disable=E1101
         if request.data.get('waterfall'):
             rate_observation.delay(instance.id, 'waterfall_upload')
         if request.data.get('demoddata'):

@@ -70,7 +70,7 @@ class ObservationSerializer(serializers.ModelSerializer):
 
     def update(self, instance, validated_data):
         """Updates observation object with validated data"""
-        super(ObservationSerializer, self).update(instance, validated_data)
+        super().update(instance, validated_data)
         return instance
 
     def get_transmitter(self, obj):
