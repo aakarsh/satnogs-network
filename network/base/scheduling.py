@@ -93,8 +93,15 @@ def resolve_overlaps(scheduled_obs, start, end):
 
 
 def create_station_window(
-        window_start, window_end, azr, azs, altitude, tle, valid_duration, overlapped,
-        overlap_ratio=0
+    window_start,
+    window_end,
+    azr,
+    azs,
+    altitude,
+    tle,
+    valid_duration,
+    overlapped,
+    overlap_ratio=0
 ):
     """Creates an observation window"""
     return {

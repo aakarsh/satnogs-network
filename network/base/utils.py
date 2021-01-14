@@ -126,7 +126,7 @@ def export_station_status(self, request, queryset):
 
 
 def community_get_discussion_details(
-        observation_id, satellite_name, norad_cat_id, observation_url
+    observation_id, satellite_name, norad_cat_id, observation_url
 ):
     """
     Return the details of a discussion of the observation (if existent) in the
