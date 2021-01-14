@@ -24,9 +24,8 @@ APP.autodiscover_tasks()
 @APP.task
 def update_future_observations_with_new_tle_sets():
     """Wrapper task for 'update_future_observations_with_new_tle_sets' shared task"""
-    from network.base.tasks import (  # pylint: disable=C0415
-        update_future_observations_with_new_tle_sets as periodic_task
-    )
+    from network.base.tasks import (
+        update_future_observations_with_new_tle_sets as periodic_task)  # pylint: disable=C0415
     periodic_task()
 
 
@@ -61,16 +60,16 @@ def stations_cache_rates():
 @APP.task
 def notify_for_stations_without_results():
     """Wrapper task for 'notify_for_stations_without_results' shared task"""
-    from network.base.tasks import notify_for_stations_without_results as \
-        periodic_task  # pylint: disable=C0415
+    from network.base.tasks import (
+        notify_for_stations_without_results as periodic_task)  # pylint: disable=C0415
     periodic_task()
 
 
 @APP.task
 def find_and_rate_failed_observations():
     """Wrapper task for 'find_and_rate_failed_observations' shared task"""
-    from network.base.rating_tasks import find_and_rate_failed_observations as \
-        periodic_task  # pylint: disable=C0415
+    from network.base.rating_tasks import (
+        find_and_rate_failed_observations as periodic_task)  # pylint: disable=C0415
     periodic_task()
 
 
