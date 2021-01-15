@@ -35,6 +35,7 @@ THIRD_PARTY_APPS = (
     'avatar',
     'rest_framework',
     'rest_framework.authtoken',
+    'drf_spectacular',
     'django_filters',
     'crispy_forms',
     'allauth',
@@ -282,7 +283,38 @@ REST_FRAMEWORK = {
         'rest_framework.permissions.DjangoModelPermissionsOrAnonReadOnly',
     ),
     'DEFAULT_AUTHENTICATION_CLASSES': ('rest_framework.authentication.TokenAuthentication', ),
-    'DEFAULT_FILTER_BACKENDS': ('django_filters.rest_framework.DjangoFilterBackend', )
+    'DEFAULT_FILTER_BACKENDS': ('django_filters.rest_framework.DjangoFilterBackend', ),
+    'DEFAULT_SCHEMA_CLASS': 'drf_spectacular.openapi.AutoSchema',
+}
+SPECTACULAR_DEFAULTS = {
+    'SCHEMA_PATH_PREFIX': r'/api',
+    'DEFAULT_GENERATOR_CLASS': 'drf_spectacular.generators.SchemaGenerator',
+    'COMPONENT_SPLIT_REQUEST': True,
+    'TITLE': 'SatNOGS Network',
+    'DESCRIPTION': 'SatNOGS Network is a web application, implementing a global scheduling and'
+    'monitoring network for ground station operations.',
+    'CONTACT': {
+        'name': 'SatNOGS Developer Chat',
+        'url': 'https://riot.im/app/#/room/#satnogs-dev:matrix.org'
+    },
+    'LICENSE': {
+        'name': 'AGPL 3.0',
+        'url': 'https://www.gnu.org/licenses/agpl-3.0.html'
+    },
+    'VERSION': '1.1',
+    'SERVERS': [
+        {
+            'url': 'https://network-dev.satnogs.org',
+            'description': 'Development server'
+        }, {
+            'url': 'https://network.satnogs.org',
+            'description': 'Production server'
+        }
+    ],
+    'EXTERNAL_DOCS': {
+        'url': 'https://wiki.satnogs.org',
+        'description': 'SatNOGS Wiki'
+    },
 }
 
 # Security

@@ -26,15 +26,10 @@ schema:
   script:
     - pip install --no-cache-dir --no-deps -r "requirements.txt" --force-reinstall .
     - >-
-      ./manage.py generateschema
-      --title "SatNOGS Network"
-      --description "SatNOGS Network is a web application, implementing a global scheduling and monitoring network for ground station operations." |
-      ./contrib/postprocess-openapi-schema.py
-      --expand-aliases
-      --api-version '1'
-      --server-url 'https://network.satnogs.org'
-      --enable-apikey-auth -
-      > satnogs-network-api-client/api-schema.yml
+      ./manage.py spectacular
+      --file satnogs-network-api-client/api-schema.yml
+      --validate
+#      --fail-on-warn
   artifacts:
     expire_in: 1 week
     when: always

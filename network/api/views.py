@@ -5,8 +5,6 @@ from django.shortcuts import get_object_or_404
 from django.utils.timezone import now
 from rest_framework import mixins, status, viewsets
 from rest_framework.response import Response
-from rest_framework.schemas.openapi import AutoSchema
-from rest_framework.schemas.utils import is_list_view
 from rest_framework.serializers import ValidationError
 
 from network.api import filters, pagination, serializers
@@ -16,37 +14,6 @@ from network.base.rating_tasks import rate_observation
 from network.base.tasks import sync_to_db
 from network.base.validators import NegativeElevationError, NoTleSetError, \
     ObservationOverlapError, SinglePassError
-
-
-class ViewSchema(AutoSchema):
-    """
-    AutoSchema override
-    """
-    def _get_operation_id(self, path, method):
-        """
-        Compute an operation ID from the view name.
-        """
-        method_name = getattr(self.view, 'action', method.lower())
-        if is_list_view(path, method, self.view):
-            action = 'list'
-        elif method_name not in self.method_mapping:
-            action = method_name
-        else:
-            action = self.method_mapping[method.lower()]
-
-        name = self.view.__class__.__name__
-        if name.endswith('APIView'):
-            name = name[:-7]
-        elif name.endswith('View'):
-            name = name[:-4]
-
-        if name.endswith(action.title()):
-            name = name[:-len(action)]
-
-        if action == 'list' and not name.endswith('s'):
-            name += 's'
-
-        return action + name
 
 
 class ObservationView(  # pylint: disable=R0901
@@ -141,7 +108,6 @@ class TransmitterView(  # pylint: disable=R0901
     lookup_field = 'transmitter_uuid'
     filterset_class = filters.TransmitterViewFilter
     pagination_class = pagination.LinkedHeaderPageNumberPagination
-    schema = ViewSchema()
 
 
 class JobView(viewsets.ReadOnlyModelViewSet):  # pylint: disable=R0901
@@ -150,7 +116,6 @@ class JobView(viewsets.ReadOnlyModelViewSet):  # pylint: disable=R0901
     serializer_class = serializers.JobSerializer
     filterset_class = filters.ObservationViewFilter
     filterset_fields = ('ground_station')
-    schema = ViewSchema()
 
     def get_queryset(self):
         """Returns queryset for Job API view"""
