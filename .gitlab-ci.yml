@@ -6,7 +6,7 @@ variables:
   GITLAB_CI_IMAGE_OPENAPI_GENERATOR_CLI: 'openapitools/openapi-generator-cli'
   GITLAB_CI_IMAGE_SENTRY_CLI: 'getsentry/sentry-cli'
   GITLAB_CI_PYPI_DOCKER_COMPOSE: 'docker-compose~=1.23.0'
-  GITLAB_CI_PYPI_TOX: 'tox~=3.14.0'
+  GITLAB_CI_PYPI_TOX: 'tox~=3.21.0'
 stages:
   - schema
   - api

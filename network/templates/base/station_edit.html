@@ -1,6 +1,6 @@
 {% extends "base.html" %}
 {% load tags %}
-{% load staticfiles %}
+{% load static %}
 
 {% block title %}{% if station_form.instance.id %} - Edit Ground Station {{ station_form.instance.name }}{% else %} - Add Ground Station{% endif %}{% endblock %}
 
