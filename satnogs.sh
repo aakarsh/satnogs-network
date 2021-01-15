@@ -17,11 +17,9 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-DOCKER_CMD="docker"
 COMPOSE_CMD="docker-compose"
 COMPOSE_FILE="docker-compose.yml"
 SERVICE_WEB="web"
-VOLUMES="satnogs-network_db satnogs-network_media satnogs-network_redis satnogs-network_static"
 SHELL_CMD="/bin/bash"
 REFRESH_CMD="./contrib/refresh-requirements.sh"
 TOX_CMD="tox"
@@ -33,7 +31,7 @@ usage() {
 Usage: $(basename "$0") [OPTIONS]... [COMMAND]...
 SatNOGS Development and Maintenance script.
 
-COMMANDS:
+DOCKER COMMANDS:
   DOCKER_COMPOSE_COMMANDS [ARGS]
                         Run any Docker Compose command.
                          See 'docker-compose --help' for details.
@@ -42,7 +40,17 @@ COMMANDS:
                          background.
   shell SERVICE         Open a shell to a running service.
   clean                 Bring down all services and remove volumes.
-  flush                 Remove all data from database only.
+  django-admin          Execute 'django-admin'. See 'django-admin help'
+                         for available subcommands.
+
+VIRTUALENV COMMANDS:
+  develop               Run application in development mode and
+                         initialize, if needed.
+  develop_celery        Run Celery in development mode and initialize,
+                         if needed.
+  remove                Remove virtualenv.
+
+DEVELOPMENT AND MAINTENANCE COMMANDS:
   tox [ARGS]            Run 'tox' test automation tool.
   refresh               Refresh requirements files.
   update                Update frontend dependencies.
@@ -53,18 +61,79 @@ EOF
 	exit 1
 }
 
+yesno() {
+	while true; do
+		echo "$1"
+		read -r yesno
+		case $yesno in
+			Y|y|YES|Yes|yes)
+				return 0
+				;;
+			N|n|NO|No|no)
+				return 1
+				;;
+			*)
+				echo "Please answer yes or no."
+				;;
+		esac
+	done
+}
+
+frontend_deps() {
+	if [ "$1" = "install" ] || [ "$1" = "update" ]; then
+		"$NPM_CMD" "$1"
+	fi
+	./node_modules/.bin/gulp
+}
+
+wait_prepare() {
+	echo "Collecting static assets, compressing and migrating..."
+	while ! "$COMPOSE_CMD" exec "$SERVICE_WEB" ps -p 1 -o args= | grep -q "runserver"; do
+		sleep 5
+	done
+}
+
+docker_initialize() {
+	if ! "$COMPOSE_CMD" exec "$SERVICE_WEB" "$MANAGE_CMD" dumpdata --no-color --format yaml users.user | grep -q "is_superuser: true"; then
+		"$COMPOSE_CMD" exec "$SERVICE_WEB" djangoctl.sh initialize
+	fi
+}
+
+virtualenv_initialize() {
+	. .virtualenv/bin/activate
+	if ! "$MANAGE_CMD" dumpdata --no-color --format yaml users.user | grep -q "is_superuser: true"; then
+		./bin/djangoctl.sh initialize
+	fi
+	deactivate
+}
+
+virtualenv_install() {
+	virtualenv .virtualenv
+	.virtualenv/bin/pip install \
+			    --no-cache-dir \
+			    --no-deps \
+			    --force-reinstall \
+			    -e "."
+	.virtualenv/bin/pip install \
+			    --no-cache-dir \
+			    --no-deps \
+			    -r "./requirements-dev.txt"
+}
+
 parse_args() {
 	arg="$1"
 	case $arg in
 		build|config|create|down|events|exec|images|kill|logs|pause|port|ps|pull|push|restart|rm|run|scale|start|stop|top|unpause|up)
 			if [ "$arg" = "up" ]; then
-				prepare
+				frontend_deps install
 				shift
 				"$COMPOSE_CMD" "$arg" -d "$@"
-				initialize
+				wait_prepare
+				docker_initialize
 			else
 				"$COMPOSE_CMD" "$@"
 			fi
+			echo "Services start-up completed."
 			return
 			;;
 		shell)
@@ -74,16 +143,22 @@ parse_args() {
 				usage
 				exit 1
 			fi
-			"$COMPOSE_CMD" exec "$1" "$SHELL_CMD"
+			if ! "$COMPOSE_CMD" exec "$1" "$SHELL_CMD"; then
+				echo "Please make sure that the services are up!" >&2
+				exit 1
+			fi
 			return
 			;;
 		clean)
-			"$COMPOSE_CMD" down
-			"$DOCKER_CMD" volume rm "$VOLUMES"
+			yesno "This action will delete all installation data! Are you sure? [Yes/No]"
+			"$COMPOSE_CMD" down -v
 			return
 			;;
-		flush)
-			"$COMPOSE_CMD" exec "$SERVICE_WEB" "$MANAGE_CMD" flush
+		django-admin)
+			if ! "$COMPOSE_CMD" exec "$SERVICE_WEB" "$MANAGE_CMD" django-admin; then
+				echo "Please make sure that the services are up!" >&2
+				exit 1
+			fi
 			return
 			;;
 		tox)
@@ -95,8 +170,22 @@ parse_args() {
 			return
 			;;
 		update)
-			"$NPM_CMD" update
-			./node_modules/.bin/gulp
+			frontend_deps update
+			return
+			;;
+		develop|develop_celery)
+			if [ ! -d .virtualenv ]; then
+				frontend_deps install
+				virtualenv_install
+				virtualenv_initialize
+			fi
+			. .virtualenv/bin/activate
+			./bin/djangoctl.sh "$arg" .
+			return
+			;;
+		remove)
+			yesno "This action will delete all installation data! Are you sure? [Yes/No]"
+			rm -rf ".virtualenv" "db.sqlite3" "media" "staticfiles"
 			return
 			;;
 		*)
@@ -104,21 +193,6 @@ parse_args() {
 			exit 1
 			;;
 	esac
-}
-
-prepare() {
-	"$NPM_CMD" install
-	./node_modules/.bin/gulp
-}
-
-initialize() {
-	echo "Collecting static assets, compressing and migrating..."
-	while ! "$COMPOSE_CMD" exec "$SERVICE_WEB" ps -p 1 -o args= | grep -q "runserver"; do
-		sleep 5
-	done
-	if ! "$COMPOSE_CMD" exec "$SERVICE_WEB" "$MANAGE_CMD" dumpdata --no-color --format yaml users.user | grep -q "is_superuser: true"; then
-		"$COMPOSE_CMD" exec "$SERVICE_WEB" djangoctl.sh initialize
-	fi
 }
 
 main() {
