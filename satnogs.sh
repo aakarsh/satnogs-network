@@ -130,10 +130,10 @@ parse_args() {
 				"$COMPOSE_CMD" "$arg" -d "$@"
 				wait_prepare
 				docker_initialize
+				echo "Services start-up completed."
 			else
 				"$COMPOSE_CMD" "$@"
 			fi
-			echo "Services start-up completed."
 			return
 			;;
 		shell)
