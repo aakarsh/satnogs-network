@@ -4,5 +4,7 @@ network/*/migrations
 satnogs-network-api-client
 .tox
 build
+dist
 docs
 versioneer.py
+.virtualenv
