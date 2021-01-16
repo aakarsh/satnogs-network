@@ -1,0 +1,6 @@
+/.openapi-generator
+/.openapi-generator-ignore
+/api-schema.yml
+/html2
+/satnogsnetworkapiclient
+/satnogsnetworkapiclient_README.md

@@ -1,39 +1,17 @@
-# Basics
-*.py[cod]
-*.pyc
-__pycache__
-.env
-.cache
-
-# Logs
-*.log
-pip-log.txt
-
-# Unit test / coverage reports
-.coverage
-.tox
-nosetests.xml
-.pytest_cache
-
-# build artifacts
-build
-dist
-
-# Sqlite
-*.db
-*.sqlite
-*.sqlite3
-
-# Media & Static
-media
-/staticfiles/*
-/network/static/lib/
-node_modules
 *.css.map
-.sass-cache
-
-# Celery
-celerybeat-schedule
-
-# Documentation
-/docs/_build/
+*.py[cod]
+/.coverage
+/.env
+/.sass-cache
+/.tox
+/build
+/celerybeat-schedule
+/db.sqlite3
+/dist
+/docs/_build
+/media
+/network/static/lib
+/node_modules
+/satnogs_network.egg-info
+/staticfiles
+__pycache__
