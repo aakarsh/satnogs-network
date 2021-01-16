@@ -1,7 +1,0 @@
-FROM fedora:latest
-RUN dnf upgrade -y libsolv
-RUN dnf -y install python python-pip python-devel git gcc libjpeg-turbo-devel findutils \
-                   libxml2-devel libxslt-devel mysql-devel mysql npm redhat-rpm-config rubygem-sass
-RUN dnf -y clean all
-
-RUN npm install -g eslint stylelint
