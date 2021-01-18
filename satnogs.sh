@@ -120,10 +120,18 @@ virtualenv_install() {
 			    -r "./requirements-dev.txt"
 }
 
+has_command() {
+	if ! which "$1" >/dev/null; then
+		echo "ERROR: '$1' not found! Either not installed or PATH not set correctly." >&2
+		exit 1
+	fi
+}
+
 parse_args() {
 	arg="$1"
 	case $arg in
 		build|config|create|down|events|exec|images|kill|logs|pause|port|ps|pull|push|restart|rm|run|scale|start|stop|top|unpause|up)
+			has_command "docker-compose"
 			if [ "$arg" = "up" ]; then
 				frontend_deps install
 				shift
@@ -137,6 +145,7 @@ parse_args() {
 			return
 			;;
 		shell)
+			has_command "docker-compose"
 			shift
 			if [ -z "$1" ]; then
 				echo "ERROR: No service name specified!" >&2
@@ -150,11 +159,13 @@ parse_args() {
 			return
 			;;
 		clean)
+			has_command "docker-compose"
 			yesno "This action will delete all installation data! Are you sure? [Yes/No]"
 			"$COMPOSE_CMD" down -v
 			return
 			;;
 		django-admin)
+			has_command "docker-compose"
 			if ! "$COMPOSE_CMD" exec "$SERVICE_WEB" "$MANAGE_CMD" django-admin; then
 				echo "Please make sure that the services are up!" >&2
 				exit 1
@@ -162,18 +173,22 @@ parse_args() {
 			return
 			;;
 		tox)
+			has_command "tox"
 			"$TOX_CMD" "$@"
 			return
 			;;
 		refresh)
+			has_command "virtualenv"
 			"$REFRESH_CMD"
 			return
 			;;
 		update)
+			has_command "npm"
 			frontend_deps update
 			return
 			;;
 		develop|develop_celery)
+			has_command "virtualenv"
 			if [ ! -d .virtualenv ]; then
 				frontend_deps install
 				virtualenv_install
