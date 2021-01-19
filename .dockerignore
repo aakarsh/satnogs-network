@@ -1,0 +1,16 @@
+**/*.css.map
+**/*.py[cod]
+**/__pycache__
+/.coverage
+/.sass-cache
+/.tox
+/build
+/celerybeat-schedule
+/db.sqlite3
+/dist
+/docs/_build
+/media
+/node_modules
+/satnogs-network-api-client
+/satnogs_network.egg-info
+/staticfiles
