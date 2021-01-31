@@ -84,8 +84,6 @@ def setup_periodic_tasks(sender, **kwargs):  # pylint: disable=W0613
 
     sender.add_periodic_task(RUN_HOURLY, station_status_update.s(), name='station_status_update')
 
-    sender.add_periodic_task(RUN_HOURLY, clean_observations.s(), name='clean_observations')
-
     sender.add_periodic_task(RUN_HOURLY, stations_cache_rates.s(), name='stations_cache_rates')
 
     sender.add_periodic_task(

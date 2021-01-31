@@ -9,7 +9,6 @@ from tinytag import TinyTag, TinyTagException
 
 from network.base.models import Observation, Station, StationStatusLog
 from network.base.rating_tasks import rate_observation
-from network.base.tasks import archive_audio, delay_task_with_lock
 
 
 def _observation_post_save(sender, instance, created, **kwargs):  # pylint: disable=W0613
@@ -28,9 +27,6 @@ def _observation_post_save(sender, instance, created, **kwargs):  # pylint: disa
             if audio_metadata.duration is None or audio_metadata.duration < 1:
                 instance.payload.delete()
             elif settings.ENVIRONMENT == 'production' and os.path.isfile(instance.payload.path):
-                delay_task_with_lock(
-                    archive_audio, instance.id, settings.ARCHIVE_AUDIO_LOCK_EXPIRATION, instance.id
-                )
                 rate_observation(instance.id, 'audio_upload', audio_metadata.duration)
         except TinyTagException:
             # Remove invalid audio file
