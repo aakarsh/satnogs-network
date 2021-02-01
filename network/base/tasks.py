@@ -97,30 +97,48 @@ def fetch_data():
 def archive_audio(obs_id):
     """Upload audio of observation in archive.org"""
     obs = Observation.objects.get(id=obs_id)
+    site = Site.objects.get_current()
     suffix = '-{0}'.format(settings.ENVIRONMENT)
+    license_url = 'http://creativecommons.org/licenses/by-sa/4.0/'
     if settings.ENVIRONMENT == 'production':
         suffix = ''
-    identifier = 'satnogs{0}-observation-{1}'.format(suffix, obs.id)
+
+    obs_thousand = ((obs_id - 1) // 1000) * 1000
+    range_from = obs_thousand + 1
+    range_to = obs_thousand + 1000
+    obs_range = '{0}-{1}'.format(str(range_from).zfill(9), str(range_to).zfill(9))
+
+    item_id = 'satnogs{0}-observations-{1}'.format(suffix, obs_range)
+    title = 'SatNOGS{0} Observations {1}'.format(suffix, obs_range)
+    description = (
+        '<p>Audio files from <a href="{1}/observations">'
+        'SatNOGS{0} Observations</a> from {2} to {3}.</p>'
+    ).format(suffix, site.domain, range_from, range_to)
+
+    item_metadata = dict(
+        collection=settings.ARCHIVE_COLLECTION,
+        title=title,
+        mediatype='audio',
+        licenseurl=license_url,
+        description=description
+    )
 
     ogg = obs.payload.path
     filename = obs.payload.name.split('/')[-1]
-    site = Site.objects.get_current()
-    description = (
-        '<p>Audio file from SatNOGS{0} <a href="{1}/observations/{2}">'
-        'Observation {3}</a>.</p>'
-    ).format(suffix, site.domain, obs.id, obs.id)
-    metadata = dict(
-        collection=settings.ARCHIVE_COLLECTION,
-        title=identifier,
-        mediatype='audio',
-        licenseurl='http://creativecommons.org/licenses/by-sa/4.0/',
-        description=description
+    observation_url = '{0}/observations/{1}/'.format(site.domain, obs_id)
+    file_metadata = dict(
+        name=ogg,
+        title=filename,
+        license_url=license_url,
+        observation_id=obs_id,
+        observation_url=observation_url
     )
+
     try:
         res = upload(
-            identifier,
-            files=[ogg],
-            metadata=metadata,
+            item_id,
+            files=file_metadata,
+            metadata=item_metadata,
             access_key=settings.S3_ACCESS_KEY,
             secret_key=settings.S3_SECRET_KEY,
             retries=settings.S3_RETRIES_ON_SLOW_DOWN,
@@ -129,10 +147,11 @@ def archive_audio(obs_id):
     except (requests.exceptions.RequestException, AuthenticationError) as error:
         print('Upload of audio for observation {} failed, reason:\n{}'.format(obs_id, repr(error)))
         return
+
     if res[0].status_code == 200:
         obs.archived = True
-        obs.archive_url = '{0}{1}/{2}'.format(settings.ARCHIVE_URL, identifier, filename)
-        obs.archive_identifier = identifier
+        obs.archive_url = '{0}{1}/{2}'.format(settings.ARCHIVE_URL, item_id, filename)
+        obs.archive_identifier = item_id
         obs.payload.delete(save=False)
         obs.save(update_fields=['archived', 'archive_url', 'archive_identifier', 'payload'])
 
