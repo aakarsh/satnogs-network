@@ -182,7 +182,8 @@ def sync_demoddata_to_db(frame):
         'latitude': ground_station.lat,
         'frame': frame.display_payload_hex().replace(' ', ''),
         'satnogs_network': 'True',  # NOT a part of SiDS
-        'observation_id': obs.id  # NOT a part of SiDS
+        'observation_id': obs.id,  # NOT a part of SiDS
+        'station_id': obs.ground_station.id  # NOT a part of SiDS
     }
 
     telemetry_url = "{}telemetry/".format(settings.DB_API_ENDPOINT)
