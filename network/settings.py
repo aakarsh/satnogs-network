@@ -413,7 +413,7 @@ STATION_HEARTBEAT_TIME = config('STATION_HEARTBEAT_TIME', default=60, cast=int)
 # Maximum window for upcoming passes in hours
 STATION_UPCOMING_END = config('STATION_UPCOMING_END', default=24, cast=int)
 WIKI_STATION_URL = config('WIKI_STATION_URL', default='https://wiki.satnogs.org/')
-MAX_ANTENNAS_PER_STATION = config('MAX_ANTENNAS_PER_STATION', default=3, cast=int)
+MAX_ANTENNAS_PER_STATION = config('MAX_ANTENNAS_PER_STATION', default=4, cast=int)
 MAX_FREQUENCY_RANGES_PER_ANTENNA = config('MAX_FREQUENCY_RANGES_PER_ANTENNA', default=5, cast=int)
 MAX_FREQUENCY_FOR_RANGE = config('MAX_FREQUENCY_FOR_RANGE', default=40000000000, cast=int)
 MIN_FREQUENCY_FOR_RANGE = config('MIN_FREQUENCY_FOR_RANGE', default=300, cast=int)
