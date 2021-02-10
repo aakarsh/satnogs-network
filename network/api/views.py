@@ -1,6 +1,8 @@
 """SatNOGS Network API django rest framework Views"""
 from django.core.exceptions import ObjectDoesNotExist
+from django.db import transaction
 from django.db.models import Count
+from django.db.models.query import QuerySet
 from django.shortcuts import get_object_or_404
 from django.utils.timezone import now
 from rest_framework import mixins, status, viewsets
@@ -20,10 +22,21 @@ class ObservationView(  # pylint: disable=R0901
         mixins.ListModelMixin, mixins.RetrieveModelMixin, mixins.UpdateModelMixin,
         mixins.CreateModelMixin, viewsets.GenericViewSet):
     """SatNOGS Network Observation API view class"""
-    queryset = Observation.objects.prefetch_related('satellite', 'demoddata', 'ground_station')
     filterset_class = filters.ObservationViewFilter
     permission_classes = [StationOwnerPermission]
     pagination_class = pagination.LinkedHeaderPageNumberPagination
+
+    def get_queryset(self):
+        if self.action == 'update':
+            queryset = Observation.objects.select_for_update()
+        else:
+            queryset = Observation.objects.prefetch_related(
+                'satellite', 'demoddata', 'ground_station'
+            )
+        if isinstance(queryset, QuerySet):
+            # Ensure queryset is re-evaluated on each request.
+            queryset = queryset.all()
+        return queryset
 
     def get_serializer_class(self):
         """Returns the right serializer depending on http method that is used"""
@@ -53,35 +66,42 @@ class ObservationView(  # pylint: disable=R0901
 
     def update(self, request, *args, **kwargs):
         """Updates observation with audio, waterfall or demoded data"""
-        instance = self.get_object()
-        if request.data.get('client_version'):
-            instance.ground_station.client_version = request.data.get('client_version')
-            instance.ground_station.save()
-        if request.data.get('demoddata'):
-            try:
-                file_path = 'data_obs/{0}/{1}'.format(instance.id, request.data.get('demoddata'))
-                instance.demoddata.get(payload_demod=file_path)
-                return Response(
-                    data='This data file has already been uploaded',
-                    status=status.HTTP_403_FORBIDDEN
-                )
-            except ObjectDoesNotExist:
-                demoddata = instance.demoddata.create(payload_demod=request.data.get('demoddata'))
-                sync_to_db.delay(frame_id=demoddata.id)
-        if request.data.get('waterfall'):
-            if instance.has_waterfall:
-                return Response(
-                    data='Watefall has already been uploaded', status=status.HTTP_403_FORBIDDEN
-                )
-        if request.data.get('payload'):
-            if instance.has_audio:
-                return Response(
-                    data='Audio has already been uploaded', status=status.HTTP_403_FORBIDDEN
-                )
+        with transaction.atomic():
+            instance = self.get_object()
+            if request.data.get('client_version'):
+                instance.ground_station.client_version = request.data.get('client_version')
+                instance.ground_station.save()
+            if request.data.get('demoddata'):
+                try:
+                    file_path = 'data_obs/{0}/{1}'.format(
+                        instance.id, request.data.get('demoddata')
+                    )
+                    instance.demoddata.get(payload_demod=file_path)
+                    return Response(
+                        data='This data file has already been uploaded',
+                        status=status.HTTP_403_FORBIDDEN
+                    )
+                except ObjectDoesNotExist:
+                    demoddata = instance.demoddata.create(
+                        payload_demod=request.data.get('demoddata')
+                    )
+                    sync_to_db.delay(frame_id=demoddata.id)
+            if request.data.get('waterfall'):
+                if instance.has_waterfall:
+                    return Response(
+                        data='Watefall has already been uploaded',
+                        status=status.HTTP_403_FORBIDDEN
+                    )
+            if request.data.get('payload'):
+                if instance.has_audio:
+                    return Response(
+                        data='Audio has already been uploaded', status=status.HTTP_403_FORBIDDEN
+                    )
 
-        # False-positive no-member (E1101) pylint error:
-        # Parent class rest_framework.mixins.UpdateModelMixin provides the 'update' method
-        super().update(request, *args, **kwargs)  # pylint: disable=E1101
+            # False-positive no-member (E1101) pylint error:
+            # Parent class rest_framework.mixins.UpdateModelMixin provides the 'update' method
+            super().update(request, *args, **kwargs)  # pylint: disable=E1101
+
         if request.data.get('waterfall'):
             rate_observation.delay(instance.id, 'waterfall_upload')
         if request.data.get('demoddata'):
