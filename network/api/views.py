@@ -1,4 +1,5 @@
 """SatNOGS Network API django rest framework Views"""
+from django.conf import settings
 from django.core.exceptions import ObjectDoesNotExist
 from django.db import transaction
 from django.db.models import Count
@@ -13,7 +14,7 @@ from network.api import filters, pagination, serializers
 from network.api.perms import StationOwnerPermission
 from network.base.models import Observation, Station
 from network.base.rating_tasks import rate_observation
-from network.base.tasks import sync_to_db
+from network.base.tasks import delay_task_with_lock, process_audio, sync_to_db
 from network.base.validators import NegativeElevationError, NoTleSetError, \
     ObservationOverlapError, SinglePassError
 
@@ -106,6 +107,10 @@ class ObservationView(  # pylint: disable=R0901
             rate_observation.delay(instance.id, 'waterfall_upload')
         if request.data.get('demoddata'):
             rate_observation.delay(instance.id, 'data_upload')
+        if request.data.get('payload'):
+            delay_task_with_lock(
+                process_audio, instance.id, settings.PROCESS_AUDIO_LOCK_EXPIRATION, instance.id
+            )
         return Response(status=status.HTTP_200_OK)
 
 

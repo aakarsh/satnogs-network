@@ -454,6 +454,16 @@ ITEMS_PER_PAGE = config('ITEMS_PER_PAGE', default=25, cast=int)
 # User settings
 AVATAR_GRAVATAR_DEFAULT = config('AVATAR_GRAVATAR_DEFAULT', default='mm')
 
+# Cache expiration of the lock for "process audio" task
+PROCESS_AUDIO_LOCK_EXPIRATION = config('PROCESS_AUDIO_LOCK_EXPIRATION', default=900, cast=int)
+
+# Audio zip
+ZIP_AUDIO_FILES = config('ZIP_AUDIO_FILES', default=False, cast=bool)
+AUDIO_FILES_PER_ZIP = config('AUDIO_FILES_PER_ZIP', default=1000, cast=int)
+ZIP_FILE_PREFIX = config('ZIP_FILE_PREFIX', default='satnogs-observations')
+# Audio zip - Expiration time for access lock when append audio file to zip
+ZIP_AUDIO_LOCK_EXPIRATION = config('ZIP_AUDIO_LOCK_EXPIRATION', default=600, cast=int)
+
 # Archive.org
 S3_ACCESS_KEY = config('S3_ACCESS_KEY', default='')
 S3_SECRET_KEY = config('S3_SECRET_KEY', default='')

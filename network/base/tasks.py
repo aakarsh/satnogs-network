@@ -1,5 +1,7 @@
 """SatNOGS Network Celery task functions"""
 import os
+import struct
+import zipfile
 from datetime import datetime, timedelta
 
 import requests
@@ -8,12 +10,15 @@ from django.conf import settings
 from django.contrib.sites.models import Site
 from django.core.cache import cache
 from django.core.mail import send_mail
+from django.db import transaction
 from django.utils.timezone import now
 from internetarchive import upload
 from internetarchive.exceptions import AuthenticationError
+from tinytag import TinyTag, TinyTagException
 
 from network.base.db_api import DBConnectionError, get_tle_sets_by_norad_id_set
 from network.base.models import DemodData, Observation, Satellite, Station
+from network.base.rating_tasks import rate_observation
 from network.base.utils import sync_demoddata_to_db
 
 
@@ -21,6 +26,64 @@ def delay_task_with_lock(task, lock_id, lock_expiration, *args):
     """Ensure unique run of a task by aquiring lock"""
     if cache.add('{0}-{1}'.format(task.name, lock_id), '', lock_expiration):
         task.delay(*args)
+
+
+def get_zip_range_and_path(group):
+    """ Return range and zip filepath for a group of observation IDs """
+    group *= settings.AUDIO_FILES_PER_ZIP
+    group_range = (group + 1, group + settings.AUDIO_FILES_PER_ZIP)
+    zip_range = '{0}-{1}'.format(str(group_range[0]).zfill(9), str(group_range[1]).zfill(9))
+    zip_filename = '{0}-{1}.zip'.format(settings.ZIP_FILE_PREFIX, zip_range)
+    zip_path = '{0}/{1}'.format(settings.MEDIA_ROOT, zip_filename)
+    return (group_range, zip_path)
+
+
+@shared_task
+def zip_audio(observation_id, path):
+    """Add audio file to a zip file"""
+    print('zip audio: {0}'.format(observation_id))
+    group = ((observation_id - 1) // settings.AUDIO_FILES_PER_ZIP)
+    group_range, zip_path = get_zip_range_and_path(group)
+    cache_key = '{0}-{1}-{2}'.format('ziplock', group_range[0], group_range[1])
+    if cache.add(cache_key, '', settings.ZIP_AUDIO_LOCK_EXPIRATION):
+        print('lock aquired for zip audio: {0}'.format(observation_id))
+        with zipfile.ZipFile(file=zip_path, mode='a', compression=zipfile.ZIP_DEFLATED,
+                             compresslevel=9) as zip_file:
+            zip_file.write(filename=path, arcname=path.split('/')[-1])
+        Observation.objects.filter(pk=observation_id).update(audio_zipped=True)
+        cache.delete(cache_key)
+
+
+@shared_task
+def process_audio(observation_id):
+    """
+    Process Audio
+    * Check audio file for duration less than 1 sec
+    * Validate audio file
+    * Run task for rating according to audio file
+    * Run task for adding audio in zip file
+    """
+    print('process audio: {0}'.format(observation_id))
+    observations = Observation.objects.select_for_update()
+    with transaction.atomic():
+        observation = observations.get(pk=observation_id)
+        try:
+            audio_metadata = TinyTag.get(observation.payload.path)
+            # Remove audio if it is less than 1 sec
+            if audio_metadata.duration is None or audio_metadata.duration < 1:
+                observation.payload.delete()
+                return
+            rate_observation.delay(observation_id, 'audio_upload', audio_metadata.duration)
+            if settings.ZIP_AUDIO_FILES:
+                zip_audio.delay(observation_id, observation.payload.path)
+        except TinyTagException:
+            # Remove invalid audio file
+            observation.payload.delete()
+            return
+        except (struct.error, TypeError):
+            # Remove audio file with wrong structure
+            observation.payload.delete()
+            return
 
 
 @shared_task
