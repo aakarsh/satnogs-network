@@ -465,12 +465,25 @@ ZIP_FILE_PREFIX = config('ZIP_FILE_PREFIX', default='satnogs-observations')
 ZIP_AUDIO_LOCK_EXPIRATION = config('ZIP_AUDIO_LOCK_EXPIRATION', default=600, cast=int)
 
 # Archive.org
+ARCHIVE_ZIP_FILES = config('ARCHIVE_ZIP_FILES', default=False, cast=bool)
+ZIP_FILES_PER_ITEM = config('ZIP_FILES_PER_ITEM', default=10, cast=int)
+ITEM_IDENTIFIER_PREFIX = config('ITEM_IDENTIFIER_PREFIX', default='satnogs-observations')
+ITEM_TITLE_PREFIX = config('ITEM_TITLE_PREFIX', default='SatNOGS Observations')
+# Archive.org - Cache expiration of the lock for "archive audio" task
+ARCHIVE_TASK_LOCK_EXPIRATION = config('ARCHIVE_TASK_LOCK_EXPIRATION', default=86400, cast=int)
+# Archive.org - Expiration time for access lock when archiving zip file
+ARCHIVE_ZIP_LOCK_EXPIRATION = config('ARCHIVE_ZIP_LOCK_EXPIRATION', default=21600, cast=int)
+# Archive.org - Hours from end time of the timely last observation of a group
+ARCHIVE_SKIP_TIME = config('ARCHIVE_SKIP_TIME', default=48, cast=int)
 S3_ACCESS_KEY = config('S3_ACCESS_KEY', default='')
 S3_SECRET_KEY = config('S3_SECRET_KEY', default='')
 S3_RETRIES_ON_SLOW_DOWN = config('S3_RETRIES_ON_SLOW_DOWN', default=1, cast=int)
 S3_RETRIES_SLEEP = config('S3_RETRIES_SLEEP', default=30, cast=int)
 ARCHIVE_COLLECTION = config('ARCHIVE_COLLECTION', default='test_collection')
+ARCHIVE_MEDIA_TYPE = config('ARCHIVE_MEDIA_TYPE', default='data')
 ARCHIVE_URL = 'https://archive.org/download/'
+REMOVE_ARCHIVED_AUDIO_FILES = config('REMOVE_ARCHIVED_AUDIO_FILES', default=False, cast=bool)
+REMOVE_ARCHIVED_ZIP_FILE = config('REMOVE_ARCHIVED_ZIP_FILE', default=False, cast=bool)
 
 if AUTH0:
     SOCIAL_AUTH_TRAILING_SLASH = False  # Remove end slash from routes

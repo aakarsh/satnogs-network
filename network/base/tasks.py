@@ -11,6 +11,7 @@ from django.contrib.sites.models import Site
 from django.core.cache import cache
 from django.core.mail import send_mail
 from django.db import transaction
+from django.db.models import Q
 from django.utils.timezone import now
 from internetarchive import upload
 from internetarchive.exceptions import AuthenticationError
@@ -39,6 +40,106 @@ def get_zip_range_and_path(group):
 
 
 @shared_task
+def archive_audio_zip_files(force_archive=False):
+    """Archive audio zip files to archive.org"""
+    print('archive audio')
+    if cache.add('archive-task', '', settings.ARCHIVE_TASK_LOCK_EXPIRATION):
+        print('Lock aquired for archive task')
+        if settings.ARCHIVE_ZIP_FILES or force_archive:
+            archived_groups = []
+            skipped_groups = []
+            archive_skip_time = now() - timedelta(hours=settings.ARCHIVE_SKIP_TIME)
+            observation_ids = Observation.objects.filter(
+                audio_zipped=True, archived=False
+            ).values_list(
+                'pk', flat=True
+            )
+            groups = {(pk - 1) // settings.AUDIO_FILES_PER_ZIP for pk in observation_ids}
+            for group in groups:
+                group_range, zip_path = get_zip_range_and_path(group)
+                cache_key = '{0}-{1}-{2}'.format('ziplock', group_range[0], group_range[1])
+                if not cache.add(
+                        cache_key, '', settings.ARCHIVE_ZIP_LOCK_EXPIRATION
+                ) or Observation.objects.filter(pk__range=group_range).filter(Q(archived=True) | Q(
+                        end__gte=archive_skip_time)).count() or not zipfile.is_zipfile(zip_path):
+                    skipped_groups.append(group_range)
+                    cache.delete(cache_key)
+                    continue
+
+                archived_groups.append(group_range)
+                site = Site.objects.get_current()
+                license_url = 'http://creativecommons.org/licenses/by-sa/4.0/'
+
+                item_group = group // settings.ZIP_FILES_PER_ITEM
+                files_per_item = settings.ZIP_FILES_PER_ITEM * settings.AUDIO_FILES_PER_ZIP
+                item_from = (item_group * files_per_item) + 1
+                item_to = (item_group + 1) * files_per_item
+                item_range = '{0}-{1}'.format(str(item_from).zfill(9), str(item_to).zfill(9))
+
+                item_id = '{0}-{1}'.format(settings.ITEM_IDENTIFIER_PREFIX, item_range)
+                title = '{0} {1}'.format(settings.ITEM_TITLE_PREFIX, item_range)
+                description = (
+                    '<p>Audio files from <a href="{0}/observations">'
+                    'SatNOGS Observations</a> with ID from {1} to {2}.</p>'
+                ).format(site.domain, item_from, item_to)
+
+                item_metadata = dict(
+                    collection=settings.ARCHIVE_COLLECTION,
+                    title=title,
+                    mediatype=settings.ARCHIVE_MEDIA_TYPE,
+                    licenseurl=license_url,
+                    description=description
+                )
+
+                zip_name = zip_path.split('/')[-1]
+                file_metadata = dict(
+                    name=zip_path,
+                    title=zip_name.replace('.zip', ''),
+                    license_url=license_url,
+                )
+
+                try:
+                    res = upload(
+                        item_id,
+                        files=file_metadata,
+                        metadata=item_metadata,
+                        access_key=settings.S3_ACCESS_KEY,
+                        secret_key=settings.S3_SECRET_KEY,
+                        retries=settings.S3_RETRIES_ON_SLOW_DOWN,
+                        retries_sleep=settings.S3_RETRIES_SLEEP
+                    )
+                except (requests.exceptions.RequestException, AuthenticationError) as error:
+                    print('Upload of zip {0} failed, reason:\n{1}'.format(zip_name, repr(error)))
+                    return
+
+                if res[0].status_code == 200:
+                    observations = Observation.objects.select_for_update().filter(
+                        pk__range=group_range
+                    ).filter(audio_zipped=True)
+                    with transaction.atomic():
+                        for observation in observations:
+                            audio_filename = observation.payload.path.split('/')[-1]
+                            observation.archived = True
+                            observation.archive_url = '{0}{1}/{2}/{3}'.format(
+                                settings.ARCHIVE_URL, item_id, zip_name, audio_filename
+                            )
+                            observation.archive_identifier = item_id
+                            if settings.REMOVE_ARCHIVED_AUDIO_FILES:
+                                observation.payload.delete(save=False)
+                            observation.save(
+                                update_fields=[
+                                    'archived', 'archive_url', 'archive_identifier', 'payload'
+                                ]
+                            )
+                    if settings.REMOVE_ARCHIVED_ZIP_FILE:
+                        os.remove(zip_path)
+                cache.delete(cache_key)
+            cache.delete('archive-task')
+            print('Archived Groups: {0}'.format(archived_groups))
+            print('Skipped Groups: {0}'.format(skipped_groups))
+
+
+@shared_task
 def zip_audio(observation_id, path):
     """Add audio file to a zip file"""
     print('zip audio: {0}'.format(observation_id))
@@ -46,7 +147,7 @@ def zip_audio(observation_id, path):
     group_range, zip_path = get_zip_range_and_path(group)
     cache_key = '{0}-{1}-{2}'.format('ziplock', group_range[0], group_range[1])
     if cache.add(cache_key, '', settings.ZIP_AUDIO_LOCK_EXPIRATION):
-        print('lock aquired for zip audio: {0}'.format(observation_id))
+        print('Lock aquired for zip audio: {0}'.format(observation_id))
         with zipfile.ZipFile(file=zip_path, mode='a', compression=zipfile.ZIP_DEFLATED,
                              compresslevel=9) as zip_file:
             zip_file.write(filename=path, arcname=path.split('/')[-1])
@@ -157,69 +258,6 @@ def fetch_data():
 
 
 @shared_task
-def archive_audio(obs_id):
-    """Upload audio of observation in archive.org"""
-    obs = Observation.objects.get(id=obs_id)
-    site = Site.objects.get_current()
-    suffix = '-{0}'.format(settings.ENVIRONMENT)
-    license_url = 'http://creativecommons.org/licenses/by-sa/4.0/'
-    if settings.ENVIRONMENT == 'production':
-        suffix = ''
-
-    obs_thousand = ((obs_id - 1) // 1000) * 1000
-    range_from = obs_thousand + 1
-    range_to = obs_thousand + 1000
-    obs_range = '{0}-{1}'.format(str(range_from).zfill(9), str(range_to).zfill(9))
-
-    item_id = 'satnogs{0}-observations-{1}'.format(suffix, obs_range)
-    title = 'SatNOGS{0} Observations {1}'.format(suffix, obs_range)
-    description = (
-        '<p>Audio files from <a href="{1}/observations">'
-        'SatNOGS{0} Observations</a> from {2} to {3}.</p>'
-    ).format(suffix, site.domain, range_from, range_to)
-
-    item_metadata = dict(
-        collection=settings.ARCHIVE_COLLECTION,
-        title=title,
-        mediatype='audio',
-        licenseurl=license_url,
-        description=description
-    )
-
-    ogg = obs.payload.path
-    filename = obs.payload.name.split('/')[-1]
-    observation_url = '{0}/observations/{1}/'.format(site.domain, obs_id)
-    file_metadata = dict(
-        name=ogg,
-        title=filename,
-        license_url=license_url,
-        observation_id=obs_id,
-        observation_url=observation_url
-    )
-
-    try:
-        res = upload(
-            item_id,
-            files=file_metadata,
-            metadata=item_metadata,
-            access_key=settings.S3_ACCESS_KEY,
-            secret_key=settings.S3_SECRET_KEY,
-            retries=settings.S3_RETRIES_ON_SLOW_DOWN,
-            retries_sleep=settings.S3_RETRIES_SLEEP
-        )
-    except (requests.exceptions.RequestException, AuthenticationError) as error:
-        print('Upload of audio for observation {} failed, reason:\n{}'.format(obs_id, repr(error)))
-        return
-
-    if res[0].status_code == 200:
-        obs.archived = True
-        obs.archive_url = '{0}{1}/{2}'.format(settings.ARCHIVE_URL, item_id, filename)
-        obs.archive_identifier = item_id
-        obs.payload.delete(save=False)
-        obs.save(update_fields=['archived', 'archive_url', 'archive_identifier', 'payload'])
-
-
-@shared_task
 def clean_observations():
     """Task to clean up old observations that lack actual data."""
     threshold = now() - timedelta(days=int(settings.OBSERVATION_OLD_RANGE))
@@ -230,8 +268,6 @@ def clean_observations():
             if not obs.status >= 100:
                 obs.delete()
                 continue
-        if os.path.isfile(obs.payload.path):
-            archive_audio.delay(obs.id)
 
 
 @shared_task

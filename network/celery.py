@@ -65,6 +65,13 @@ def notify_for_stations_without_results():
 
 
 @APP.task
+def archive_audio_zip_files():
+    """Wrapper task for 'archive_audio_zip_files' shared task"""
+    from network.base.tasks import archive_audio_zip_files as periodic_task
+    periodic_task()
+
+
+@APP.task
 def find_and_rate_failed_observations():
     """Wrapper task for 'find_and_rate_failed_observations' shared task"""
     from network.base.rating_tasks import find_and_rate_failed_observations as periodic_task
@@ -91,6 +98,11 @@ def setup_periodic_tasks(sender, **kwargs):  # pylint: disable=W0613
         notify_for_stations_without_results.s(),
         name='notify_for_stations_without_results'
     )
+
+    if settings.ARCHIVE_ZIP_FILES:
+        sender.add_periodic_task(
+            RUN_HOURLY, archive_audio_zip_files.s(), name='archive_audio_zip_files'
+        )
 
     sender.add_periodic_task(
         RUN_EVERY_15_MINUTES,
