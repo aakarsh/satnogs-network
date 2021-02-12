@@ -463,6 +463,8 @@ AUDIO_FILES_PER_ZIP = config('AUDIO_FILES_PER_ZIP', default=1000, cast=int)
 ZIP_FILE_PREFIX = config('ZIP_FILE_PREFIX', default='satnogs-observations')
 # Audio zip - Expiration time for access lock when append audio file to zip
 ZIP_AUDIO_LOCK_EXPIRATION = config('ZIP_AUDIO_LOCK_EXPIRATION', default=600, cast=int)
+# Audio zip - Cache expiration of the lock for "zip audio" task
+ZIP_TASK_LOCK_EXPIRATION = config('ZIP_TASK_LOCK_EXPIRATION', default=3600, cast=int)
 
 # Archive.org
 ARCHIVE_ZIP_FILES = config('ARCHIVE_ZIP_FILES', default=False, cast=bool)

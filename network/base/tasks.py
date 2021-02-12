@@ -56,7 +56,7 @@ def zip_audio(observation_id, path):
 
 
 @shared_task
-def process_audio(observation_id):
+def process_audio(observation_id, force_zip=False):
     """
     Process Audio
     * Check audio file for duration less than 1 sec
@@ -75,7 +75,7 @@ def process_audio(observation_id):
                 observation.payload.delete()
                 return
             rate_observation.delay(observation_id, 'audio_upload', audio_metadata.duration)
-            if settings.ZIP_AUDIO_FILES:
+            if settings.ZIP_AUDIO_FILES or force_zip:
                 zip_audio(observation_id, observation.payload.path)
         except TinyTagException:
             # Remove invalid audio file
@@ -85,6 +85,29 @@ def process_audio(observation_id):
             # Remove audio file with wrong structure
             observation.payload.delete()
             return
+
+
+@shared_task
+def zip_audio_files(force_zip=False):
+    """Zip audio files per group"""
+    print('zip audio')
+    if cache.add('zip-task', '', settings.ZIP_TASK_LOCK_EXPIRATION):
+        print('Lock aquired for zip task')
+        if settings.ZIP_AUDIO_FILES or force_zip:
+            zipped_files = []
+            observations = Observation.objects.filter(audio_zipped=False).exclude(payload='')
+            non_zipped_ids = observations.order_by('pk').values_list('pk', flat=True)
+            group = (non_zipped_ids[0] - 1) // settings.AUDIO_FILES_PER_ZIP
+            for observation_id in non_zipped_ids:
+                if group == (observation_id - 1) // settings.AUDIO_FILES_PER_ZIP:
+                    process_audio(observation_id, force_zip)
+                    zipped_files.append(observation_id)
+                else:
+                    print('Processed Files: {0}'.format(zipped_files))
+                    cache.delete('zip-task')
+                    return
+    print('Processed Files: {0}'.format(zipped_files))
+    cache.delete('zip-task')
 
 
 @shared_task

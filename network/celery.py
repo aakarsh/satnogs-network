@@ -65,6 +65,13 @@ def notify_for_stations_without_results():
 
 
 @APP.task
+def zip_audio_files():
+    """Wrapper task for 'zip_audio_files' shared task"""
+    from network.base.tasks import zip_audio_files as periodic_task
+    periodic_task()
+
+
+@APP.task
 def archive_audio_zip_files():
     """Wrapper task for 'archive_audio_zip_files' shared task"""
     from network.base.tasks import archive_audio_zip_files as periodic_task
@@ -103,6 +110,9 @@ def setup_periodic_tasks(sender, **kwargs):  # pylint: disable=W0613
         sender.add_periodic_task(
             RUN_HOURLY, archive_audio_zip_files.s(), name='archive_audio_zip_files'
         )
+
+    if settings.ZIP_AUDIO_FILES:
+        sender.add_periodic_task(RUN_EVERY_15_MINUTES, zip_audio_files.s(), name='zip_audio_files')
 
     sender.add_periodic_task(
         RUN_EVERY_15_MINUTES,
