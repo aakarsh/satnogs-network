@@ -40,6 +40,54 @@ def get_zip_range_and_path(group):
 
 
 @shared_task
+def zip_audio(observation_id, path):
+    """Add audio file to a zip file"""
+    print('zip audio: {0}'.format(observation_id))
+    group = (observation_id - 1) // settings.AUDIO_FILES_PER_ZIP
+    group_range, zip_path = get_zip_range_and_path(group)
+    cache_key = '{0}-{1}-{2}'.format('ziplock', group_range[0], group_range[1])
+    if cache.add(cache_key, '', settings.ZIP_AUDIO_LOCK_EXPIRATION):
+        print('Lock aquired for zip audio: {0}'.format(observation_id))
+        with zipfile.ZipFile(file=zip_path, mode='a', compression=zipfile.ZIP_DEFLATED,
+                             compresslevel=9) as zip_file:
+            zip_file.write(filename=path, arcname=path.split('/')[-1])
+        Observation.objects.filter(pk=observation_id).update(audio_zipped=True)
+        cache.delete(cache_key)
+
+
+@shared_task
+def process_audio(observation_id):
+    """
+    Process Audio
+    * Check audio file for duration less than 1 sec
+    * Validate audio file
+    * Run task for rating according to audio file
+    * Run task for adding audio in zip file
+    """
+    print('process audio: {0}'.format(observation_id))
+    observations = Observation.objects.select_for_update()
+    with transaction.atomic():
+        observation = observations.get(pk=observation_id)
+        try:
+            audio_metadata = TinyTag.get(observation.payload.path)
+            # Remove audio if it is less than 1 sec
+            if audio_metadata.duration is None or audio_metadata.duration < 1:
+                observation.payload.delete()
+                return
+            rate_observation.delay(observation_id, 'audio_upload', audio_metadata.duration)
+            if settings.ZIP_AUDIO_FILES:
+                zip_audio(observation_id, observation.payload.path)
+        except TinyTagException:
+            # Remove invalid audio file
+            observation.payload.delete()
+            return
+        except (struct.error, TypeError):
+            # Remove audio file with wrong structure
+            observation.payload.delete()
+            return
+
+
+@shared_task
 def archive_audio_zip_files(force_archive=False):
     """Archive audio zip files to archive.org"""
     print('archive audio')
@@ -137,54 +185,6 @@ def archive_audio_zip_files(force_archive=False):
             cache.delete('archive-task')
             print('Archived Groups: {0}'.format(archived_groups))
             print('Skipped Groups: {0}'.format(skipped_groups))
-
-
-@shared_task
-def zip_audio(observation_id, path):
-    """Add audio file to a zip file"""
-    print('zip audio: {0}'.format(observation_id))
-    group = ((observation_id - 1) // settings.AUDIO_FILES_PER_ZIP)
-    group_range, zip_path = get_zip_range_and_path(group)
-    cache_key = '{0}-{1}-{2}'.format('ziplock', group_range[0], group_range[1])
-    if cache.add(cache_key, '', settings.ZIP_AUDIO_LOCK_EXPIRATION):
-        print('Lock aquired for zip audio: {0}'.format(observation_id))
-        with zipfile.ZipFile(file=zip_path, mode='a', compression=zipfile.ZIP_DEFLATED,
-                             compresslevel=9) as zip_file:
-            zip_file.write(filename=path, arcname=path.split('/')[-1])
-        Observation.objects.filter(pk=observation_id).update(audio_zipped=True)
-        cache.delete(cache_key)
-
-
-@shared_task
-def process_audio(observation_id):
-    """
-    Process Audio
-    * Check audio file for duration less than 1 sec
-    * Validate audio file
-    * Run task for rating according to audio file
-    * Run task for adding audio in zip file
-    """
-    print('process audio: {0}'.format(observation_id))
-    observations = Observation.objects.select_for_update()
-    with transaction.atomic():
-        observation = observations.get(pk=observation_id)
-        try:
-            audio_metadata = TinyTag.get(observation.payload.path)
-            # Remove audio if it is less than 1 sec
-            if audio_metadata.duration is None or audio_metadata.duration < 1:
-                observation.payload.delete()
-                return
-            rate_observation.delay(observation_id, 'audio_upload', audio_metadata.duration)
-            if settings.ZIP_AUDIO_FILES:
-                zip_audio.delay(observation_id, observation.payload.path)
-        except TinyTagException:
-            # Remove invalid audio file
-            observation.payload.delete()
-            return
-        except (struct.error, TypeError):
-            # Remove audio file with wrong structure
-            observation.payload.delete()
-            return
 
 
 @shared_task
