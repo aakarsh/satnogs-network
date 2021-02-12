@@ -3,12 +3,6 @@
 $(document).ready(function() {
     'use strict';
 
-    // Render Station success rate
-    var success_rate = $('.progress-bar-success').data('success-rate');
-    var percentagerest = $('.progress-bar-danger').data('percentagerest');
-    $('.progress-bar-success').css('width', success_rate + '%');
-    $('.progress-bar-danger').css('width', percentagerest + '%');
-
     var mapboxtoken = $('div#map').data('mapboxtoken');
     var stations = $('div#map').data('stations');
 

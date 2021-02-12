@@ -355,17 +355,3 @@ def notify_for_stations_without_results():
                 subject, stations, settings.DEFAULT_FROM_EMAIL,
                 [settings.EMAIL_FOR_STATIONS_ISSUES], False
             )
-
-
-@shared_task
-def stations_cache_rates():
-    """Cache the success rate of the stations"""
-    stations = Station.objects.all()
-    for station in stations:
-        observations = station.observations.exclude(testing=True).exclude(status__range=(0, 99))
-        success = observations.filter(
-            id__in=(o.id for o in observations if o.status >= 100 or -100 <= o.status < 0)
-        ).count()
-        if observations:
-            rate = int(100 * (success / observations.count()))
-            cache.set('station-{0}-rate'.format(station.id), rate, 60 * 60 * 2)

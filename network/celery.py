@@ -51,13 +51,6 @@ def station_status_update():
 
 
 @APP.task
-def stations_cache_rates():
-    """Wrapper task for 'stations_cache_rates' shared task"""
-    from network.base.tasks import stations_cache_rates as periodic_task
-    periodic_task()
-
-
-@APP.task
 def notify_for_stations_without_results():
     """Wrapper task for 'notify_for_stations_without_results' shared task"""
     from network.base.tasks import notify_for_stations_without_results as periodic_task
@@ -97,8 +90,6 @@ def setup_periodic_tasks(sender, **kwargs):  # pylint: disable=W0613
     sender.add_periodic_task(RUN_HOURLY, fetch_data.s(), name='fetch_data')
 
     sender.add_periodic_task(RUN_HOURLY, station_status_update.s(), name='station_status_update')
-
-    sender.add_periodic_task(RUN_HOURLY, stations_cache_rates.s(), name='stations_cache_rates')
 
     sender.add_periodic_task(
         settings.OBS_NO_RESULTS_CHECK_PERIOD,

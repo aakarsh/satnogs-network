@@ -10,6 +10,7 @@ from django.core.exceptions import ValidationError
 from django.core.validators import MaxLengthValidator, MaxValueValidator, MinLengthValidator, \
     MinValueValidator
 from django.db import models
+from django.db.models import Count, Q
 from django.dispatch import receiver
 from django.urls import reverse
 from django.utils.html import format_html
@@ -142,12 +143,18 @@ class Station(models.Model):
         rate = cache.get('station-{0}-rate'.format(self.id))
         if not rate:
             observations = self.observations.exclude(testing=True).exclude(status__range=(0, 99))
-            success = observations.filter(
-                id__in=(o.id for o in observations if o.status >= 100 or -100 <= o.status < 0)
-            ).count()
-            if observations:
-                rate = int(100 * (success / observations.count()))
-                cache.set('station-{0}-rate'.format(self.id), rate)
+            stats = observations.aggregate(
+                bad=Count('pk', filter=Q(status__range=(-100, -1))),
+                good=Count('pk', filter=Q(status__gte=100)),
+                failed=Count('pk', filter=Q(status__lt=100))
+            )
+            good_count = 0 if stats['good'] is None else stats['good']
+            bad_count = 0 if stats['bad'] is None else stats['bad']
+            failed_count = 0 if stats['failed'] is None else stats['failed']
+            total = good_count + bad_count + failed_count
+            if total:
+                rate = int(100 * ((bad_count + good_count) / total))
+                cache.set('station-{0}-rate'.format(self.id), rate, 60 * 60 * 6)
             else:
                 rate = False
         return rate
