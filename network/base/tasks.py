@@ -29,6 +29,11 @@ def delay_task_with_lock(task, lock_id, lock_expiration, *args):
         task.delay(*args)
 
 
+def get_observation_zip_group(observation_id):
+    """ Return observation group """
+    return (observation_id - 1) // settings.AUDIO_FILES_PER_ZIP
+
+
 def get_zip_range_and_path(group):
     """ Return range and zip filepath for a group of observation IDs """
     group *= settings.AUDIO_FILES_PER_ZIP
@@ -43,7 +48,7 @@ def get_zip_range_and_path(group):
 def zip_audio(observation_id, path):
     """Add audio file to a zip file"""
     print('zip audio: {0}'.format(observation_id))
-    group = (observation_id - 1) // settings.AUDIO_FILES_PER_ZIP
+    group = get_observation_zip_group(observation_id)
     group_range, zip_path = get_zip_range_and_path(group)
     cache_key = '{0}-{1}-{2}'.format('ziplock', group_range[0], group_range[1])
     if cache.add(cache_key, '', settings.ZIP_AUDIO_LOCK_EXPIRATION):
@@ -97,9 +102,9 @@ def zip_audio_files(force_zip=False):
             zipped_files = []
             observations = Observation.objects.filter(audio_zipped=False).exclude(payload='')
             non_zipped_ids = observations.order_by('pk').values_list('pk', flat=True)
-            group = (non_zipped_ids[0] - 1) // settings.AUDIO_FILES_PER_ZIP
+            group = get_observation_zip_group(non_zipped_ids[0])
             for observation_id in non_zipped_ids:
-                if group == (observation_id - 1) // settings.AUDIO_FILES_PER_ZIP:
+                if group == get_observation_zip_group(observation_id):
                     process_audio(observation_id, force_zip)
                     zipped_files.append(observation_id)
                 else:
@@ -125,7 +130,7 @@ def archive_audio_zip_files(force_archive=False):
             ).values_list(
                 'pk', flat=True
             )
-            groups = {(pk - 1) // settings.AUDIO_FILES_PER_ZIP for pk in observation_ids}
+            groups = {get_observation_zip_group(pk) for pk in observation_ids}
             for group in groups:
                 group_range, zip_path = get_zip_range_and_path(group)
                 cache_key = '{0}-{1}-{2}'.format('ziplock', group_range[0], group_range[1])
