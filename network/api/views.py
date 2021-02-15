@@ -67,6 +67,7 @@ class ObservationView(  # pylint: disable=R0901
 
     def update(self, request, *args, **kwargs):
         """Updates observation with audio, waterfall or demoded data"""
+        observation_has_data = False
         with transaction.atomic():
             instance = self.get_object()
             if request.data.get('client_version'):
@@ -83,6 +84,8 @@ class ObservationView(  # pylint: disable=R0901
                         status=status.HTTP_403_FORBIDDEN
                     )
                 except ObjectDoesNotExist:
+                    # Check if observation has data before saving the current ones
+                    observation_has_data = instance.demoddata.exists()
                     demoddata = instance.demoddata.create(
                         payload_demod=request.data.get('demoddata')
                     )
@@ -105,7 +108,8 @@ class ObservationView(  # pylint: disable=R0901
 
         if request.data.get('waterfall'):
             rate_observation.delay(instance.id, 'waterfall_upload')
-        if request.data.get('demoddata'):
+        # Rate observation only on first demoddata uploading
+        if request.data.get('demoddata') and not observation_has_data:
             rate_observation.delay(instance.id, 'data_upload')
         if request.data.get('payload'):
             delay_task_with_lock(
