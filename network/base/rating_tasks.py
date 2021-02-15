@@ -17,17 +17,13 @@ def find_and_rate_failed_observations():
     "-1000".
     """
     time_limit = now() - timedelta(seconds=settings.OBS_NO_RESULTS_IGNORE_TIME)
-    observations = Observation.objects.select_for_update().filter(
+    Observation.objects.filter(
         waterfall='',
         archived=False,
         payload='',
         demoddata__payload_demod__isnull=True,
         end__lt=time_limit
-    ).exclude(status=-1000)
-    with transaction.atomic():
-        for observation in observations:
-            observation.status = -1000
-            observation.save(update_fields=['status'])
+    ).exclude(status=-1000).update(status=-1000)
 
 
 @shared_task
