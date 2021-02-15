@@ -47,7 +47,7 @@ def zip_audio(observation_id, path):
     group_range, zip_path = get_zip_range_and_path(group)
     cache_key = '{0}-{1}-{2}'.format('ziplock', group_range[0], group_range[1])
     if cache.add(cache_key, '', settings.ZIP_AUDIO_LOCK_EXPIRATION):
-        print('Lock aquired for zip audio: {0}'.format(observation_id))
+        print('Lock acquired for zip audio: {0}'.format(observation_id))
         with zipfile.ZipFile(file=zip_path, mode='a', compression=zipfile.ZIP_DEFLATED,
                              compresslevel=9) as zip_file:
             zip_file.write(filename=path, arcname=path.split('/')[-1])
@@ -92,7 +92,7 @@ def zip_audio_files(force_zip=False):
     """Zip audio files per group"""
     print('zip audio')
     if cache.add('zip-task', '', settings.ZIP_TASK_LOCK_EXPIRATION):
-        print('Lock aquired for zip task')
+        print('Lock acquired for zip task')
         if settings.ZIP_AUDIO_FILES or force_zip:
             zipped_files = []
             observations = Observation.objects.filter(audio_zipped=False).exclude(payload='')
@@ -115,7 +115,7 @@ def archive_audio_zip_files(force_archive=False):
     """Archive audio zip files to archive.org"""
     print('archive audio')
     if cache.add('archive-task', '', settings.ARCHIVE_TASK_LOCK_EXPIRATION):
-        print('Lock aquired for archive task')
+        print('Lock acquired for archive task')
         if settings.ARCHIVE_ZIP_FILES or force_archive:
             archived_groups = []
             skipped_groups = []
