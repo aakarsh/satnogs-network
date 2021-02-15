@@ -1,4 +1,5 @@
 """SatNOGS Network Celery task functions"""
+import logging
 import os
 import struct
 import zipfile
@@ -21,6 +22,8 @@ from network.base.db_api import DBConnectionError, get_tle_sets_by_norad_id_set
 from network.base.models import DemodData, Observation, Satellite, Station
 from network.base.rating_tasks import rate_observation
 from network.base.utils import sync_demoddata_to_db
+
+LOGGER = logging.getLogger('db')
 
 
 def delay_task_with_lock(task, lock_id, lock_expiration, *args):
@@ -47,12 +50,12 @@ def get_zip_range_and_path(group):
 @shared_task
 def zip_audio(observation_id, path):
     """Add audio file to a zip file"""
-    print('zip audio: {0}'.format(observation_id))
+    LOGGER.info('zip audio: %s', observation_id)
     group = get_observation_zip_group(observation_id)
     group_range, zip_path = get_zip_range_and_path(group)
     cache_key = '{0}-{1}-{2}'.format('ziplock', group_range[0], group_range[1])
     if cache.add(cache_key, '', settings.ZIP_AUDIO_LOCK_EXPIRATION):
-        print('Lock acquired for zip audio: {0}'.format(observation_id))
+        LOGGER.info('Lock acquired for zip audio: %s', observation_id)
         with zipfile.ZipFile(file=zip_path, mode='a', compression=zipfile.ZIP_DEFLATED,
                              compresslevel=9) as zip_file:
             zip_file.write(filename=path, arcname=path.split('/')[-1])
@@ -69,7 +72,7 @@ def process_audio(observation_id, force_zip=False):
     * Run task for rating according to audio file
     * Run task for adding audio in zip file
     """
-    print('process audio: {0}'.format(observation_id))
+    LOGGER.info('process audio: %s', observation_id)
     observations = Observation.objects.select_for_update()
     with transaction.atomic():
         observation = observations.get(pk=observation_id)
@@ -95,9 +98,9 @@ def process_audio(observation_id, force_zip=False):
 @shared_task
 def zip_audio_files(force_zip=False):
     """Zip audio files per group"""
-    print('zip audio')
+    LOGGER.info('zip audio')
     if cache.add('zip-task', '', settings.ZIP_TASK_LOCK_EXPIRATION):
-        print('Lock acquired for zip task')
+        LOGGER.info('Lock acquired for zip task')
         if settings.ZIP_AUDIO_FILES or force_zip:
             zipped_files = []
             observations = Observation.objects.filter(audio_zipped=False).exclude(payload='')
@@ -108,19 +111,19 @@ def zip_audio_files(force_zip=False):
                     process_audio(observation_id, force_zip)
                     zipped_files.append(observation_id)
                 else:
-                    print('Processed Files: {0}'.format(zipped_files))
+                    LOGGER.info('Processed Files: %s', zipped_files)
                     cache.delete('zip-task')
                     return
-    print('Processed Files: {0}'.format(zipped_files))
+    LOGGER.info('Processed Files: %s', zipped_files)
     cache.delete('zip-task')
 
 
 @shared_task
 def archive_audio_zip_files(force_archive=False):
     """Archive audio zip files to archive.org"""
-    print('archive audio')
+    LOGGER.info('archive audio')
     if cache.add('archive-task', '', settings.ARCHIVE_TASK_LOCK_EXPIRATION):
-        print('Lock acquired for archive task')
+        LOGGER.info('Lock acquired for archive task')
         if settings.ARCHIVE_ZIP_FILES or force_archive:
             archived_groups = []
             skipped_groups = []
@@ -185,7 +188,7 @@ def archive_audio_zip_files(force_archive=False):
                         retries_sleep=settings.S3_RETRIES_SLEEP
                     )
                 except (requests.exceptions.RequestException, AuthenticationError) as error:
-                    print('Upload of zip {0} failed, reason:\n{1}'.format(zip_name, repr(error)))
+                    LOGGER.info('Upload of zip %s failed, reason:\n%s', zip_name, repr(error))
                     return
 
                 if res[0].status_code == 200:
@@ -211,8 +214,8 @@ def archive_audio_zip_files(force_archive=False):
                         os.remove(zip_path)
                 cache.delete(cache_key)
             cache.delete('archive-task')
-            print('Archived Groups: {0}'.format(archived_groups))
-            print('Skipped Groups: {0}'.format(skipped_groups))
+            LOGGER.info('Archived Groups: %s', archived_groups)
+            LOGGER.info('Skipped Groups: %s', skipped_groups)
 
 
 @shared_task
@@ -252,11 +255,11 @@ def fetch_data():
 
     db_api_url = settings.DB_API_ENDPOINT
     if not db_api_url:
-        print("Zero length api url, fetching is stopped")
+        LOGGER.info("Zero length api url, fetching is stopped")
         return
     satellites_url = "{}satellites".format(db_api_url)
 
-    print("Fetching Satellites from {}".format(satellites_url))
+    LOGGER.info("Fetching Satellites from %s", satellites_url)
     r_satellites = requests.get(satellites_url)
 
     # Fetch Satellites
@@ -282,7 +285,7 @@ def fetch_data():
             Satellite.objects.create(**satellite)
             satellites_added += 1
 
-    print('Added/Updated {}/{} satellites from db.'.format(satellites_added, satellites_updated))
+    LOGGER.info('Added/Updated %s/%s satellites from db.', satellites_added, satellites_updated)
 
 
 @shared_task
