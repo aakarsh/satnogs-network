@@ -140,7 +140,7 @@ def archive_audio_zip_files(force_archive=False):
                 if not cache.add(
                         cache_key, '', settings.ARCHIVE_ZIP_LOCK_EXPIRATION
                 ) or Observation.objects.filter(pk__range=group_range).filter(Q(archived=True) | Q(
-                        end__gte=archive_skip_time)).count() or not zipfile.is_zipfile(zip_path):
+                        end__gte=archive_skip_time)).exists() or not zipfile.is_zipfile(zip_path):
                     skipped_groups.append(group_range)
                     cache.delete(cache_key)
                     continue

@@ -499,7 +499,7 @@ class Observation(models.Model):
     @property
     def has_demoddata(self):
         """Check if the observation has Demod Data."""
-        if self.demoddata.count():
+        if self.demoddata.exists():
             return True
         return False
 
