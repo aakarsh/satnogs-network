@@ -68,6 +68,7 @@ class ObservationView(  # pylint: disable=R0901
     def update(self, request, *args, **kwargs):
         """Updates observation with audio, waterfall or demoded data"""
         observation_has_data = False
+        demoddata_id = None
         with transaction.atomic():
             instance = self.get_object()
             if request.data.get('client_version'):
@@ -89,7 +90,7 @@ class ObservationView(  # pylint: disable=R0901
                     demoddata = instance.demoddata.create(
                         payload_demod=request.data.get('demoddata')
                     )
-                    sync_to_db.delay(frame_id=demoddata.id)
+                    demoddata_id = demoddata.id
             if request.data.get('waterfall'):
                 if instance.has_waterfall:
                     return Response(
@@ -109,8 +110,10 @@ class ObservationView(  # pylint: disable=R0901
         if request.data.get('waterfall'):
             rate_observation.delay(instance.id, 'waterfall_upload')
         # Rate observation only on first demoddata uploading
-        if request.data.get('demoddata') and not observation_has_data:
-            rate_observation.delay(instance.id, 'data_upload')
+        if request.data.get('demoddata') and demoddata_id:
+            sync_to_db.delay(frame_id=demoddata_id)
+            if not observation_has_data:
+                rate_observation.delay(instance.id, 'data_upload')
         if request.data.get('payload'):
             delay_task_with_lock(
                 process_audio, instance.id, settings.PROCESS_AUDIO_LOCK_EXPIRATION, instance.id

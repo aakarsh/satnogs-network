@@ -192,4 +192,4 @@ def sync_demoddata_to_db(frame):
     response.raise_for_status()
 
     frame.copied_to_db = True
-    frame.save()
+    frame.save(update_fields=['copied_to_db'])
