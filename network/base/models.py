@@ -370,13 +370,13 @@ class Observation(models.Model):
     0 =< x < 100  -> Unknown (Future if observation not completed)
     100 =< x      -> Good
     """
-    status = models.SmallIntegerField(default=0, db_index=True)
+    status = models.SmallIntegerField(default=0)
     testing = models.BooleanField(default=False)
     rise_azimuth = models.FloatField(blank=True, null=True)
     max_altitude = models.FloatField(blank=True, null=True)
     set_azimuth = models.FloatField(blank=True, null=True)
-    audio_zipped = models.BooleanField(default=False, db_index=True)
-    archived = models.BooleanField(default=False, db_index=True)
+    audio_zipped = models.BooleanField(default=False)
+    archived = models.BooleanField(default=False)
     archive_identifier = models.CharField(max_length=255, blank=True)
     archive_url = models.URLField(blank=True, null=True)
     transmitter_uuid = ShortUUIDField(auto=False, db_index=True)
