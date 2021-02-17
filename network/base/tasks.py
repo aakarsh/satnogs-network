@@ -114,7 +114,7 @@ def zip_audio_files(force_zip=False):
                     LOGGER.info('Processed Files: %s', zipped_files)
                     cache.delete('zip-task')
                     return
-    LOGGER.info('Processed Files: %s', zipped_files)
+            LOGGER.info('Processed Files: %s', zipped_files)
     cache.delete('zip-task')
 
 
