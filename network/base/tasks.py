@@ -105,7 +105,8 @@ def zip_audio_files(force_zip=False):
             zipped_files = []
             observations = Observation.objects.filter(audio_zipped=False).exclude(payload='')
             non_zipped_ids = observations.order_by('pk').values_list('pk', flat=True)
-            group = get_observation_zip_group(non_zipped_ids[0])
+            if non_zipped_ids:
+                group = get_observation_zip_group(non_zipped_ids[0])
             for observation_id in non_zipped_ids:
                 if group == get_observation_zip_group(observation_id):
                     process_audio(observation_id, force_zip)
