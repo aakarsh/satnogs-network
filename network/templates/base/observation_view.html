@@ -248,19 +248,13 @@
           <span class="label label-default">Downloads</span>
           <span class="front-data">
           {% if observation.has_audio and observation.audio_url %}
-            {% if observation.audio_url == 'archived' %}
-              <button type="button" class="btn btn-default btn-xs" disabled="disabled">
+            <a href="{{ observation.audio_url }}"
+               target="_blank"
+               download="">
+              <button type="button" class="btn btn-default btn-xs">
                 <span class="glyphicon glyphicon-download"></span> Audio
               </button>
-            {% else %}
-              <a href="{{ observation.audio_url }}"
-                 target="_blank"
-                 download="">
-                <button type="button" class="btn btn-default btn-xs">
-                  <span class="glyphicon glyphicon-download"></span> Audio
-                </button>
-              </a>
-            {% endif %}
+            </a>
           {% endif %}
           {% if observation.waterfall %}
             <a href="{{ MEDIA_URL }}{{ observation.waterfall }}"
@@ -381,26 +375,19 @@
           <div role="tabpanel" class="tab-pane" id="tab-audio">
             {% if observation.has_audio %}
               {% if observation.audio_url %}
-                {% if observation.audio_url == 'archived' %}
-                  <div class="notice">
-                    Due to data migration, access to audio file is limited. For more details and updates please follow
-                    <a href="https://community.libre.space/t/data-migration-on-satnogs-network-limited-access-to-audio-files-before-2021-01-31-00-00-utc"> this thread</a>.
-                  </div>
-                {% else %}
-                  <div id="loading-{{ observation.id }}" class="notice">Loading audio...</div>
-                  <div class="progress progress-striped active" id="progress-bar-{{ observation.id }}">
-                    <div class="progress-bar progress-bar-info"></div>
-                  </div>
-                  <div class="wave tab-data" id="data-{{ observation.id }}"
-                       data-id="{{ observation.id }}"
-                       data-audio="{{ observation.audio_url }}"></div>
-                  <div id="wave-spectrogram"></div>
-                  <button type="button" class="btn btn-primary btn-xs playpause">
-                    <span class="glyphicon glyphicon-play"></span>
-                    <span class="glyphicon glyphicon-pause"></span>
-                  </button>
-                  <span id="playback-time-{{ observation.id }}" class="label label-info playback-time"></span>
-                {% endif %}
+                <div id="loading-{{ observation.id }}" class="notice">Loading audio...</div>
+                <div class="progress progress-striped active" id="progress-bar-{{ observation.id }}">
+                  <div class="progress-bar progress-bar-info"></div>
+                </div>
+                <div class="wave tab-data" id="data-{{ observation.id }}"
+                     data-id="{{ observation.id }}"
+                     data-audio="{{ observation.audio_url }}"></div>
+                <div id="wave-spectrogram"></div>
+                <button type="button" class="btn btn-primary btn-xs playpause">
+                  <span class="glyphicon glyphicon-play"></span>
+                  <span class="glyphicon glyphicon-pause"></span>
+                </button>
+                <span id="playback-time-{{ observation.id }}" class="label label-info playback-time"></span>
               {% else %}
                 <div class="notice">
                   Audio is not currently available
