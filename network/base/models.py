@@ -1,11 +1,9 @@
 """Django database base model for SatNOGS Network"""
 import codecs
-import logging
 import os
 import re
 from datetime import timedelta
 
-import requests
 from django.conf import settings
 from django.core.cache import cache
 from django.core.exceptions import ValidationError
@@ -510,18 +508,8 @@ class Observation(models.Model):
         """Return url for observation's audio file"""
         if self.has_audio:
             if self.archive_url:
-                try:
-                    request = requests.get(self.archive_url, allow_redirects=False)
-                    request.raise_for_status()
-
-                    url = request.headers['Location']
-                    return url
-                except requests.exceptions.RequestException as error:
-                    logger = logging.getLogger(__name__)
-                    logger.warning("Error in request to '%s'. Error: %s", self.archive_url, error)
-                    return ''
-            else:
-                return self.payload.url
+                return self.archive_url
+            return self.payload.url
         return ''
 
     class Meta:
