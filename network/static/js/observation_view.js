@@ -16,79 +16,83 @@ $(document).ready(function() {
     var panelWidth = $('.tab-content').first().width();
     $('.tab-pane').css('width', panelWidth);
 
-    // Waveform loading
-    $('.wave').each(function(){
-        var $this = $(this);
-        var wid = $this.data('id');
-        var data_audio_url = $this.data('audio');
-        var container_el = '#data-' + wid;
-        $(container_el).css('opacity', '0');
-        var loading = '#loading-' + wid;
-        var $playbackTime = $('#playback-time-' + wid);
-        var progressDiv = $('#progress-bar-' + wid);
-        var progressBar = $('.progress-bar', progressDiv);
-
-        var showProgress = function (percent) {
-            if (percent == 100) {
-                $(loading).text('Analyzing data...');
-            }
-            progressDiv.css('display', 'block');
-            progressBar.css('width', percent + '%');
-            progressBar.text(percent + '%');
-        };
-
-        var hideProgress = function () {
-            progressDiv.css('display', 'none');
-        };
-
-        var wavesurfer = WaveSurfer.create({
-            container: container_el,
-            waveColor: '#bf7fbf',
-            progressColor: 'purple',
-            plugins: [
-                WaveSurfer.spectrogram.create({
-                    wavesurfer: wavesurfer,
-                    container: '#wave-spectrogram',
-                    fftSamples: 256,
-                    windowFunc: 'hann'
-                })
-            ]
-        });
-
-        wavesurfer.on('destroy', hideProgress);
-        wavesurfer.on('error', hideProgress);
-
-        wavesurfer.on('loading', function(percent) {
-            showProgress(percent);
-            $(loading).show();
-        });
-
-        $this.parents('.observation-data').find('.playpause').click( function(){
-            wavesurfer.playPause();
-        });
-
-        $('a[href="#tab-audio"]').on('shown.bs.tab', function () {
+    function load_audio_tab() {
+        // Waveform loading
+        $('.wave').each(function(){
+            var $this = $(this);
+            var wid = $this.data('id');
+            var data_audio_url = $this.data('audio');
+            var container_el = '#data-' + wid;
+            $(container_el).css('opacity', '0');
+            var loading = '#loading-' + wid;
+            var $playbackTime = $('#playback-time-' + wid);
+            var progressDiv = $('#progress-bar-' + wid);
+            var progressBar = $('.progress-bar', progressDiv);
+ 
+            var showProgress = function (percent) {
+                if (percent == 100) {
+                    $(loading).text('Analyzing data...');
+                }
+                progressDiv.css('display', 'block');
+                progressBar.css('width', percent + '%');
+                progressBar.text(percent + '%');
+            };
+ 
+            var hideProgress = function () {
+                progressDiv.css('display', 'none');
+            };
+ 
+            var wavesurfer = WaveSurfer.create({
+                container: container_el,
+                waveColor: '#bf7fbf',
+                progressColor: 'purple',
+                plugins: [
+                    WaveSurfer.spectrogram.create({
+                        wavesurfer: wavesurfer,
+                        container: '#wave-spectrogram',
+                        fftSamples: 256,
+                        windowFunc: 'hann'
+                    })
+                ]
+            });
+ 
+            wavesurfer.on('destroy', hideProgress);
+            wavesurfer.on('error', hideProgress);
+ 
+            wavesurfer.on('loading', function(percent) {
+                showProgress(percent);
+                $(loading).show();
+            });
+ 
+            $this.parents('.observation-data').find('.playpause').click( function(){
+                wavesurfer.playPause();
+            });
+ 
             wavesurfer.load(data_audio_url);
-            $('a[href="#tab-audio"]').off('shown.bs.tab');
-        });
 
-        wavesurfer.on('ready', function() {
-            hideProgress();
-
-            //$playbackTime.text(formatTime(wavesurfer.getCurrentTime()));
-            $playbackTime.text(formatTime(wavesurfer.getCurrentTime()));
-
-            wavesurfer.on('audioprocess', function(evt) {
-                $playbackTime.text(formatTime(evt));
+            wavesurfer.on('ready', function() {
+                hideProgress();
+ 
+                //$playbackTime.text(formatTime(wavesurfer.getCurrentTime()));
+                $playbackTime.text(formatTime(wavesurfer.getCurrentTime()));
+ 
+                wavesurfer.on('audioprocess', function(evt) {
+                    $playbackTime.text(formatTime(evt));
+                });
+                wavesurfer.on('seek', function(evt) {
+                    $playbackTime.text(formatTime(wavesurfer.getDuration() * evt));
+                });
+                $(loading).hide();
+                $(container_el).css('opacity', '1');
             });
-            wavesurfer.on('seek', function(evt) {
-                $playbackTime.text(formatTime(wavesurfer.getDuration() * evt));
-            });
-            $(loading).hide();
-            $(container_el).css('opacity', '1');
         });
+    }
+
+    $('a[href="#tab-audio"]').on('shown.bs.tab', function () {
+        load_audio_tab();
+        $('a[href="#tab-audio"]').off('shown.bs.tab');
     });
-
+ 
     // Handle Observation tabs
     var uri = new URL(location.href);
     var tab = uri.hash;
