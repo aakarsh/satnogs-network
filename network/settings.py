@@ -329,6 +329,7 @@ CSP_DEFAULT_SRC = config(
     cast=lambda v: tuple(s.strip() for s in v.split(',')),
     default="'self',"
     'https://*.mapbox.com,'
+    'https://archive.org,'
     'https://*.archive.org'
 )
 CSP_SCRIPT_SRC = config(
