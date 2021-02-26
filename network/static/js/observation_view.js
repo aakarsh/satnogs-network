@@ -41,6 +41,11 @@ $(document).ready(function() {
             var hideProgress = function () {
                 progressDiv.css('display', 'none');
             };
+
+            var onError = function () {
+                hideProgress();
+                $('#tab-audio').replaceWith('<div class="notice">Something went wrong, try again later.</div><div class="notice">If the problem persists, please contact an administrator.</div>');
+            };
  
             var wavesurfer = WaveSurfer.create({
                 container: container_el,
@@ -57,7 +62,7 @@ $(document).ready(function() {
             });
  
             wavesurfer.on('destroy', hideProgress);
-            wavesurfer.on('error', hideProgress);
+            wavesurfer.on('error', onError);
  
             wavesurfer.on('loading', function(percent) {
                 showProgress(percent);
