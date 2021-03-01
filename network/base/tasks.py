@@ -56,10 +56,34 @@ def zip_audio(observation_id, path):
     cache_key = '{0}-{1}-{2}'.format('ziplock', group_range[0], group_range[1])
     if cache.add(cache_key, '', settings.ZIP_AUDIO_LOCK_EXPIRATION):
         LOGGER.info('Lock acquired for zip audio: %s', observation_id)
-        with zipfile.ZipFile(file=zip_path, mode='a', compression=zipfile.ZIP_DEFLATED,
-                             compresslevel=9) as zip_file:
-            zip_file.write(filename=path, arcname=path.split('/')[-1])
-        Observation.objects.filter(pk=observation_id).update(audio_zipped=True)
+        file_exists_in_zip_file = False
+        files_in_zip = []
+        if zipfile.is_zipfile(zip_path):
+            with zipfile.ZipFile(file=zip_path, mode='r') as zip_file:
+                files_in_zip = zip_file.namelist()
+                filename = path.split('/')[-1]
+                if filename in files_in_zip:
+                    file_exists_in_zip_file = True
+        if file_exists_in_zip_file:
+            LOGGER.info('Audio file already exists in zip file for id %s', observation_id)
+            ids = [name.split('_')[1] for name in files_in_zip]
+            observations = Observation.objects.filter(pk__in=ids).exclude(payload=''
+                                                                          ).exclude(archived=True)
+            if observations.count() == len(ids):
+                observations.update(audio_zipped=False)
+                os.remove(zip_path)
+            else:
+                cache.delete(cache_key)
+                error_message = (
+                    'Zip file can not be deleted,'
+                    ' it includes removed, archived or duplicate audio files'
+                )
+                raise RuntimeError(error_message)
+        else:
+            with zipfile.ZipFile(file=zip_path, mode='a', compression=zipfile.ZIP_DEFLATED,
+                                 compresslevel=9) as zip_file:
+                zip_file.write(filename=path, arcname=path.split('/')[-1])
+            Observation.objects.filter(pk=observation_id).update(audio_zipped=True)
         cache.delete(cache_key)
 
 
