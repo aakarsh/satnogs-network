@@ -138,10 +138,10 @@ def archive_audio_zip_files(force_archive=False):
             for group in groups:
                 group_range, zip_path = get_zip_range_and_path(group)
                 cache_key = '{0}-{1}-{2}'.format('ziplock', group_range[0], group_range[1])
-                if not cache.add(
-                        cache_key, '', settings.ARCHIVE_ZIP_LOCK_EXPIRATION
-                ) or Observation.objects.filter(pk__range=group_range).filter(Q(archived=True) | Q(
-                        end__gte=archive_skip_time)).exists() or not zipfile.is_zipfile(zip_path):
+                if (not cache.add(cache_key, '', settings.ARCHIVE_ZIP_LOCK_EXPIRATION)
+                    ) or Observation.objects.filter(pk__range=group_range).filter(Q(
+                        archived=True) | Q(end__gte=archive_skip_time) | (~Q(payload='') & Q(
+                            audio_zipped=False))).exists() or not zipfile.is_zipfile(zip_path):
                     skipped_groups.append(group_range)
                     cache.delete(cache_key)
                     continue
