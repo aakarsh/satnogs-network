@@ -461,9 +461,13 @@
       <h3>
         TLE used
         <small>
-          fetched from Celestrak
+          {% if observation.tle_source == "SatNOGS" %}
+            computed by SatNOGS
+          {% else %}
+            fetched from {{ observation.tle_source }}
+          {% endif %}
           <span data-toggle="tooltip" data-placement="bottom" title="{{ observation.tle_updated|date:"Y-m-d H:i:s" }}">
-            {{ observation.tle_updated|naturaltime }}
+            for {{ observation.tle_updated|naturaltime }}
           </span>
         </small>
       </h3>
