@@ -324,11 +324,6 @@ secret_detection:
   needs:
     - job: api
       artifacts: true
-secret_detection_default_branch:
-  stage: security
-  needs:
-    - job: api
-      artifacts: true
 license_scanning:
   stage: security
   needs:
