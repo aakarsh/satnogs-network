@@ -188,7 +188,7 @@ def observation_view(request, observation_id):
     if settings.ENVIRONMENT == 'production':
         discussion_details = community_get_discussion_details(
             observation.id, observation.satellite.name, observation.satellite.norad_cat_id,
-            'http://{}{}'.format(request.get_host(), request.path)
+            'http:%2F%2F{}{}'.format(request.get_host(), request.path)
         )
 
         return render(
